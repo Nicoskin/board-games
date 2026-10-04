@@ -12,7 +12,7 @@
 
    Добавили новую игру — допишите её файлы в ASSETS и поднимите VERSION. */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const APP = 'bg-app-' + VERSION;
 const MEDIA = 'bg-media';
 const FONTS = 'bg-fonts';
@@ -74,7 +74,8 @@ const ASSETS = [
   'score/orleans/img/wine.png', 'score/orleans/img/wool.png', 'score/star-realms/app.js',
   'score/star-realms/', 'score/star-realms/style.css', 'score/star-realms/icons/apple-touch-icon.png',
   'score/star-realms/icons/icon-192.png', 'rules/7-wonders-duel.html', 'rules/castles-of-burgundy.html',
-  'rules/cascadia.html', 'rules/assets/style.css', 'rules/assets/app.js', 'rules/img/7wd/cover.jpg',
+  'rules/cascadia.html', 'rules/dune-imperium-uprising.html', 'rules/img/dune/cover.jpg',
+  'rules/assets/style.css', 'rules/assets/app.js', 'rules/img/7wd/cover.jpg',
   'rules/img/cob/logo.jpg', 'rules/img/csc/cover.jpg'
 ];
 
@@ -123,13 +124,14 @@ self.addEventListener('fetch', e => {
   if (url.origin === location.origin) {
     const media = url.pathname.includes('/rules/img/');
     e.respondWith((async () => {
-      const hit = await cached(req);
+      /* точное совпадение вместе с «?v=…»: новая версия стиля не должна подменяться старой из кэша */
+      const hit = await caches.match(req);
       if (hit) {
         if (!media) e.waitUntil(fetch(req).then(r => putCopy(APP, req, r)).catch(() => {}));
         return hit;
       }
       try { return putCopy(media ? MEDIA : APP, req, await fetch(req)); }
-      catch (err) { return new Response('', {status: 504}); }
+      catch (err) { return (await cached(req)) || new Response('', {status: 504}); }
     })());
     return;
   }

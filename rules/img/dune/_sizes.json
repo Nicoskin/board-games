@@ -1,0 +1,394 @@
+{
+"icons/agent.png": [
+50,
+80
+],
+"icons/wall.png": [
+58,
+67
+],
+"icons/sym-crys.png": [
+62,
+40
+],
+"icons/sym-mouse.png": [
+62,
+37
+],
+"icons/sym-thopter.png": [
+62,
+37
+],
+"icons/sym-wild.png": [
+62,
+37
+],
+"icons/bonus.png": [
+54,
+127
+],
+"icons/recall-agent.png": [
+50,
+80
+],
+"icons/recall-spy.png": [
+60,
+76
+],
+"icons/intrigue.png": [
+59,
+91
+],
+"icons/draw.png": [
+59,
+91
+],
+"icons/uprising.png": [
+60,
+57
+],
+"icons/signet.png": [
+59,
+52
+],
+"icons/contract.png": [
+68,
+44
+],
+"icons/control.png": [
+59,
+71
+],
+"icons/steal.png": [
+69,
+62
+],
+"icons/hook.png": [
+58,
+52
+],
+"icons/sword.png": [
+59,
+81
+],
+"icons/troop.png": [
+59,
+64
+],
+"icons/persuasion.png": [
+60,
+59
+],
+"icons/worm.png": [
+59,
+54
+],
+"icons/vp.png": [
+59,
+59
+],
+"icons/maker.png": [
+66,
+60
+],
+"icons/inf-emperor.png": [
+54,
+61
+],
+"icons/inf-guild.png": [
+54,
+61
+],
+"icons/inf-bg.png": [
+54,
+61
+],
+"icons/inf-fremen.png": [
+54,
+61
+],
+"icons/inf-any1.png": [
+54,
+61
+],
+"icons/inf-any2.png": [
+46,
+61
+],
+"icons/inf-lose.png": [
+54,
+61
+],
+"icons/solari.png": [
+57,
+58
+],
+"icons/spice.png": [
+65,
+58
+],
+"icons/water.png": [
+39,
+58
+],
+"icons/discard.png": [
+59,
+91
+],
+"icons/trash-intrigue.png": [
+59,
+91
+],
+"icons/trash.png": [
+135,
+206
+],
+"icons/spy.png": [
+63,
+90
+],
+"icons/a-emperor.png": [
+64,
+46
+],
+"icons/a-guild.png": [
+64,
+46
+],
+"icons/a-bg.png": [
+64,
+46
+],
+"icons/a-fremen.png": [
+64,
+46
+],
+"icons/a-landsraad.png": [
+64,
+46
+],
+"icons/a-city.png": [
+64,
+46
+],
+"icons/a-spice.png": [
+64,
+46
+],
+"icons/a-spy.png": [
+64,
+46
+],
+"round.jpg": [
+1400,
+174
+],
+"card-anatomy.jpg": [
+1100,
+715
+],
+"faction-track.jpg": [
+341,
+664
+],
+"intrigue-types.jpg": [
+784,
+409
+],
+"conflict-zone.jpg": [
+445,
+208
+],
+"wall-locations.jpg": [
+358,
+370
+],
+"control-flag.jpg": [
+353,
+212
+],
+"observation-post.jpg": [
+298,
+420
+],
+"combat-track.jpg": [
+514,
+154
+],
+"conflict-card.jpg": [
+310,
+454
+],
+"battle-symbols.jpg": [
+352,
+136
+],
+"double-reward.jpg": [
+257,
+164
+],
+"solo-vp.jpg": [
+304,
+366
+],
+"six-agents.jpg": [
+245,
+173
+],
+"six-boards.jpg": [
+754,
+466
+],
+"six-team-reward.jpg": [
+236,
+169
+],
+"six-exchange.jpg": [
+154,
+169
+],
+"six-reinforce.jpg": [
+154,
+154
+],
+"six-muaddib.jpg": [
+164,
+106
+],
+"six-shaddam.jpg": [
+164,
+99
+],
+"setup.jpg": [
+1600,
+1176
+],
+"cells/arrakeen.jpg": [
+332,
+242
+],
+"cells/dutiful-service.jpg": [
+332,
+201
+],
+"cells/desert-tactics.jpg": [
+332,
+200
+],
+"cells/assembly-hall.jpg": [
+332,
+172
+],
+"cells/imperial-basin.jpg": [
+332,
+209
+],
+"cells/accept-contract.jpg": [
+332,
+183
+],
+"cells/research-station.jpg": [
+332,
+170
+],
+"cells/swordmaster.jpg": [
+332,
+188
+],
+"cells/gather-support.jpg": [
+332,
+151
+],
+"cells/shipping.jpg": [
+332,
+209
+],
+"cells/imperial-privilege.jpg": [
+332,
+186
+],
+"cells/sardaukar.jpg": [
+332,
+200
+],
+"cells/sietch-tabr.jpg": [
+332,
+161
+],
+"cells/spice-refinery.jpg": [
+332,
+255
+],
+"cells/deliver-supplies.jpg": [
+332,
+201
+],
+"cells/secrets.jpg": [
+332,
+200
+],
+"cells/fremkit.jpg": [
+332,
+201
+],
+"cells/heighliner.jpg": [
+332,
+200
+],
+"cells/espionage.jpg": [
+332,
+200
+],
+"cells/desert-mastery.jpg": [
+332,
+200
+],
+"cells/military-support.jpg": [
+332,
+200
+],
+"cells/battle-hardened.jpg": [
+332,
+200
+],
+"cells/controlled-tech.jpg": [
+332,
+200
+],
+"cells/carthag.jpg": [
+332,
+169
+],
+"cells/vast-wealth.jpg": [
+332,
+201
+],
+"cells/swordmaster-6.jpg": [
+332,
+188
+],
+"cells/economic-support.jpg": [
+332,
+201
+],
+"cells/expedition.jpg": [
+332,
+201
+],
+"cells/habbanya-erg.jpg": [
+332,
+148
+],
+"cells/hagga-basin.jpg": [
+346,
+154
+],
+"cells/high-council.jpg": [
+586,
+198
+],
+"cells/deep-desert.jpg": [
+342,
+149
+]
+}

@@ -98,6 +98,9 @@ h1{margin:0 0 14px;font-size:26px;line-height:1.15;letter-spacing:-.01em}
       <li><a class="card" href="rules/7-wonders-duel.html">
         <img class="top" src="rules/img/7wd/cover.jpg" alt="" width="64" height="64">
         <div><b>7 чудес: Дуэль</b><span>2 игрока · 3 эпохи · военная, научная или гражданская победа</span></div></a></li>
+      <li><a class="card" href="rules/dune-imperium-uprising.html">
+        <img class="top" src="rules/img/dune/cover.jpg" alt="" width="64" height="64">
+        <div><b>Дюна. Империя. Восстание</b><span>1–4 игрока и режим на 6 · агенты, колода, сражения за Арракис</span></div></a></li>
       <li><a class="card" href="rules/castles-of-burgundy.html">
         <img class="logo" src="rules/img/cob/logo.jpg" alt="" width="64" height="64">
         <div><b>Замки Бургундии</b><span>1–4 игрока · 5 фаз по 5 раундов · все дополнения</span></div></a></li>
@@ -107,7 +110,7 @@ h1{margin:0 0 14px;font-size:26px;line-height:1.15;letter-spacing:-.01em}
     </ul>
     <div class="offline" id="offline" hidden>
       <button type="button" id="saveRules">Сохранить для офлайна</button>
-      <span id="saveNote">Картинки из буклетов, около 32 МБ</span>
+      <span id="saveNote">Картинки из буклетов, около 50 МБ</span>
     </div>
   </section>
 </main>
@@ -157,7 +160,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 /* Счётчики кладутся в кэш сами при установке. Правила — это сотни картинок из буклетов,
    поэтому их сохраняем по кнопке: читаем страницы правил и складываем всё, на что они ссылаются. */
 const MEDIA = 'bg-media';
-const RULES = ['7-wonders-duel', 'castles-of-burgundy', 'cascadia'];
+const RULES = ['7-wonders-duel', 'dune-imperium-uprising', 'castles-of-burgundy', 'cascadia'];
 const SAVED_KEY = 'boardgames-rules-saved';
 const box = document.getElementById('offline'), btn = document.getElementById('saveRules'), note = document.getElementById('saveNote');
 

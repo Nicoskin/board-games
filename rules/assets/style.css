@@ -401,3 +401,22 @@ body.game-csc { --accent: #2f6b3a; --accent-soft: #dcead8; }
 @media (min-width: 640px) { .sh-img.goal { width: 140px; } }
 body.game-csc #popup .pop-img { width: min(300px, 86%); }
 .muted { color: var(--muted); font-size: .93rem; }
+
+/* ===== Дюна. Империя. Восстание ===== */
+body.game-dune { --accent: #a4571c; --accent-soft: #f6e3cf; }
+@media (prefers-color-scheme: dark) { body.game-dune { --accent: #e9a35f; --accent-soft: #3a2817; } }
+.cell, .sym { padding: 12px 0; border-top: 1px dashed var(--line); overflow: hidden; }
+.cell h4, .sym h4 { margin: 0 0 4px; }
+.cell p, .sym p { margin: 3px 0; }
+.cell > img { float: left; width: 128px; height: auto; margin: 3px 12px 6px 0; border-radius: 6px; box-shadow: var(--shadow); }
+.cell-meta { color: var(--muted); font-size: .9rem; }
+.cell-meta span { display: inline-block; margin-right: 10px; }
+.cell-meta span:not(:first-child)::before { content: "· "; }
+.sym h4 .ic { height: 1.9em; vertical-align: -0.55em; margin-right: 3px; }
+ul.plain { list-style: none; padding-left: 0; }
+ul.plain li { margin: 7px 0; }
+table.agent-icons td:first-child { width: 44px; text-align: center; }
+table.agent-icons .ic { height: 1.8em; }
+.example .inline-pic { float: left; width: 96px; height: auto; margin: 2px 12px 4px 0; border-radius: 6px; }
+.example { overflow: hidden; }
+@media (max-width: 420px) { .cell > img { width: 104px; } }
