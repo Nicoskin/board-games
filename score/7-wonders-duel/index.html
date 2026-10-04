@@ -16,14 +16,14 @@
 <meta property="og:image" content="img/cover.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=PT+Sans:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=PT+Sans:wght@400;700&display=swap">
 <style>
 :root{
   --ground:#E4D0A8; --surface:#FBF4E4; --surface-2:#F1E4C6; --ink:#2C2417; --muted:#75644A;
   --line:#CDB58A; --accent:#1C6B63; --accent-ink:#F3FBF8; --accent-soft:#D3E5DA;
   --gold:#B8891F; --focus:#1F5FA8; --shadow:rgba(60,40,15,.18); --warn:#A8322A;
   --board:#173E44; --board-ink:#F4EFDF; --board-cell:rgba(240,250,245,.1);
-  --display:Forum, Georgia, "Times New Roman", serif;
+  --display:"Cormorant Garamond", Georgia, "Times New Roman", serif;
   --body:"PT Sans", "Segoe UI", system-ui, sans-serif;
   --c-blue:#1D5E9E; --c-green:#1F8A47; --c-yellow:#EFC21B; --c-purple:#7A4A9E;
   --c-brown:#6E4526; --c-grey:#8C8C88; --c-red:#C8272E;
@@ -46,7 +46,7 @@
 [hidden]{display:none !important}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
-body{margin:0;color:var(--ink);font:400 16px/1.45 var(--body);-webkit-text-size-adjust:100%;
+body{margin:0;color:var(--ink);font:400 16px/1.45 var(--body);font-variant-numeric:lining-nums;-webkit-text-size-adjust:100%;
   background:var(--ground) url("img/parchment.jpg") repeat;background-size:420px;background-blend-mode:multiply;
   padding-bottom:calc(78px + env(safe-area-inset-bottom))}
 button,input{font:inherit;color:inherit}
@@ -81,7 +81,7 @@ img{max-width:100%}
   padding:calc(7px + env(safe-area-inset-top)) 14px 3px}
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
 .brand img{width:40px;height:40px;border-radius:9px;flex:none;box-shadow:0 1px 3px var(--shadow)}
-.brand h1{margin:0;font:400 27px/1 var(--display);letter-spacing:.01em;white-space:nowrap}
+.brand h1{margin:0;font:600 27px/1 var(--display);letter-spacing:.01em;white-space:nowrap}
 .brand small{display:block;font-size:11.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase}
 .secnav{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:5px 10px 7px;scrollbar-width:none}
 .secnav::-webkit-scrollbar{display:none}
@@ -107,7 +107,7 @@ img{max-width:100%}
   .results{position:sticky;top:104px;max-height:calc(100vh - 186px);overflow:auto}
 }
 .group{scroll-margin-top:100px}
-.group > h2{margin:18px 4px 8px;font:400 27px/1.1 var(--display)}
+.group > h2{margin:18px 4px 8px;font:600 27px/1.1 var(--display)}
 .cats{display:grid;gap:10px}
 
 /* ---------- карточки категорий ---------- */
@@ -139,7 +139,7 @@ img{max-width:100%}
 .stepper button{width:46px;height:46px;border:0;background:var(--surface-2);font:700 26px/1 var(--body);cursor:pointer;color:var(--ink)}
 .stepper button:active{background:var(--accent-soft)}
 .stepper input{width:54px;text-align:center;border:0;border-inline:1.5px solid var(--line);background:var(--surface);font:700 21px var(--body);
-  font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield;padding:0;border-radius:0}
+  font-variant-numeric:lining-nums tabular-nums;-moz-appearance:textfield;appearance:textfield;padding:0;border-radius:0}
 .stepper input::placeholder{color:var(--muted);font-weight:400}
 .stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .stepper.sm button{width:38px;height:40px;font-size:21px}
@@ -193,7 +193,7 @@ img{max-width:100%}
 .gline{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13.5px;min-width:0}
 .gline > span{display:flex;align-items:center;gap:5px;min-width:0}
 .gline > span b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
-.gline .auto{font:700 17px var(--body);font-variant-numeric:tabular-nums;padding-right:6px}
+.gline .auto{font:700 17px var(--body);font-variant-numeric:lining-nums tabular-nums;padding-right:6px}
 .gres{font-size:13.5px;font-weight:700;color:var(--accent)}
 
 /* ---------- военный трек: поле из правил, по делениям можно тыкать ---------- */
@@ -228,7 +228,7 @@ img{max-width:100%}
 
 /* ---------- итоги ---------- */
 .results{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;scroll-margin-top:100px;box-shadow:0 1px 3px var(--shadow)}
-.results > h2{margin:0 0 10px;font:400 26px/1.1 var(--display)}
+.results > h2{margin:0 0 10px;font:600 26px/1.1 var(--display)}
 .verdict{display:flex;gap:10px;align-items:center;border:1.5px solid var(--gold);border-radius:11px;padding:10px 12px;margin-bottom:10px;
   background:color-mix(in srgb,var(--gold) 14%,var(--surface-2));font-size:15px;line-height:1.3}
 .verdict img{width:40px;height:40px;flex:none}
@@ -239,7 +239,7 @@ img{max-width:100%}
   border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2);min-width:0}
 .ptot .pmeeple{grid-row:span 2;width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.2)}
 .ptname{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ptot b{font:400 34px/1 var(--display);font-variant-numeric:tabular-nums}
+.ptot b{font:600 34px/1 var(--display);font-variant-numeric:lining-nums tabular-nums}
 .ptot.lead{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
 .rtable{margin-top:12px;border-radius:14px;background:var(--board);padding:8px;display:grid;gap:4px;
   box-shadow:inset 0 0 0 1px rgba(0,0,0,.3),inset 0 0 26px rgba(0,0,0,.28),0 2px 6px var(--shadow)}
@@ -253,8 +253,8 @@ img{max-width:100%}
 .rname{color:var(--board-ink);font-weight:700;font-size:14.5px;line-height:1.15}
 .rv{display:grid;place-items:center}
 .rrow.rtotal{background:rgba(0,0,0,.28)}
-.rrow.rtotal .rname{font:400 20px var(--display)}
-.rtv{text-align:center;font:700 20px var(--body);font-variant-numeric:tabular-nums;color:var(--board-ink)}
+.rrow.rtotal .rname{font:600 20px var(--display)}
+.rtv{text-align:center;font:700 20px var(--body);font-variant-numeric:lining-nums tabular-nums;color:var(--board-ink)}
 .rtv.lead{color:#FFD766}
 
 .export{margin-top:18px;padding-top:14px;border-top:1.5px solid var(--line)}
@@ -269,7 +269,7 @@ img{max-width:100%}
 .tot{min-width:0;display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 12px;border-radius:10px;
   background:var(--surface-2);color:var(--ink);text-decoration:none}
 .tot span{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tot b{margin-left:auto;font:400 26px/1 var(--display);font-variant-numeric:tabular-nums}
+.tot b{margin-left:auto;font:600 26px/1 var(--display);font-variant-numeric:lining-nums tabular-nums}
 .tot.lead{box-shadow:inset 0 0 0 1.5px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
 @media (min-width:1000px){ .dock{display:none} body{padding-bottom:0} }
 
@@ -278,7 +278,7 @@ dialog{border:0;border-radius:14px;padding:0;width:min(560px,calc(100% - 20px));
   background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.4)}
 dialog::backdrop{background:rgba(20,16,8,.6)}
 .dlg-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--line)}
-.dlg-h h2{margin:0;font:400 24px var(--display)}
+.dlg-h h2{margin:0;font:600 24px var(--display)}
 .dlg-b{padding:4px 16px 12px;overflow:auto;max-height:66vh}
 .dlg-b.pad{padding:12px 16px}
 .pedit{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
@@ -300,7 +300,7 @@ dialog::backdrop{background:rgba(20,16,8,.6)}
 /* памятка по подготовке */
 .steps{margin:0;padding-left:22px;display:grid;gap:7px;line-height:1.35}
 .steps li::marker{font-weight:700;color:var(--accent)}
-.setup-h{margin:16px 0 8px;font:400 21px var(--display)}
+.setup-h{margin:16px 0 8px;font:600 21px var(--display)}
 .setup-h:first-child{margin-top:0}
 .firstgame{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .firstgame div{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--surface-2);font-size:14.5px;line-height:1.4}
@@ -320,7 +320,7 @@ dialog::backdrop{background:rgba(20,16,8,.6)}
 .hrow{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:15.5px}
 .hrow i{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
 .hrow span{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hrow b{font-variant-numeric:tabular-nums;font-size:17px}
+.hrow b{font-variant-numeric:lining-nums tabular-nums;font-size:17px}
 .hrow.win{font-weight:700}
 .hrow.win span::after{content:" 🏆";font-size:13px}
 .hempty{margin:0;color:var(--muted);line-height:1.4}
@@ -330,6 +330,8 @@ footer p{margin:0 0 6px;max-width:78ch}
 .home{flex:none;align-self:center;display:grid;place-items:center;width:30px;height:40px;margin:0 -4px 0 -8px;border-radius:9px;color:var(--muted);text-decoration:none}
 .home:active{background:var(--surface-2)}
 @media (max-width:400px){.home + img{display:none}}
+/* у Cormorant Garamond цифры по умолчанию «старинные»; сокращение font сбрасывает их вид, поэтому задаём явно */
+.brand h1,.group > h2,.results > h2,.rrow.rtotal .rname,.dlg-h h2,.setup-h{font-variant-numeric:lining-nums}
 </style>
 </head>
 <body>
@@ -1187,7 +1189,7 @@ const ROW_ICON = {wonders:'wonder.png', progress:'progress.png', coins:'coin.png
 
 async function buildImage(now) {
   try {
-    await Promise.all(['400 60px Forum', '700 30px "PT Sans"', '400 30px "PT Sans"']
+    await Promise.all(['600 60px "Cormorant Garamond"', '700 30px "PT Sans"', '400 30px "PT Sans"']
       .map(f => document.fonts.load(f, '0123456789АаБбВвЁё—×')));
   } catch (e) {}
   const icons = {};
@@ -1209,7 +1211,7 @@ async function buildImage(now) {
   ctx.fillStyle = pg; ctx.fillRect(0, 0, Wd, H);
 
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#16564F'; ctx.font = '400 64px Forum, Georgia, serif'; ctx.fillText('7 чудес: Дуэль', P, P + 56);
+  ctx.fillStyle = '#16564F'; ctx.font = '600 64px "Cormorant Garamond", Georgia, serif'; ctx.fillText('7 чудес: Дуэль', P, P + 56);
   ctx.fillStyle = '#6B563A'; ctx.font = '400 27px "PT Sans", sans-serif';
   ctx.fillText('Итоги партии · ' + dateRu(now), P, P + 96);
   if (v) {
@@ -1234,7 +1236,7 @@ async function buildImage(now) {
     ctx.fillText(win ? (st.winners.length > 1 ? 'победа поделена' : 'победа') : '', tx, y + 34);
     ctx.font = '700 28px "PT Sans", sans-serif'; ctx.fillStyle = '#F4EFDF';
     ctx.fillText(fitText(ctx, p.name || 'Без имени', tw), tx, y + 70);
-    ctx.font = '400 46px Forum, Georgia, serif'; ctx.fillStyle = win ? '#FFD766' : '#F4EFDF';
+    ctx.font = '700 42px "PT Sans", sans-serif'; ctx.fillStyle = win ? '#FFD766' : '#F4EFDF';
     ctx.fillText(String(totals[i]), tx, y + 116);
     const numW = ctx.measureText(String(totals[i])).width;
     ctx.font = '400 22px "PT Sans", sans-serif'; ctx.fillStyle = 'rgba(240,245,235,.75)';
@@ -1266,10 +1268,10 @@ async function buildImage(now) {
   y += 14;
   const th = totalH - 10, ty = y + th / 2;
   drawBoard(ctx, P, y, inner, th, 13);
-  ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#F4EFDF'; ctx.font = '400 38px Forum, Georgia, serif';
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#F4EFDF'; ctx.font = '600 38px "Cormorant Garamond", Georgia, serif';
   ctx.fillText('Итого', P + 22, ty);
   ps.forEach((p, i) => {
-    ctx.textAlign = 'center'; ctx.font = '400 46px Forum, Georgia, serif';
+    ctx.textAlign = 'center'; ctx.font = '700 42px "PT Sans", sans-serif';
     ctx.fillStyle = st.isLead(i) ? '#FFD766' : '#F4EFDF';
     ctx.fillText(String(totals[i]), colX(i), ty + 2);
   });

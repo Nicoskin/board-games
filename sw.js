@@ -12,7 +12,7 @@
 
    Добавили новую игру — допишите её файлы в ASSETS и поднимите VERSION. */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const APP = 'bg-app-' + VERSION;
 const MEDIA = 'bg-media';
 const FONTS = 'bg-fonts';
@@ -38,8 +38,8 @@ const ASSETS = [
   'score/7-wonders-duel/img/w-lighthouse.jpg', 'score/7-wonders-duel/img/w-mausoleum.jpg',
   'score/7-wonders-duel/img/w-piraeus.jpg', 'score/7-wonders-duel/img/w-pyramids.jpg',
   'score/7-wonders-duel/img/w-sphinx.jpg', 'score/7-wonders-duel/img/w-zeus.jpg',
-  'score/7-wonders-duel/img/wonder.png', 'score/agricola/favicon.svg', 'score/agricola/icon-192.png',
-  'score/agricola/icon.svg', 'score/agricola/', 'score/cascadia/', 'score/cascadia/img/art-bear.png',
+  'score/7-wonders-duel/img/wonder.png', 'score/agricola/icon-192.png',
+  'score/agricola/', 'score/cascadia/', 'score/cascadia/img/art-bear.png',
   'score/cascadia/img/art-elk.png', 'score/cascadia/img/art-fox.png', 'score/cascadia/img/art-hawk.png',
   'score/cascadia/img/art-salmon.png', 'score/cascadia/img/bear.png', 'score/cascadia/img/elk.png',
   'score/cascadia/img/forest.png', 'score/cascadia/img/fox.png', 'score/cascadia/img/hawk.png',
@@ -76,7 +76,7 @@ const ASSETS = [
   'score/star-realms/icons/icon-192.png', 'rules/7-wonders-duel.html', 'rules/castles-of-burgundy.html',
   'rules/cascadia.html', 'rules/dune-imperium-uprising.html', 'rules/img/dune/cover.jpg',
   'rules/assets/style.css', 'rules/assets/app.js', 'rules/img/7wd/cover.jpg',
-  'rules/img/cob/logo.jpg', 'rules/img/csc/cover.jpg'
+  'rules/img/cob/thumb.jpg', 'rules/img/csc/cover.jpg'
 ];
 
 self.addEventListener('install', e => {
