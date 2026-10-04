@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Счётный лист Каскадии</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="img/icon.png" sizes="any">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<meta name="theme-color" content="#3E6B2F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Каскадия">
+<meta name="description" content="Подсчёт очков в настольной игре «Каскадия»: карты целей, ареалы, лидерство и жетоны природы">
+<meta property="og:title" content="Счётный лист Каскадии">
+<meta property="og:description" content="Подсчёт очков в настольной игре «Каскадия»">
+<meta property="og:image" content="img/cover.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Caveat:wght@600;700&family=PT+Sans:wght@400;700&display=swap">
+<style>
+:root{
+  --ground:#EDE4D3; --surface:#FBF7EE; --surface-2:#F1E9D9; --ink:#2E2418; --muted:#76664F;
+  --line:#D5C6AA; --accent:#3E6B2F; --accent-ink:#F8F5EA; --accent-soft:#DCE7CD;
+  --gold:#B8891F; --focus:#1F5FA8; --shadow:rgba(60,40,15,.16);
+  --board:#5B3B20; --board-ink:#FBF3E4; --board-cell:rgba(255,244,219,.14);
+  --pts:#2B8459;
+  --display:Bitter, Georgia, "Times New Roman", serif;
+  --body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#14120C; --surface:#1F1B13; --surface-2:#2A241A; --ink:#EEE6D4; --muted:#A99A7E;
+    --line:#453A2A; --accent:#8FC173; --accent-ink:#13200D; --accent-soft:#2C3A22;
+    --gold:#E0B44A; --focus:#8FB8F2; --shadow:rgba(0,0,0,.45);
+    --board:#3A2614; --board-cell:rgba(255,244,219,.09); --pts:#2F8F61;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14120C; --surface:#1F1B13; --surface-2:#2A241A; --ink:#EEE6D4; --muted:#A99A7E;
+  --line:#453A2A; --accent:#8FC173; --accent-ink:#13200D; --accent-soft:#2C3A22;
+  --gold:#E0B44A; --focus:#8FB8F2; --shadow:rgba(0,0,0,.45);
+  --board:#3A2614; --board-cell:rgba(255,244,219,.09); --pts:#2F8F61;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+body{margin:0;color:var(--ink);font:400 16px/1.45 var(--body);-webkit-text-size-adjust:100%;
+  background:var(--ground) url("img/paper.jpg") repeat;background-size:600px;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{background-blend-mode:multiply} }
+:root[data-theme="dark"] body{background-blend-mode:multiply}
+button,input{font:inherit;color:inherit}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* у степпера и переключателей overflow:hidden — обводку фокуса рисуем внутрь */
+.stepper :focus-visible,.seg :focus-visible,.modes :focus-visible,.pcount :focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--focus)}
+h1,h2,h3{text-wrap:balance}
+img{max-width:100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.board,.stepper,.seg,.pts,.hint-btn,.tot,.secnav,.ico,.calc-btn,.gbtn,.modes{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* ---------- кружок очков — как на картах целей ---------- */
+.pts{--s:46px;position:relative;flex:none;width:var(--s);height:var(--s);border-radius:50%;display:grid;place-items:center;
+  background:var(--pts);box-shadow:inset 0 0 0 2px var(--pts),inset 0 0 0 3.5px rgba(255,255,255,.85),0 1px 3px rgba(0,0,0,.35)}
+.pts b{font:700 calc(var(--s) * .44)/1 var(--body);font-variant-numeric:lining-nums tabular-nums;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.pts i{position:absolute;right:-7px;top:-7px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;font:700 12.5px/22px var(--body);
+  font-style:normal;text-align:center;background:var(--gold);color:#241800;box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.pts.empty{background:#9C927F;box-shadow:inset 0 0 0 2px #9C927F,inset 0 0 0 3.5px rgba(255,255,255,.6)}
+.pts.empty b{font-weight:400}
+.pts.sm{--s:34px}
+.pts.sm i{right:-9px;top:-8px;min-width:19px;height:19px;font-size:11px;line-height:19px;padding:0 4px}
+
+/* ---------- шапка ---------- */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--ground) 90%,transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.top-row{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:calc(7px + env(safe-area-inset-top)) 14px 3px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand img{width:40px;height:40px;border-radius:9px;flex:none;box-shadow:0 1px 3px var(--shadow)}
+.brand h1{margin:0;font:700 26px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.brand small{display:block;font-size:11.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-top:2px}
+.secnav{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:5px 10px 7px;scrollbar-width:none}
+.secnav::-webkit-scrollbar{display:none}
+.secnav a{flex:none;padding:6px 14px;border-radius:999px;color:var(--ink);text-decoration:none;font-weight:700;font-size:15px}
+.secnav a[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.btn{font-weight:700;font-size:15px;padding:9px 14px;min-height:42px;border-radius:8px;border:1.5px solid var(--accent);
+  background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.danger{background:transparent;color:#B2412F;border-color:#B2412F}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn.danger{color:#F0937F;border-color:#F0937F} }
+:root[data-theme="dark"] .btn.danger{color:#F0937F;border-color:#F0937F}
+.btn:disabled{opacity:.6;cursor:progress}
+.linkbtn{border:0;background:none;padding:6px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px}
+
+/* ---------- раскладка ---------- */
+/* minmax(0,1fr), а не auto: иначе колонка растягивается по самой широкой карточке */
+.layout{max-width:1180px;margin:0 auto;padding:6px 10px 20px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){
+  .layout{grid-template-columns:minmax(0,1fr) 404px;align-items:start;padding-inline:16px}
+  .results{position:sticky;top:104px;max-height:calc(100vh - 186px);overflow:auto}
+}
+.group{scroll-margin-top:100px}
+.group > h2{margin:18px 4px 8px;font:700 25px/1.1 var(--display);color:var(--accent)}
+.cats{display:grid;gap:10px;margin-top:10px}
+
+/* ---------- деревянные «доски», как рамка блокнота ---------- */
+.board{background:linear-gradient(rgba(38,22,8,.38),rgba(38,22,8,.38)),var(--board) url("img/wood.jpg") repeat;background-size:auto,1340px 56px;
+  border-radius:14px;padding:10px;color:var(--board-ink);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),inset 0 0 26px rgba(0,0,0,.3),0 2px 6px var(--shadow)}
+.board small,.board .bt{text-shadow:0 1px 2px rgba(0,0,0,.75)}
+.modes{display:flex;border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,240,210,.35);margin-bottom:10px}
+.modes button{flex:1;min-height:42px;border:0;background:rgba(0,0,0,.22);color:var(--board-ink);font-weight:700;font-size:14.5px;cursor:pointer;padding:4px 6px;line-height:1.1}
+.modes button + button{border-left:1.5px solid rgba(255,240,210,.35)}
+.modes button[aria-pressed="true"]{background:#F3E6C8;color:#3A2614}
+.cardgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+@media (max-width:560px){ .cardgrid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.ccol{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px 9px;border-radius:10px;background:var(--board-cell)}
+.ccol img{width:56px;height:56px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
+.ccol small{font-weight:700;font-size:14.5px;line-height:1.1}
+.letters{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:100%;max-width:150px}
+.letters button{min-height:36px;border:0;border-radius:7px;background:rgba(0,0,0,.28);color:var(--board-ink);font:700 16px var(--display);cursor:pointer;padding:0}
+.letters button[aria-pressed="true"]{background:#F3E6C8;color:#3A2614;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.board-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:10px}
+.board-foot p{margin:0;flex:1 1 100%;font-size:14px;line-height:1.3;text-shadow:0 1px 2px rgba(0,0,0,.75)}
+.bbtn{min-height:38px;padding:6px 12px;border-radius:999px;border:1.5px solid rgba(255,240,210,.45);background:rgba(0,0,0,.2);color:var(--board-ink);font-weight:700;font-size:14px;cursor:pointer}
+.vnote{display:flex;gap:12px;align-items:center;padding:6px 4px}
+.vnote .fam{display:flex;gap:6px;flex-wrap:wrap}
+.vnote .fam > span{display:flex;align-items:center;gap:6px;padding:4px 9px 4px 5px;border-radius:999px;background:var(--board-cell);font-weight:700}
+.board.habs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.hcol{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;background:var(--board-cell)}
+.hcol img{width:60px;height:60px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
+.hcol small{font-weight:700;font-size:14.5px}
+.habrule{grid-column:1 / -1;margin:4px 4px 0;font-size:14.5px;line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.75)}
+.habrule b{color:#FFE08A}
+.board.formula{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;padding:14px 12px}
+.fitem{display:flex;flex-direction:column;align-items:center;gap:5px;max-width:130px}
+.fitem img{width:56px;height:56px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.45))}
+.fitem span{font-size:13.5px;text-align:center;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.fop{font:700 30px/1 var(--display);text-shadow:0 1px 2px rgba(0,0,0,.7);padding-bottom:18px}
+
+/* ---------- карточки категорий ---------- */
+.cat{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 1px 3px var(--shadow)}
+.cat-h{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center}
+.ico{width:48px;height:48px;display:grid;place-items:center}
+.ico img{width:46px;height:46px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+.cat-h h3{margin:0;font:700 19px/1.15 var(--body);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cardtag{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:7px;background:var(--accent-soft);color:var(--accent);font:700 15px var(--display)}
+.donemark{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:700}
+.rule{display:block;font-size:13.5px;color:var(--muted);line-height:1.25;margin-top:2px}
+.hint-btn{min-height:38px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.hint-btn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.plist{list-style:none;margin:8px 0 0;padding:0}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px 10px;align-items:center;padding:8px 0}
+.prow + .prow{border-top:1px solid var(--line)}
+.prow.two{grid-template-columns:minmax(0,1fr) auto}
+.who{min-width:0}
+.pname{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;min-width:0}
+.pname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdot{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
+.pn{color:var(--pn-l)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .pn{color:var(--pn-d)} }
+:root[data-theme="dark"] .pn{color:var(--pn-d)}
+.csum{display:block;font-size:13px;color:var(--muted);margin:2px 0 0 22px;line-height:1.2}
+.csum.stale{color:#B2412F}
+.calc-btn{min-height:46px;padding:4px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;font-size:12px;color:var(--muted);font-weight:700}
+.calc-btn b{font:700 17px var(--display);color:var(--accent)}
+.hsize{display:flex;align-items:center;gap:8px}
+.hsize small{font-size:12.5px;color:var(--muted);line-height:1.1;text-align:right;max-width:60px}
+
+.stepper{display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);flex:none}
+.stepper button{width:44px;height:46px;border:0;background:var(--surface-2);font:700 26px/1 var(--body);cursor:pointer;color:var(--ink)}
+.stepper button:active{background:var(--accent-soft)}
+.stepper input{width:54px;text-align:center;border:0;border-inline:1.5px solid var(--line);background:var(--surface);font:700 21px var(--body);
+  font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield;padding:0}
+.stepper input::placeholder{color:var(--muted);font-weight:400}
+.stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+@media (max-width:380px){ .stepper button{width:38px} .stepper input{width:46px} .calc-btn{padding:4px 7px} }
+
+/* подсказка */
+.hint{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:12px 18px;align-items:start;
+  background:var(--surface-2);border-radius:10px;padding:12px;margin-top:10px}
+@media (max-width:640px){ .hint{grid-template-columns:1fr} .hint-art img{max-width:130px} }
+.hint-art{margin:0}
+.hint-art img{display:block;width:100%;max-width:170px;height:auto;margin:0 auto;filter:drop-shadow(0 2px 4px var(--shadow))}
+.hint-art figcaption{margin-top:5px;font-size:12.5px;color:var(--muted);text-align:center}
+.hint-text p{margin:0 0 8px;max-width:64ch}
+.hint-text p:last-child{margin-bottom:0}
+.hint-text .ex{font-weight:700}
+.ctable{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.ctable > span{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 7px 7px;min-width:46px;border-radius:9px;background:var(--surface);border:1.5px solid var(--line);font-weight:700;font-size:14px;text-align:center;line-height:1.1}
+.ctable > span em{font-style:normal;font-weight:400;font-size:11.5px;color:var(--muted)}
+.note{display:flex;gap:9px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:10px;
+  background:var(--surface-2);border-left:4px solid var(--accent);font-size:14.5px;line-height:1.35}
+.note img{width:34px;height:34px;flex:none}
+
+/* ---------- итоги ---------- */
+.results{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;scroll-margin-top:100px;box-shadow:0 1px 3px var(--shadow)}
+.results > h2{margin:0 0 10px;font:700 24px/1.1 var(--display);color:var(--accent)}
+.podium{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.ptot{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:10px;padding:10px 12px;
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.ptot .pmeeple{grid-row:span 2;width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.2)}
+.ptname{font-weight:700;display:flex;align-items:baseline;gap:2px;min-width:0}
+.ptname .pn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptot b{font:700 32px/1.05 var(--display);font-variant-numeric:tabular-nums}
+.ptot.lead{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+.ptot em{flex:none;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-left:5px}
+.tie{border:1.5px solid var(--accent);border-radius:11px;padding:10px 12px;margin-bottom:10px;background:var(--accent-soft);font-size:15px;line-height:1.35}
+.solo{display:flex;gap:12px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:11px;background:var(--surface-2);border:1.5px solid var(--line)}
+.solo b{font:700 19px var(--display);color:var(--accent)}
+.solo ol{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}
+.solo li.on{color:var(--ink);font-weight:700}
+.rgroup{margin-top:14px}
+.rscroll{overflow-x:auto;border-radius:14px}
+.rtable{display:grid;gap:4px;padding:8px;min-width:calc(150px + var(--n) * 50px)}
+.rrow{display:grid;grid-template-columns:34px minmax(0,1fr) repeat(var(--n),44px);gap:6px;align-items:center;padding:3px 8px;border-radius:9px;background:var(--board-cell)}
+.rrow.rhead{background:none;padding-block:0}
+.rhp{display:grid;place-items:center}
+.rhp i{display:block;width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)}
+.ricon img{width:32px;height:32px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.rname{font-weight:700;font-size:14.5px;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.rtv{text-align:center;font:700 17px var(--body);font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.7);white-space:nowrap}
+.rtv sup{font-size:11px;color:#FFE08A;margin-left:1px}
+.rtv.dim{opacity:.5;font-weight:400}
+.rrow.rsum{background:rgba(0,0,0,.26)}
+.rrow.rtotal{background:rgba(58,125,70,.55)}
+.rrow.rtotal .rname{font:700 19px var(--display)}
+.rrow.rtotal .rtv{font:700 21px var(--display)}
+.rtv.lead{color:#FFD766}
+
+/* нижняя панель */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:2px solid var(--line);
+  box-shadow:0 -6px 20px var(--shadow);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+.dock-in{max-width:1180px;margin:0 auto;display:flex;gap:8px;overflow-x:auto}
+.tot{flex:1 0 auto;min-width:126px;display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 12px;border-radius:10px;
+  background:var(--surface-2);color:var(--ink);text-decoration:none}
+.tot span{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.tot b{margin-left:auto;font:700 24px/1 var(--display);font-variant-numeric:tabular-nums}
+.tot.lead{box-shadow:inset 0 0 0 1.5px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+
+/* диалоги */
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,calc(100% - 20px));max-height:calc(100% - 40px);
+  background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(30,20,8,.6)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--line)}
+.dlg-h h2{margin:0;font:700 21px/1.15 var(--display);display:flex;align-items:center;gap:10px;min-width:0}
+.dlg-h h2 img{width:40px;height:40px;flex:none}
+.dlg-h h2 small{display:block;font:400 14px var(--body);color:var(--muted)}
+.dlg-b{padding:4px 16px 12px;overflow:auto;max-height:66vh}
+.dlg-b.pad{padding:12px 16px}
+.pedit{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pedit input{width:100%;min-width:0;font:700 18px var(--body);padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface-2)}
+.swatches{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sw{width:32px;height:32px;border-radius:50%;padding:0;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.sw[aria-checked="true"]{box-shadow:0 0 0 2.5px var(--ink)}
+.swatches .linkbtn{margin-left:auto}
+.dlg-f{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 16px;border-top:1.5px solid var(--line)}
+
+/* калькулятор по карте цели */
+.ctext{margin:0 0 12px;font-size:15px;line-height:1.4}
+.gbtns{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}
+.gbtn{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:56px;padding:6px 8px 6px 11px;border-radius:10px;
+  border:1.5px solid var(--line);background:var(--surface-2);cursor:pointer;text-align:left}
+.gbtn > span{font-weight:700;font-size:18px;line-height:1.05}
+.gbtn > span em{display:block;font-style:normal;font-weight:400;font-size:11.5px;color:var(--muted)}
+.gbtn:active{background:var(--accent-soft)}
+.gbtn[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.glist{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;margin:12px 0 4px;padding:8px;border-radius:10px;border:1.5px dashed var(--line)}
+.glist .empty{color:var(--muted);font-size:14px;align-self:center}
+.gchip{display:flex;align-items:center;gap:6px;padding:4px 6px 4px 10px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700}
+.gchip::after{content:"×";color:var(--muted);font-size:17px;line-height:1;padding-left:2px}
+.cline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.cline label{font-weight:700}
+.cres{margin-top:12px;display:flex;align-items:center;gap:10px;font-size:15px;color:var(--muted);line-height:1.3}
+.cres b{color:var(--ink)}
+
+.export{margin-top:18px;padding-top:14px;border-top:1.5px solid var(--line)}
+.export h3{margin:0 2px 8px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.export-btns{display:flex;flex-wrap:wrap;gap:8px}
+.export-btns .btn{flex:1 1 auto}
+#exportImg{display:block;width:100%;max-width:380px;margin:0 auto;height:auto;border-radius:10px;background:var(--surface-2)}
+.opt{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-weight:700;cursor:pointer;line-height:1.3}
+.opt input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--accent)}
+.sheet{margin:0;padding:12px;border-radius:10px;background:var(--surface-2);border:1.5px solid var(--line);
+  font:400 15px/1.5 ui-monospace,"Cascadia Mono",Consolas,"PT Sans",monospace;white-space:pre-wrap;overflow-x:auto;max-height:46vh}
+.saymsg{margin:10px 2px 0;font-size:14px;color:var(--muted);min-height:1.2em}
+.warn{margin:0 0 12px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);font-size:14px;line-height:1.35}
+
+/* памятка по подготовке */
+.topbtns{display:flex;gap:7px;flex:none}
+@media (max-width:440px){ .topbtns .btn{padding:8px 9px;font-size:14px} .brand{gap:8px} .brand img{width:34px;height:34px} .brand h1{font-size:18px;letter-spacing:.03em} .brand small{font-size:10.5px} }
+.pcount{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.pcount button{flex:1;min-height:44px;border:0;background:var(--surface);color:var(--ink);font-weight:700;font-size:15px;cursor:pointer}
+.pcount button + button{border-left:1.5px solid var(--line)}
+.pcount button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.drop{display:grid;gap:8px;padding:11px 12px;border:1.5px solid var(--line);border-radius:11px;background:var(--surface-2);margin-bottom:9px}
+.drop h4{margin:0;font:700 15.5px var(--body)}
+.drop p{margin:0;font-size:14.5px;line-height:1.38}
+.drop .big{display:flex;align-items:center;gap:11px}
+.drop .big img{width:52px;height:52px;flex:none}
+.drop .big span{font-size:15px;line-height:1.3}
+.drop .row{display:flex;gap:4px;flex-wrap:wrap}
+.drop .row img{width:36px;height:36px}
+
+/* история партий */
+.hisnote{font-size:13.5px;color:var(--muted);align-self:center;flex:1 1 auto;line-height:1.3}
+.hgame{border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:9px;background:var(--surface-2)}
+.hhead{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+.hhead time{font-size:13px;color:var(--muted);flex:1 1 auto}
+.hhead .linkbtn{flex:none;padding:0;font-size:13px}
+.hrow{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:15.5px}
+.hrow i{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
+.hrow span{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow b{font-variant-numeric:tabular-nums;font-size:17px}
+.hrow.win{font-weight:700}
+.hrow.win span::after{content:" 🏆";font-size:13px}
+.hempty{margin:0;color:var(--muted);line-height:1.4}
+
+footer{max-width:1180px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:14px}
+footer p{margin:0 0 6px;max-width:78ch}
+.home{flex:none;align-self:center;display:grid;place-items:center;width:30px;height:40px;margin:0 -4px 0 -8px;border-radius:9px;color:var(--muted);text-decoration:none}
+.home:active{background:var(--surface-2)}
+@media (max-width:400px){.home + img{display:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div class="brand"><a class="home" href="../../#score" aria-label="Все игры" title="Все игры"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <img src="img/icon.png" alt="" width="40" height="40">
+      <div><h1>Каскадия</h1><small>Счётный лист</small></div>
+    </div>
+    <div class="topbtns">
+      <button type="button" class="btn ghost" id="openSetup">Подготовка</button>
+      <button type="button" class="btn ghost" id="openPlayers">Игроки</button>
+    </div>
+  </div>
+  <nav class="secnav" id="secnav" aria-label="Разделы подсчёта"></nav>
+</header>
+
+<main class="layout">
+  <div id="cats"></div>
+  <section class="results" id="results" aria-labelledby="resTitle">
+    <h2 id="resTitle">Итоги партии</h2>
+    <div id="tiebreak"></div>
+    <div class="podium" id="podium"></div>
+    <div id="soloRank"></div>
+    <div id="rgroups"></div>
+    <div class="export">
+      <h3>Выгрузить результаты</h3>
+      <div class="export-btns">
+        <button type="button" class="btn" id="expImg">Картинка</button>
+        <button type="button" class="btn ghost" id="expTxt">Текст</button>
+        <button type="button" class="btn ghost" id="expJson">JSON</button>
+      </div>
+    </div>
+    <div class="export">
+      <h3>Архив</h3>
+      <div class="export-btns">
+        <button type="button" class="btn ghost" id="openHistory">История партий</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Правила подсчёта, блокнот и иллюстрации — из русского издания «Каскадии» (Crowd Games). Очки и имена игроков сохраняются только в вашем браузере и никуда не отправляются.</p>
+</footer>
+
+<nav class="dock" aria-label="Текущий счёт"><div class="dock-in" id="dock"></div></nav>
+
+<dialog id="playersDlg" aria-labelledby="dlgTitle">
+  <div class="dlg-h"><h2 id="dlgTitle">Игроки</h2><button type="button" class="btn ghost" data-close>Готово</button></div>
+  <div class="dlg-b" id="dlgBody"></div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="addPlayer">+ Добавить игрока</button>
+    <button type="button" class="btn danger" id="resetScores">Новая партия</button>
+  </div>
+</dialog>
+
+<dialog id="calcDlg" aria-labelledby="calcTitle">
+  <div class="dlg-h"><h2 id="calcTitle"></h2><button type="button" class="btn ghost" data-close>Отмена</button></div>
+  <div class="dlg-b pad" id="calcBody"></div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="calcClear">Очистить</button>
+    <button type="button" class="btn" id="calcSave">Записать</button>
+  </div>
+</dialog>
+
+<dialog id="textDlg" aria-labelledby="txtTitle">
+  <div class="dlg-h"><h2 id="txtTitle">Текст итогов</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <label class="opt"><input type="checkbox" id="txtCounts"> Показывать, как посчитаны животные и ареалы</label>
+    <pre class="sheet" id="txtSheet"></pre>
+    <p class="saymsg" id="txtSay"></p>
+  </div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="txtFile">Скачать .txt</button>
+    <button type="button" class="btn" id="txtCopy">Копировать</button>
+  </div>
+</dialog>
+
+<dialog id="setupDlg" aria-labelledby="setupTitle">
+  <div class="dlg-h"><h2 id="setupTitle">Подготовка к игре</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <div class="pcount" role="group" aria-label="Сколько игроков">
+      <button type="button" data-pc="1">Один</button>
+      <button type="button" data-pc="2">Двое</button>
+      <button type="button" data-pc="3">Трое</button>
+      <button type="button" data-pc="4">Четверо</button>
+    </div>
+    <div id="setupBody"></div>
+  </div>
+</dialog>
+
+<dialog id="historyDlg" aria-labelledby="hisTitle">
+  <div class="dlg-h"><h2 id="hisTitle">История партий</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad" id="historyBody"></div>
+  <div class="dlg-f">
+    <span class="hisnote" id="hisNote"></span>
+    <button type="button" class="btn danger" id="clearHistory">Очистить историю</button>
+  </div>
+</dialog>
+
+<dialog id="exportDlg" aria-labelledby="expTitle">
+  <div class="dlg-h"><h2 id="expTitle">Картинка итогов</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <p class="warn" id="imgWarn" hidden></p>
+    <img id="exportImg" alt="Итоги партии на листке блокнота">
+  </div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="shareImg" hidden>Поделиться</button>
+    <button type="button" class="btn" id="saveImg">Скачать PNG</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+const STORE = 'cascadia-scorer-v1';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const plural = (n, f) => { const a = Math.abs(n) % 100, b = a % 10; return a > 10 && a < 20 ? f[2] : b > 1 && b < 5 ? f[1] : b === 1 ? f[0] : f[2]; };
+const ochk = n => plural(n, ['очко', 'очка', 'очков']);
+
+const COLORS = {
+  /* [фишка, название, имя на светлом фоне, имя на тёмном фоне, чернила на картинке] */
+  blue:  ['#2C6CB5', 'Синий',   '#255C9C', '#8FBAF2', '#1F4F96'],
+  red:   ['#BE3A2B', 'Красный', '#A93124', '#F0937F', '#A42A1E'],
+  green: ['#3E8A3C', 'Зелёный', '#2E6A2C', '#8ACF83', '#2A6A28'],
+  yellow:['#DFAE1E', 'Жёлтый',  '#7E6108', '#EFC84C', '#8A6400']
+};
+const dot = p => `<i class="pdot" style="background:${COLORS[p.color][0]}"></i>`;
+const pnStyle = p => `--pn-l:${COLORS[p.color][2]};--pn-d:${COLORS[p.color][3]}`;
+const pn = p => `<span class="pn" style="${pnStyle(p)}">${esc(p.name || 'Без имени')}</span>`;
+const img = (n, a = '') => `<img src="img/${n}.png" alt="${esc(a)}" loading="lazy">`;
+const ptsBadge = (n, bonus, cls = '') => `<span class="pts${n == null ? ' empty' : ''}${cls}"><b>${n == null ? '—' : n}</b>${bonus ? `<i>+${bonus}</i>` : ''}</span>`;
+
+/* ---------- животные и карты целей (правила, с. 11) ---------- */
+const ANIMALS = [
+  {id:'bear',   name:'Медведи', one:'Медведь гризли', of:'медведей',
+   about:'Медведи приносят очки за группы. Форма группы любая, но разные группы медведей не должны соприкасаться. Группа приносит очки, только если в ней ровно столько медведей, сколько показано на карте.'},
+  {id:'elk',    name:'Олени',   one:'Олень Рузвельта', of:'оленей',
+   about:'Олени приносят очки за группы — на большинстве карт определённой формы. Группы оленей могут соприкасаться, но каждый олень входит только в одну группу и приносит очки один раз: отнесите его туда, где выгоднее.'},
+  {id:'salmon', name:'Лососи',  one:'Лосось чавыча', of:'лососей',
+   about:'Лососи приносят очки за миграции. Миграция — группа, где каждый лосось соседствует не больше чем с двумя другими лососями: треугольник из трёх уже не миграция, и к нему нельзя присоединить ни одного лосося. Рядом с миграцией не должно быть других лососей.'},
+  {id:'hawk',   name:'Ястребы', one:'Краснохвостый сарыч', of:'ястребов',
+   about:'Ястребы приносят очки за разбросанность: за ястребов-одиночек, за пары или за линии видимости. Линия видимости — прямая между двумя ястребами через стороны жетонов, которые не соприкасаются; прервать её может только третий ястреб.'},
+  {id:'fox',    name:'Лисы',    one:'Рыжая лисица', of:'лис',
+   about:'Лисы приносят очки за соседей. Чем больше разнообразных животных рядом, тем лучше. Одиночную лису могут окружать до 6 животных, пару лис — до 8.'}
+];
+const A = Object.fromEntries(ANIMALS.map(a => [a.id, a]));
+const LETTERS = ['A', 'B', 'C', 'D'];
+const RU = {A:'А', B:'Б', C:'В', D:'Г', family:'С', inter:'СС'};
+const CARD_NAME = k => k === 'family' ? 'семейная карта' : k === 'inter' ? 'карта средней сложности' : 'карта ' + RU[k];
+
+/* kind: count — одно число, очки по таблице; per — число × очки;
+         groups — каждую группу добавляют отдельно, очки складываются.
+   rows: [подпись, очки]; «4+» значит «4 и больше». */
+const CARDS = {
+  bear: {
+    A:{kind:'count', what:'Пар медведей', short:'пар', rows:[['1',4],['2',11],['3',19],['4+',27]],
+       text:'Очки за пары медведей: чем больше пар, тем больше очков.'},
+    B:{kind:'per', per:10, what:'Групп ровно из 3 медведей', short:'троек', text:'10 очков за каждую группу ровно из 3 медведей.'},
+    C:{kind:'groups', what:'Размер группы', short:'группы', rows:[['1',2],['2',5],['3',8]], bonusAll:3,
+       text:'Очки за каждую группу из 1, 2 или 3 медведей и ещё 3 очка, если у вас есть группы всех трёх размеров.'},
+    D:{kind:'groups', what:'Размер группы', short:'группы', rows:[['2',5],['3',8],['4',13]],
+       text:'Очки за каждую группу из 2, 3 или 4 медведей.'}
+  },
+  elk: {
+    A:{kind:'groups', what:'Длина линии', short:'линии', rows:[['1',2],['2',5],['3',9],['4',13]],
+       text:'Очки за каждую группу оленей, выстроенную прямой линией в любом направлении.'},
+    B:{kind:'groups', what:'Форма группы', short:'формы', rows:[['1',2,'один'],['2',5,'пара'],['3',9,'треугольник'],['4',13,'ромб']],
+       text:'Очки за группы показанных на карте форм — одиночка, пара, треугольник из 3, ромб из 4 — в любом направлении.'},
+    C:{kind:'groups', what:'Размер группы', short:'группы', rows:[['1',2],['2',4],['3',7],['4',10],['5',14],['6',18],['7',23],['8+',28]],
+       text:'Очки за каждую группу оленей любой формы и размера.'},
+    D:{kind:'groups', what:'Оленей в кольце', short:'кольца', rows:[['1',2],['2',5],['3',8],['4',12],['5',16],['6',21]],
+       text:'Очки за каждую группу, которая образует кольцо или его часть, как на карте.'}
+  },
+  salmon: {
+    A:{kind:'groups', what:'Размер миграции', short:'миграции', rows:[['1',2],['2',5],['3',8],['4',12],['5',16],['6',20],['7+',25]],
+       text:'Очки за каждую миграцию в зависимости от её размера.'},
+    B:{kind:'groups', what:'Размер миграции', short:'миграции', rows:[['1',2],['2',4],['3',9],['4',11],['5+',17]],
+       text:'Очки за каждую миграцию в зависимости от её размера.'},
+    C:{kind:'groups', what:'Размер миграции', short:'миграции', rows:[['3',10],['4',12],['5+',15]],
+       text:'Очки за каждую миграцию хотя бы из 3 лососей в зависимости от её размера.'},
+    D:{kind:'per', per:1, what:'Лососей в миграциях от 3 и животных рядом с ними', short:'лососей и соседей',
+       text:'За каждую миграцию хотя бы из 3 лососей: по 1 очку за каждого лосося в ней и по 1 очку за каждое животное рядом с миграцией (вид не важен).'}
+  },
+  hawk: {
+    A:{kind:'count', what:'Ястребов-одиночек', short:'одиночек', rows:[['1',2],['2',5],['3',8],['4',11],['5',14],['6',18],['7',22],['8+',26]],
+       text:'Очки за ястребов, рядом с которыми нет других ястребов: чем их больше, тем больше очков.'},
+    B:{kind:'count', what:'Одиночек на линиях видимости', short:'на линиях', rows:[['2',5],['3',9],['4',12],['5',16],['6',20],['7',24],['8+',28]],
+       text:'Очки за ястребов-одиночек, у которых есть линия видимости с другим ястребом.'},
+    C:{kind:'per', per:3, what:'Линий видимости', short:'линий', text:'3 очка за каждую линию видимости между двумя ястребами.'},
+    D:{kind:'groups', what:'Видов между ястребами', short:'пары', rows:[['1',4],['2',7],['3+',9]],
+       text:'Очки за каждую пару ястребов на линии видимости — чем больше разных видов животных между ними, тем больше. Каждый ястреб входит только в одну пару.'}
+  },
+  fox: {
+    A:{kind:'groups', what:'Видов рядом с лисой', short:'лисы', rows:[['1',1],['2',2],['3',3],['4',4],['5',5]],
+       text:'Каждая лиса приносит очки по числу разных видов животных рядом с ней (лисы тоже считаются).'},
+    B:{kind:'groups', what:'Видов парами рядом', short:'лисы', rows:[['1',3],['2',5],['3',7]],
+       text:'Каждая лиса приносит очки по числу видов, которые стоят рядом с ней парами (других лис не считают). Животные пары не обязаны соседствовать друг с другом.'},
+    C:{kind:'groups', what:'Самый частый вид рядом', short:'лисы', rows:[['1',1],['2',2],['3',3],['4',4],['5',5],['6',6]],
+       text:'Каждая лиса приносит очки по количеству животных самого многочисленного вида рядом с ней (других лис не считают).'},
+    D:{kind:'groups', what:'Видов парами рядом с парой лис', short:'пары лис', rows:[['1',5],['2',7],['3',9],['4',11]],
+       text:'Каждая пара лис приносит очки по числу видов, которые стоят рядом с ней парами (другие пары лис не считают). Животные пары не обязаны соседствовать.'}
+  }
+};
+/* варианты игры (правила, с. 10): одна карта на всех животных */
+const VARIANTS = {
+  family:{kind:'groups', what:'Размер группы', short:'группы', rows:[['1',2],['2',5],['3+',9]],
+    text:'Семейный вариант: очки за каждую группу животных одного вида по её размеру. Группы любой формы.'},
+  inter:{kind:'groups', what:'Размер группы', short:'группы', rows:[['2',5],['3',8],['4+',12]],
+    text:'Вариант средней сложности: как семейный, но больше очков за крупные группы.'}
+};
+
+/* ---------- ареалы (правила, с. 8–9) ---------- */
+const HABS = [
+  {id:'mountain', name:'Горы',   of:'гор'},
+  {id:'forest',   name:'Леса',   of:'лесов'},
+  {id:'prairie',  name:'Прерии', of:'прерий'},
+  {id:'wetland',  name:'Болота', of:'болот'},
+  {id:'river',    name:'Реки',   of:'рек'}
+];
+const H = Object.fromEntries(HABS.map(h => [h.id, h]));
+const majorityText = n => n === 1
+  ? 'Одиночная игра: <b>+2</b> за каждый ареал хотя бы из 7 жетонов.'
+  : n === 2
+    ? 'Вдвоём: самый большой ареал каждого типа — <b>+2</b>. Ничья — по <b>+1</b> обоим, второго места нет.'
+    : 'Самый большой ареал каждого типа — <b>+3</b>, второй по величине — <b>+1</b>. Ничья двоих за первое — по <b>+2</b>, троих и больше — по <b>+1</b>; второе место в этом случае не награждается. Ничья за второе место очков не даёт.';
+
+/* ---------- состояние ---------- */
+const uid = () => 'p' + Math.random().toString(36).slice(2, 9);
+const KEYS = [...ANIMALS.map(a => a.id), ...HABS.map(h => h.id), 'pine'];
+const blank = () => Object.fromEntries(KEYS.map(k => [k, null]));
+const mkPlayer = (name, color) => ({id:uid(), name, color, v:blank(), calc:{}});
+const allA = () => Object.fromEntries(ANIMALS.map(a => [a.id, 'A']));
+const freshState = () => ({players:[mkPlayer('Игрок 1', 'blue'), mkPlayer('Игрок 2', 'red')], cards:allA(), mode:'cards'});
+
+/* Имена и цвета игроков дублируются в куки на 400 дней (больше браузеры не разрешают),
+   очки текущей партии хранятся в localStorage. */
+const COOKIE = 'cascadia_players', COOKIE_DAYS = 400;
+function readPlayersCookie() {
+  try {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + COOKIE + '=([^;]*)'));
+    if (!m) return null;
+    const list = JSON.parse(decodeURIComponent(m[1]));
+    if (!Array.isArray(list)) return null;
+    const ok = list.filter(x => x && typeof x.n === 'string').slice(0, 4);
+    return ok.length ? ok : null;
+  } catch (e) { return null; }
+}
+function writePlayersCookie() {
+  try {
+    const data = encodeURIComponent(JSON.stringify(state.players.map(p => ({n:p.name, c:p.color}))));
+    const path = location.pathname.replace(/[^/]*$/, '') || '/';
+    document.cookie = `${COOKIE}=${data}; max-age=${COOKIE_DAYS * 86400}; path=${path}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+  } catch (e) {}
+}
+
+let state;
+try {
+  const raw = JSON.parse(localStorage.getItem(STORE));
+  if (raw && Array.isArray(raw.players) && raw.players.length) {
+    raw.players.forEach(p => {
+      p.id = p.id || uid(); p.v = Object.assign(blank(), p.v); p.calc = p.calc || {};
+      if (!COLORS[p.color]) p.color = 'blue';
+    });
+    const cards = allA();
+    if (raw.cards) ANIMALS.forEach(a => { if (LETTERS.includes(raw.cards[a.id])) cards[a.id] = raw.cards[a.id]; });
+    state = {players:raw.players.slice(0, 4), cards, mode:['cards', 'family', 'inter'].includes(raw.mode) ? raw.mode : 'cards'};
+  }
+} catch (e) {}
+if (!state) {
+  const saved = readPlayersCookie();
+  state = saved ? {players:saved.map(x => mkPlayer(x.n, COLORS[x.c] ? x.c : 'blue')), cards:allA(), mode:'cards'} : freshState();
+}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} writePlayersCookie(); };
+writePlayersCookie(); /* продлеваем срок куки при каждом заходе */
+const byId = id => state.players.find(p => p.id === id);
+
+const cardKey = a => state.mode === 'cards' ? state.cards[a] : state.mode;
+const cardOf = (a, k = cardKey(a)) => VARIANTS[k] || CARDS[a][k];
+const tableText = c => c.kind === 'per' ? `${c.per} ${ochk(c.per)} за каждую`
+  : c.rows.map(([l, p]) => `${l} → ${p}`).join(' · ') + (c.bonusAll ? `; все три размера +${c.bonusAll}` : '');
+
+/* ---------- очки ---------- */
+function lookup(rows, n) {
+  let best = 0;
+  rows.forEach(([l, p]) => { if (n >= parseInt(l, 10)) best = p; });
+  /* строки без «+» — точный размер: 5 медведей на карте Г не приносят ничего */
+  const last = rows[rows.length - 1][0];
+  if (!last.endsWith('+') && n > parseInt(last, 10)) return 0;
+  return best;
+}
+function calcPoints(card, c) {
+  if (card.kind === 'count') return lookup(card.rows, c.n || 0);
+  if (card.kind === 'per') return (c.n || 0) * card.per;
+  const g = c.g || [];
+  let s = g.reduce((t, i) => t + card.rows[i][1], 0);
+  if (card.bonusAll && card.rows.every((r, i) => g.includes(i))) s += card.bonusAll;
+  return s;
+}
+function calcSummary(card, c) {
+  if (card.kind !== 'groups') return `${card.short}: ${c.n || 0}`;
+  const g = (c.g || []).slice().sort((x, y) => y - x);
+  return `${card.short}: ${g.length ? g.map(i => card.rows[i][2] || card.rows[i][0]).join(', ') : 'нет'}`;
+}
+
+/* Лидерство в ареалах: считается по всем игрокам сразу. */
+function habBonus(vals, n) {
+  const s = vals.map(v => v || 0), out = s.map(() => 0);
+  if (n === 1) return s.map(v => v >= 7 ? 2 : 0);
+  const max = Math.max(0, ...s);
+  if (max <= 0) return out;
+  const first = s.map((v, i) => i).filter(i => s[i] === max);
+  if (n === 2) { first.forEach(i => { out[i] = first.length === 1 ? 2 : 1; }); return out; }
+  if (first.length === 1) {
+    out[first[0]] = 3;
+    const rest = s.map((v, i) => i).filter(i => i !== first[0] && s[i] > 0);
+    const m2 = Math.max(0, ...rest.map(i => s[i]));
+    const sec = rest.filter(i => s[i] === m2);
+    if (m2 > 0 && sec.length === 1) out[sec[0]] = 1;
+  } else first.forEach(i => { out[i] = first.length === 2 ? 2 : 1; });
+  return out;
+}
+function scores() {
+  const ps = state.players, n = ps.length, bonus = {};
+  HABS.forEach(h => { bonus[h.id] = habBonus(ps.map(p => p.v[h.id]), n); });
+  return ps.map((p, i) => {
+    const wild = ANIMALS.reduce((s, a) => s + (p.v[a.id] || 0), 0);
+    const base = HABS.reduce((s, h) => s + (p.v[h.id] || 0), 0);
+    const bon = HABS.reduce((s, h) => s + bonus[h.id][i], 0);
+    const pine = p.v.pine || 0;
+    return {wild, base, bon, hab:base + bon, pine, total:wild + base + bon + pine,
+      bonus:Object.fromEntries(HABS.map(h => [h.id, bonus[h.id][i]]))};
+  });
+}
+
+/* Кто победил. При равенстве очков — у кого больше непотраченных жетонов природы;
+   если и их поровну, победу делят. Всё видно по вводу, спрашивать никого не нужно. */
+function standing() {
+  const ps = state.players, sc = scores(), totals = sc.map(s => s.total), max = Math.max(0, ...totals);
+  const top = ps.map((p, i) => i).filter(i => totals[i] === max);
+  const bestPine = Math.max(...top.map(i => sc[i].pine));
+  const fin = top.filter(i => sc[i].pine === bestPine);
+  const live = ps.length > 1 && max > 0;
+  const winners = live ? fin : [];
+  return {sc, totals, max, top, fin, winners,
+    tiedPoints: live && top.length > 1, shared: live && fin.length > 1,
+    isLead: i => winners.includes(i)};
+}
+const order = st => state.players.map((p, i) => i)
+  .sort((a, b) => st.totals[b] - st.totals[a] || st.sc[b].pine - st.sc[a].pine);
+const placeOf = (st, i) => 1 + state.players.filter((p, j) =>
+  st.totals[j] > st.totals[i] || (st.totals[j] === st.totals[i] && st.sc[j].pine > st.sc[i].pine)).length;
+
+const SOLO = [[110, 'Невероятно!!!'], [100, 'Превосходно!'], [90, 'Отлично!'], [80, 'Здорово!'], [70, 'Вы уловили суть!'], [60, 'Хорошее начало!']];
+const soloRank = t => (SOLO.find(([m]) => t >= m) || [0, null])[1];
+
+/* ---------- отрисовка ---------- */
+const catsEl = $('#cats'), dock = $('#dock'), secnav = $('#secnav'), podium = $('#podium'), rgroups = $('#rgroups'), tieEl = $('#tiebreak');
+const openHints = new Set();
+
+const stepper = (key, pid, val, min, max, label) =>
+  `<div class="stepper"><button type="button" data-step="-1" aria-label="${esc(label)}: меньше">−</button>` +
+  `<input type="number" inputmode="numeric" pattern="[0-9]*" placeholder="—" enterkeyhint="done" data-key="${key}" data-pid="${pid}" value="${val ?? ''}" min="${min}" max="${max}" aria-label="${esc(label)}">` +
+  `<button type="button" data-step="1" aria-label="${esc(label)}: больше">+</button></div>`;
+const hintBtn = id => { const open = openHints.has(id);
+  return `<button type="button" class="hint-btn" aria-expanded="${open}" aria-controls="hint-${id}">${open ? 'Скрыть' : 'Как считать'}</button>`; };
+const hintBox = (id, art, text) => `<div class="hint" id="hint-${id}"${openHints.has(id) ? '' : ' hidden'}>
+  <figure class="hint-art">${art}</figure><div class="hint-text">${text}</div></div>`;
+const ctable = card => card.kind === 'per'
+  ? `<div class="ctable"><span>×1<em>${esc(card.what.toLowerCase())}</em>${ptsBadge(card.per, 0, ' sm')}</span></div>`
+  : `<div class="ctable">${card.rows.map(([l, p, cap]) => `<span>${l}${cap ? `<em>${cap}</em>` : ''}${ptsBadge(p, 0, ' sm')}</span>`).join('')}
+     ${card.bonusAll ? `<span>все три<em>размера</em>${ptsBadge(card.bonusAll, 0, ' sm')}</span>` : ''}</div>`;
+
+const GROUPS = [
+  {id:'wild', title:'Животные', nav:'Животные'},
+  {id:'hab',  title:'Ареалы',   nav:'Ареалы'},
+  {id:'pine', title:'Жетоны природы', nav:'Шишки'}
+];
+
+function cardsBoard() {
+  const m = state.mode;
+  const modes = [['cards', 'Карты целей'], ['family', 'Семейный'], ['inter', 'Средний']];
+  const head = `<div class="modes" role="group" aria-label="Вариант игры">${modes.map(([k, t]) =>
+    `<button type="button" data-mode="${k}" aria-pressed="${m === k}">${t}</button>`).join('')}</div>`;
+  if (m !== 'cards') {
+    const v = VARIANTS[m];
+    return `<div class="board" role="group" aria-label="Карты целей">${head}
+      <div class="vnote"><div><p class="bt" style="margin:0 0 8px">${v.text}</p>
+      <div class="fam">${v.rows.map(([l, p]) => `<span>${ptsBadge(p, 0, ' sm')} ${l} ${plural(parseInt(l, 10), ['животное', 'животных', 'животных'])}</span>`).join('')}</div></div></div></div>`;
+  }
+  return `<div class="board" role="group" aria-label="Карты целей">${head}
+    <div class="cardgrid">${ANIMALS.map(a => `<div class="ccol">${img(a.id, a.name)}<small>${a.name}</small>
+      <div class="letters" role="group" aria-label="Карта: ${a.name}">${LETTERS.map(L =>
+        `<button type="button" data-card="${a.id}" data-letter="${L}" aria-pressed="${state.cards[a.id] === L}" aria-label="${a.name}: карта ${RU[L]}">${RU[L]}</button>`).join('')}</div></div>`).join('')}</div>
+    <div class="board-foot"><p>Выберите буквы с карт целей, лежащих на столе. В первой партии советуют все «А».</p>
+      <button type="button" class="bbtn" data-cards="A">Все «А»</button>
+      <button type="button" class="bbtn" data-cards="random">Случайные</button></div></div>`;
+}
+
+function animalCat(a) {
+  const k = cardKey(a.id), card = cardOf(a.id), ps = state.players;
+  const head = `<header class="cat-h"><div class="ico">${img(a.id, a.name)}</div>
+    <div><h3>${a.name}<span class="cardtag" title="${CARD_NAME(k)}">${RU[k]}</span><span class="donemark" data-done="${a.id}" hidden title="Посчитано у всех">✓</span></h3>
+    <span class="rule">${esc(card.what)}: ${tableText(card)}</span></div>${hintBtn(a.id)}</header>`;
+  const hint = hintBox(a.id, `${img('art-' + a.id, a.one)}<figcaption>${a.one}</figcaption>`,
+    `<p>${a.about}</p><p class="ex">${CARD_NAME(k)[0].toUpperCase() + CARD_NAME(k).slice(1)}: ${card.text}</p>${ctable(card)}
+     <p>Нажмите «по карте» рядом с игроком — сайт посчитает очки по таблице карты. Или впишите готовое число.</p>`);
+  const rows = ps.map(p => `<li class="prow"><div class="who"><span class="pname">${dot(p)}${pn(p)}</span><span class="csum" data-csum="${a.id}" data-pid="${p.id}"></span></div>
+    <button type="button" class="calc-btn" data-calc="${a.id}" data-pid="${p.id}" aria-label="Посчитать по карте: ${esc(p.name)}">по карте<b>${RU[k]}</b></button>
+    ${stepper(a.id, p.id, p.v[a.id], 0, 99, a.name + ': ' + p.name)}</li>`).join('');
+  return `<article class="cat" id="cat-${a.id}">${head}${hint}<ul class="plist">${rows}</ul></article>`;
+}
+
+function habBoard() {
+  return `<div class="board habs" role="group" aria-label="Типы ареалов">${HABS.map(h =>
+    `<div class="hcol">${img(h.id, h.name)}<small>${h.name}</small></div>`).join('')}
+    <p class="habrule">1 очко за каждый жетон в самом большом ареале каждого типа. ${majorityText(state.players.length)}</p></div>`;
+}
+function habCat(h) {
+  const ps = state.players;
+  const head = `<header class="cat-h"><div class="ico">${img(h.id, h.name)}</div>
+    <div><h3>${h.name}<span class="donemark" data-done="${h.id}" hidden title="Посчитано у всех">✓</span></h3>
+    <span class="rule">Сколько жетонов в самом большом ареале ${h.of}</span></div>${hintBtn(h.id)}</header>`;
+  const hint = hintBox(h.id, img(h.id, h.name),
+    `<p>Найдите самый большой ареал ${h.of} — жетоны, соединённые хотя бы одной стороной с этим типом местности, — и посчитайте в нём жетоны. <b>Каждый жетон — 1 очко.</b> Меньшие ареалы того же типа не считаются.</p>
+     <p class="ex">Пример: ареал из 3 ${h.of} и ареал из 4 ${h.of} — вы получаете 4 очка.</p>
+     <p>Жетон с двумя типами местности может входить в ареалы обоих типов. Бонус за лидерство сайт посчитает сам: ${majorityText(ps.length)}</p>`);
+  const rows = ps.map(p => `<li class="prow two"><span class="pname">${dot(p)}${pn(p)}</span>
+    <span class="hsize">${stepper(h.id, p.id, p.v[h.id], 0, 60, h.name + ', размер ареала: ' + p.name)}
+    <output data-pts="${h.id}" data-pid="${p.id}">${ptsBadge(null)}</output></span></li>`).join('');
+  return `<article class="cat" id="cat-${h.id}">${head}${hint}<ul class="plist">${rows}</ul></article>`;
+}
+function pineCat() {
+  const ps = state.players;
+  const head = `<header class="cat-h"><div class="ico">${img('pine', 'Жетон природы')}</div>
+    <div><h3>Жетоны природы<span class="donemark" data-done="pine" hidden title="Посчитано у всех">✓</span></h3>
+    <span class="rule">1 очко за каждый непотраченный жетон</span></div>${hintBtn('pine')}</header>`;
+  const hint = hintBox('pine', img('pine', 'Шишка Дугласовой пихты'),
+    `<p>Жетон природы (шишку) получают, когда кладут фишку животного на жетон заповедника. Потратить его можно, чтобы взять любые жетон и фишку или обновить фишки.</p>
+     <p><b>Каждый непотраченный жетон в конце игры — 1 очко.</b> При ничьей по очкам побеждает тот, у кого их больше.</p>`);
+  const rows = ps.map(p => `<li class="prow two"><span class="pname">${dot(p)}${pn(p)}</span>${stepper('pine', p.id, p.v.pine, 0, 25, 'Жетоны природы: ' + p.name)}</li>`).join('');
+  return `<article class="cat" id="cat-pine">${head}${hint}<ul class="plist">${rows}</ul></article>`;
+}
+
+function renderAll() {
+  catsEl.innerHTML =
+    `<section class="group" id="g-wild" aria-labelledby="gh-wild"><h2 id="gh-wild">Животные</h2>${cardsBoard()}
+      <div class="cats">${ANIMALS.map(animalCat).join('')}</div></section>` +
+    `<section class="group" id="g-hab" aria-labelledby="gh-hab"><h2 id="gh-hab">Ареалы</h2>${habBoard()}
+      <div class="cats">${HABS.map(habCat).join('')}</div></section>` +
+    `<section class="group" id="g-pine" aria-labelledby="gh-pine"><h2 id="gh-pine">Жетоны природы</h2>
+      <div class="cats">${pineCat()}</div></section>`;
+  secnav.innerHTML = GROUPS.map((g, i) => `<a href="#g-${g.id}" data-nav="g-${g.id}" aria-current="${i === 0}">${g.nav}</a>`).join('')
+    + '<a href="#results" data-nav="results" aria-current="false">Итоги</a>';
+  update(); spy();
+}
+
+function update() {
+  const ps = state.players, st = standing();
+  ps.forEach((p, i) => {
+    HABS.forEach(h => {
+      const el = catsEl.querySelector(`[data-pts="${h.id}"][data-pid="${p.id}"]`); if (!el) return;
+      const base = p.v[h.id], b = st.sc[i].bonus[h.id];
+      el.innerHTML = ptsBadge(base == null ? null : base + b, base == null ? 0 : b);
+      el.title = base == null ? '' : `${base} за ареал${b ? ` + ${b} за лидерство` : ''}`;
+    });
+    ANIMALS.forEach(a => {
+      const el = catsEl.querySelector(`[data-csum="${a.id}"][data-pid="${p.id}"]`); if (!el) return;
+      const c = p.calc[a.id];
+      if (!c) { el.textContent = ''; el.classList.remove('stale'); return; }
+      const stale = c.k !== cardKey(a.id);
+      el.textContent = stale ? `посчитано по «${RU[c.k]}» — пересчитайте` : calcSummary(cardOf(a.id, c.k), c);
+      el.classList.toggle('stale', stale);
+    });
+  });
+  KEYS.forEach(k => {
+    const dm = catsEl.querySelector(`[data-done="${k}"]`); if (dm) dm.hidden = !ps.every(p => p.v[k] != null);
+  });
+  renderDock(st); renderResults(st);
+}
+
+function renderDock(st) {
+  dock.innerHTML = state.players.map((p, i) =>
+    `<a class="tot${st.isLead(i) ? ' lead' : ''}" href="#results">${dot(p)}${pn(p)}<b>${st.totals[i]}</b></a>`).join('');
+}
+
+function tieNote(st, html = true) {
+  const ps = state.players, nm = i => html ? pn(ps[i]) : (ps[i].name || 'Без имени');
+  if (!st.tiedPoints) return '';
+  const pts = `${st.max} ${ochk(st.max)}`;
+  if (st.shared) return `Ничья: по ${pts} и поровну жетонов природы — победа общая: ${st.fin.map(nm).join(', ')}.`;
+  const k = st.sc[st.fin[0]].pine;
+  return `Ничья по очкам (${pts}). Побеждает ${nm(st.fin[0])}: больше непотраченных жетонов природы (${k}).`;
+}
+
+function renderResults(st) {
+  const ps = state.players, {totals, isLead, sc} = st, n = ps.length;
+  const t = tieNote(st);
+  tieEl.innerHTML = t ? `<div class="tie">${t}</div>` : '';
+  podium.innerHTML = order(st).map(i => { const p = ps[i];
+    return `<div class="ptot${isLead(i) ? ' lead' : ''}"><i class="pmeeple" style="background:${COLORS[p.color][0]}"></i>
+    <span class="ptname">${pn(p)}${isLead(i) ? '<em>победа</em>' : ''}</span><b>${totals[i]}</b></div>`; }).join('');
+  const sr = $('#soloRank');
+  if (n === 1) {
+    const r = soloRank(totals[0]);
+    sr.innerHTML = `<div class="solo">${img('seal')}<div><b>${r || 'Меньше 60 — попробуйте ещё'}</b>
+      <ol>${SOLO.slice().reverse().map(([m, t]) => `<li class="${t === r ? 'on' : ''}">${m}+ ${t}</li>`).join('')}</ol></div></div>`;
+    sr.querySelector('img').style.cssText = 'width:44px;height:44px;flex:none';
+  } else sr.innerHTML = '';
+
+  const head = `<div class="rrow rhead" role="row"><span role="columnheader"><span class="sr">Значок</span></span>
+    <span role="columnheader"><span class="sr">Категория</span></span>
+    ${ps.map(p => `<span class="rhp" role="columnheader" title="${esc(p.name)}"><i style="background:${COLORS[p.color][0]}"></i><span class="sr">${esc(p.name)}</span></span>`).join('')}</div>`;
+  const cell = (v, extra = '') => `<span class="rtv${v == null ? ' dim' : ''}" role="cell">${v == null ? '—' : v}${extra}</span>`;
+  const row = (ico, name, cells, cls = '') => `<div class="rrow${cls}" role="row"><span class="ricon" role="cell">${img(ico)}</span>
+    <span class="rname" role="rowheader">${name}</span>${cells}</div>`;
+  const tbl = (label, body) => `<div class="rgroup"><div class="rscroll"><div class="board rtable" style="--n:${n}" role="table" aria-label="${label}">${head}${body}</div></div></div>`;
+  rgroups.innerHTML =
+    tbl('Животные', ANIMALS.map(a => row(a.id, `${a.name} · ${RU[cardKey(a.id)]}`, ps.map(p => cell(p.v[a.id])).join(''))).join('')
+      + row('sum-wild', 'Все животные', ps.map((p, i) => cell(sc[i].wild)).join(''), ' rsum'))
+    + tbl('Ареалы', HABS.map(h => row(h.id, h.name, ps.map((p, i) => {
+        const b = sc[i].bonus[h.id];
+        return cell(p.v[h.id], b ? `<sup>+${b}</sup>` : ''); }).join(''))).join('')
+      + row('sum-hab', 'Все ареалы', ps.map((p, i) => cell(sc[i].hab)).join(''), ' rsum'))
+    + tbl('Итого', row('pine', 'Жетоны природы', ps.map(p => cell(p.v.pine)).join(''))
+      + row('seal', 'Итого', ps.map((p, i) => `<span class="rtv${isLead(i) ? ' lead' : ''}" role="cell">${totals[i]}</span>`).join(''), ' rtotal'));
+}
+
+let observer;
+function spy() {
+  if (!('IntersectionObserver' in window)) return;
+  if (observer) observer.disconnect();
+  const set = id => secnav.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', String(a.dataset.nav === id)));
+  observer = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) set(e.target.id); }), {rootMargin:'-35% 0px -60% 0px'});
+  /* на широком экране итоги «прилипли» сбоку и видны всегда — следим только за разделами */
+  const sel = matchMedia('(min-width:1000px)').matches ? '.group' : '.group, #results';
+  document.querySelectorAll(sel).forEach(s => observer.observe(s));
+}
+
+/* ---------- ввод ---------- */
+const clamp = (n, inp) => Math.min(+inp.max, Math.max(+inp.min, n));
+const changed = () => { save(); update(); };
+const setVal = (p, key, n) => { p.v[key] = n; if (A[key]) delete p.calc[key]; /* ручной ввод отменяет расчёт по карте */ };
+
+catsEl.addEventListener('click', e => {
+  const step = e.target.closest('[data-step]');
+  if (step) {
+    const inp = step.parentElement.querySelector('input'), d = +step.dataset.step;
+    const now = inp.value === '' ? null : parseInt(inp.value, 10);
+    const n = clamp(now == null || isNaN(now) ? (d > 0 ? 1 : 0) : now + d, inp);
+    inp.value = n; setVal(byId(inp.dataset.pid), inp.dataset.key, n); changed(); return;
+  }
+  const hb = e.target.closest('.hint-btn');
+  if (hb) {
+    const id = hb.getAttribute('aria-controls'), h = document.getElementById(id), open = h.hidden;
+    h.hidden = !open; hb.setAttribute('aria-expanded', String(open)); hb.textContent = open ? 'Скрыть' : 'Как считать';
+    const cid = id.slice(5); if (open) openHints.add(cid); else openHints.delete(cid);
+    return;
+  }
+  const md = e.target.closest('[data-mode]');
+  if (md) { state.mode = md.dataset.mode; save(); renderAll(); return; }
+  const cb = e.target.closest('[data-card]');
+  if (cb) { state.cards[cb.dataset.card] = cb.dataset.letter; save(); renderAll(); return; }
+  const cs = e.target.closest('[data-cards]');
+  if (cs) {
+    ANIMALS.forEach(a => { state.cards[a.id] = cs.dataset.cards === 'A' ? 'A' : LETTERS[Math.floor(Math.random() * 4)]; });
+    save(); renderAll(); return;
+  }
+  const calc = e.target.closest('[data-calc]');
+  if (calc) openCalc(calc.dataset.pid, calc.dataset.calc);
+});
+catsEl.addEventListener('input', e => {
+  const inp = e.target.closest('[data-key]'); if (!inp) return;
+  const p = byId(inp.dataset.pid);
+  if (inp.value === '') { setVal(p, inp.dataset.key, null); changed(); return; }
+  const n = parseInt(inp.value, 10); if (isNaN(n)) return;
+  setVal(p, inp.dataset.key, clamp(n, inp)); changed();
+});
+catsEl.addEventListener('change', e => {
+  const inp = e.target.closest('[data-key]');
+  if (inp) inp.value = byId(inp.dataset.pid).v[inp.dataset.key] ?? '';
+});
+catsEl.addEventListener('focusin', e => { if (e.target.matches('[data-key]')) e.target.select(); });
+
+const openDlg = d => d.showModal ? d.showModal() : d.setAttribute('open', '');
+const closeDlg = d => d.close ? d.close() : d.removeAttribute('open');
+
+/* ---------- калькулятор по карте цели ---------- */
+const calcDlg = $('#calcDlg'), calcBody = $('#calcBody');
+let cc = null; /* {pid, a, k, n, g} — черновик, пока не нажали «Записать» */
+function openCalc(pid, a) {
+  const p = byId(pid), k = cardKey(a), prev = p.calc[a];
+  cc = {pid, a, k, n:prev && prev.k === k ? prev.n || 0 : 0, g:prev && prev.k === k ? (prev.g || []).slice() : []};
+  const card = cardOf(a);
+  $('#calcTitle').innerHTML = `${img(a)}<span>${A[a].name} · ${RU[k]}<small>${esc(p.name || 'Без имени')}</small></span>`;
+  paintCalc(); openDlg(calcDlg);
+  if (card.kind !== 'groups') setTimeout(() => { const i = calcBody.querySelector('input'); if (i) { i.focus(); i.select(); } }, 30);
+}
+function paintCalc() {
+  const card = cardOf(cc.a, cc.k), pts = calcPoints(card, cc);
+  let body = `<p class="ctext">${card.text}</p>`;
+  if (card.kind === 'groups') {
+    body += `<b>${card.what} — нажмите, чтобы добавить:</b>
+      <div class="gbtns" style="margin-top:8px">${card.rows.map(([l, p, cap], i) =>
+        `<button type="button" class="gbtn" data-add="${i}"><span>${l}${cap ? `<em>${cap}</em>` : ''}</span>${ptsBadge(p, 0, ' sm')}</button>`).join('')}</div>
+      <div class="glist" aria-live="polite">${cc.g.length ? cc.g.map((i, j) =>
+        `<button type="button" class="gchip" data-del="${j}" aria-label="Убрать ${card.rows[i][0]}">${card.rows[i][2] || card.rows[i][0]} → ${card.rows[i][1]}</button>`).join('')
+        : '<span class="empty">Пока ничего — добавьте группы кнопками выше. Нажатие на добавленную убирает её.</span>'}</div>`;
+    if (card.bonusAll) {
+      const has = card.rows.every((r, i) => cc.g.includes(i));
+      body += `<p class="ctext" style="margin:6px 0 0">${has ? `✓ Есть группы всех трёх размеров: +${card.bonusAll}` : `Бонус +${card.bonusAll}, если будут группы всех трёх размеров.`}</p>`;
+    }
+  } else {
+    body += `<div class="cline"><label for="ccN">${card.what}</label>
+      <div class="stepper"><button type="button" data-cstep="-1" aria-label="Меньше">−</button>
+      <input id="ccN" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="40" value="${cc.n}" enterkeyhint="done">
+      <button type="button" data-cstep="1" aria-label="Больше">+</button></div></div>`;
+    if (card.kind === 'count') {
+      const hit = card.rows.reduce((h, [l], i) => cc.n >= parseInt(l, 10) ? i : h, -1);
+      body += `<div class="gbtns" style="margin-top:12px">${card.rows.map(([l, p], i) =>
+        `<button type="button" class="gbtn" data-setn="${parseInt(l, 10)}" aria-current="${i === hit}"><span>${l}</span>${ptsBadge(p, 0, ' sm')}</button>`).join('')}</div>`;
+    }
+  }
+  body += `<div class="cres" aria-live="polite">${ptsBadge(pts)}<span><b>${pts} ${ochk(pts)}</b> за ${A[cc.a].of}</span></div>`;
+  calcBody.innerHTML = body;
+  $('#calcSave').textContent = `Записать ${pts}`;
+}
+calcDlg.addEventListener('click', e => {
+  if (e.target === calcDlg || e.target.closest('[data-close]')) { closeDlg(calcDlg); return; }
+  const add = e.target.closest('[data-add]'); if (add) { cc.g.push(+add.dataset.add); paintCalc(); return; }
+  const del = e.target.closest('[data-del]'); if (del) { cc.g.splice(+del.dataset.del, 1); paintCalc(); return; }
+  const sn = e.target.closest('[data-setn]'); if (sn) { cc.n = +sn.dataset.setn; paintCalc(); return; }
+  const st = e.target.closest('[data-cstep]');
+  if (st) { cc.n = Math.max(0, Math.min(40, (cc.n || 0) + +st.dataset.cstep)); paintCalc(); }
+});
+calcBody.addEventListener('input', e => {
+  if (e.target.id !== 'ccN') return;
+  const n = parseInt(e.target.value, 10); cc.n = isNaN(n) ? 0 : Math.max(0, Math.min(40, n));
+  const card = cardOf(cc.a, cc.k), pts = calcPoints(card, cc);
+  /* перерисовываем всё, кроме поля ввода, чтобы не сбить курсор */
+  calcBody.querySelector('.cres').innerHTML = `${ptsBadge(pts)}<span><b>${pts} ${ochk(pts)}</b> за ${A[cc.a].of}</span>`;
+  const hit = card.kind === 'count' ? card.rows.reduce((h, [l], i) => cc.n >= parseInt(l, 10) ? i : h, -1) : -1;
+  calcBody.querySelectorAll('[data-setn]').forEach((b, i) => b.setAttribute('aria-current', String(i === hit)));
+  $('#calcSave').textContent = `Записать ${pts}`;
+});
+calcBody.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'ccN') { e.preventDefault(); $('#calcSave').click(); } });
+calcBody.addEventListener('focusin', e => { if (e.target.id === 'ccN') e.target.select(); });
+$('#calcClear').addEventListener('click', () => { cc.n = 0; cc.g = []; paintCalc(); });
+$('#calcSave').addEventListener('click', () => {
+  const p = byId(cc.pid), card = cardOf(cc.a, cc.k);
+  p.v[cc.a] = calcPoints(card, cc);
+  p.calc[cc.a] = card.kind === 'groups' ? {k:cc.k, g:cc.g.slice()} : {k:cc.k, n:cc.n};
+  closeDlg(calcDlg); save(); renderAll();
+});
+
+/* ---------- игроки ---------- */
+const dlg = $('#playersDlg'), dlgBody = $('#dlgBody');
+function renderDialog() {
+  dlgBody.innerHTML = state.players.map(p => `<div class="pedit">
+    <input class="pn" style="${pnStyle(p)}" value="${esc(p.name)}" maxlength="24" data-name="${p.id}" aria-label="Имя игрока" enterkeyhint="done">
+    <div class="swatches" role="radiogroup" aria-label="Цвет: ${esc(p.name)}">
+      ${Object.entries(COLORS).map(([k, [hex, label]]) =>
+        `<button type="button" class="sw" role="radio" aria-checked="${p.color === k}" aria-label="${label}" data-color="${k}" data-pid="${p.id}" style="background:${hex}"></button>`).join('')}
+      ${state.players.length > 1 ? `<button type="button" class="linkbtn" data-remove="${p.id}">удалить</button>` : ''}
+    </div></div>`).join('')
+    + `<p class="hempty" style="padding-top:10px;font-size:14px">В блокноте четыре колонки — играют от 1 до 4 человек. Один игрок — одиночная игра со своим бонусом за ареалы и оценкой результата.</p>`;
+  $('#addPlayer').hidden = state.players.length >= 4;
+}
+$('#openPlayers').addEventListener('click', () => { renderDialog(); openDlg(dlg); });
+dlg.addEventListener('click', e => {
+  if (e.target === dlg || e.target.closest('[data-close]')) { closeDlg(dlg); return; }
+  const sw = e.target.closest('[data-color]');
+  if (sw) { byId(sw.dataset.pid).color = sw.dataset.color; save(); renderDialog(); renderAll(); return; }
+  const rm = e.target.closest('[data-remove]');
+  if (rm) {
+    const p = byId(rm.dataset.remove);
+    if (!confirm(`Удалить игрока «${p.name}»?`)) return;
+    state.players = state.players.filter(q => q !== p);
+    save(); renderDialog(); renderAll();
+  }
+});
+dlgBody.addEventListener('input', e => {
+  const inp = e.target.closest('[data-name]'); if (!inp) return;
+  byId(inp.dataset.name).name = inp.value; save(); renderAll();
+});
+$('#addPlayer').addEventListener('click', () => {
+  const used = state.players.map(p => p.color);
+  state.players.push(mkPlayer('Игрок ' + (state.players.length + 1), Object.keys(COLORS).find(k => !used.includes(k)) || 'blue'));
+  save(); renderDialog(); renderAll();
+});
+$('#resetScores').addEventListener('click', () => {
+  if (!confirm('Начать новую партию? Счёт уедет в «Историю партий», лист очистится, игроки и карты целей останутся.')) return;
+  const kept = archiveGame();
+  state.players.forEach(p => { p.v = blank(); p.calc = {}; });
+  save(); renderAll(); closeDlg(dlg); window.scrollTo({top:0});
+  if (kept) setTimeout(() => alert('Партия сохранена в «Историю партий».'), 60);
+});
+
+/* ---------- памятка по подготовке (правила, с. 4 и 10) ---------- */
+const TILES = {1:[43, 42], 2:[43, 42], 3:[63, 22], 4:[83, 2]};
+const setupDlg = $('#setupDlg'), setupBody = $('#setupBody');
+function renderSetup(n) {
+  $$('#setupDlg [data-pc]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.pc === n)));
+  const [keep, back] = TILES[n];
+  const hexes = `<div class="row">${HABS.map(h => img(h.id, h.name)).join('')}</div>`;
+  setupBody.innerHTML = `
+    <div class="drop"><h4>Жетоны ареалов</h4>
+      <div class="big">${img('forest')}<span>Оставьте <b>${keep} ${plural(keep, ['жетон', 'жетона', 'жетонов'])}</b> — случайных, не глядя; <b>${back}</b> верните в коробку.</span></div>
+      <p>Это 20 жетонов на игрока плюс 3.${n === 1 ? ' В одиночной игре — столько же, сколько вдвоём.' : ''} Сложите их лицом вниз в стопки.</p></div>
+    <div class="drop"><h4>Карты целей</h4>
+      <div class="row">${ANIMALS.map(a => img(a.id, a.name)).join('')}</div>
+      <p>Случайно выберите по 1 карте для каждого из 5 видов животных. В первой партии советуют карты с буквой <b>«А»</b>. Отметьте выбранные буквы в разделе «Животные» — калькулятор будет считать по ним.</p></div>
+    <div class="drop"><h4>Раздача</h4>
+      <p>Каждый берёт случайный <b>начальный жетон ареалов</b>. В центр выложите 4 жетона ареалов и рядом 4 фишки животных из мешочка — получится 4 пары. Жетоны природы — в общий запас.</p>
+      <p>Первым ходит тот, кто последним видел кого-то из этих животных живьём.</p></div>
+    <div class="drop"><h4>Перенаселение</h4>
+      <p>Если среди 4 фишек все 4 — одного вида, их сразу заменяют новыми (и так, пока не станет иначе). Если одного вида 3 фишки, игрок перед своим ходом может один раз заменить эти 3.</p></div>
+    ${n === 1 ? `<div class="drop"><h4>Только для одиночной игры</h4>
+      <p>Стопки жетонов — слева от игровой зоны. После каждого хода уберите в коробку крайний правый жетон и крайнюю правую фишку, сдвиньте оставшиеся вправо и доложите 2 новые пары. Ходов ровно 20.</p>
+      <p>За ареалы: <b>+2</b> за каждый ареал хотя бы из 7 жетонов. Итог сверьте с таблицей: 60+ «Хорошее начало!» … 110+ «Невероятно!!!» — сайт покажет её в итогах.</p></div>` : ''}
+    <div class="drop"><h4>По желанию</h4>
+      <p>Чтобы виды были представлены ровнее при игре на 1–3, положите в мешочек только по 5 фишек каждого вида на участника. Часть достижений тогда станет недоступна.</p></div>
+    <p class="hempty">Конец игры: когда после хода нельзя выложить новый жетон ареалов. Каждый делает ровно 20 ходов.</p>`;
+}
+$('#openSetup').addEventListener('click', () => {
+  renderSetup(Math.min(4, Math.max(1, state.players.length)));
+  openDlg(setupDlg);
+});
+setupDlg.addEventListener('click', e => {
+  if (e.target === setupDlg || e.target.closest('[data-close]')) { closeDlg(setupDlg); return; }
+  const pc = e.target.closest('[data-pc]');
+  if (pc) renderSetup(+pc.dataset.pc);
+});
+
+/* ---------- история партий ---------- */
+const HISTORY = 'cascadia-history', HIST_MAX = 60;
+const readHistory = () => { try { const h = JSON.parse(localStorage.getItem(HISTORY)); return Array.isArray(h) ? h : []; } catch (e) { return []; } };
+const writeHistory = h => { try { localStorage.setItem(HISTORY, JSON.stringify(h.slice(0, HIST_MAX))); } catch (e) {} };
+const cardsLine = () => state.mode === 'cards'
+  ? ANIMALS.map(a => `${a.name.toLowerCase()} ${RU[state.cards[a.id]]}`).join(', ')
+  : state.mode === 'family' ? 'семейный вариант' : 'вариант средней сложности';
+
+function archiveGame() {
+  const st = standing();
+  if (!st.totals.some(t => t > 0)) return false;
+  const h = readHistory();
+  h.unshift({
+    at:new Date().toISOString(), cards:cardsLine(),
+    players:order(st).map(i => ({name:state.players[i].name || 'Без имени', color:state.players[i].color,
+      total:st.totals[i], win:st.isLead(i)}))
+  });
+  writeHistory(h);
+  return true;
+}
+
+const historyDlg = $('#historyDlg'), historyBody = $('#historyBody'), hisNote = $('#hisNote');
+function renderHistory() {
+  const h = readHistory();
+  $('#clearHistory').hidden = !h.length;
+  if (!h.length) {
+    hisNote.textContent = '';
+    historyBody.innerHTML = `<p class="hempty">Пока пусто. Партия попадёт сюда, когда вы нажмёте «Новая партия» в окне «Игроки» — счёт сохранится, а лист очистится.</p>`;
+    return;
+  }
+  const wins = {};
+  h.forEach(g => g.players.forEach(p => { if (p.win) wins[p.name] = (wins[p.name] || 0) + 1; }));
+  const table = Object.entries(wins).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'));
+  hisNote.textContent = `${h.length} ${plural(h.length, ['партия', 'партии', 'партий'])}`
+    + (table.length ? ' · победы: ' + table.map(([n, w]) => `${n} ${w}`).join(', ') : '');
+  historyBody.innerHTML = h.map((g, k) => `<div class="hgame">
+    <div class="hhead"><time datetime="${esc(g.at)}">${dateRu(new Date(g.at))}${g.cards ? ' · ' + esc(g.cards) : ''}</time>
+      <button type="button" class="linkbtn" data-del="${k}">удалить</button></div>
+    ${g.players.map(p => `<div class="hrow${p.win ? ' win' : ''}">
+      <i style="background:${(COLORS[p.color] || COLORS.blue)[0]}"></i>
+      <span>${esc(p.name)}</span><b>${p.total}</b></div>`).join('')}
+  </div>`).join('');
+}
+$('#openHistory').addEventListener('click', () => { renderHistory(); openDlg(historyDlg); });
+historyDlg.addEventListener('click', e => {
+  if (e.target === historyDlg || e.target.closest('[data-close]')) { closeDlg(historyDlg); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); }
+});
+$('#clearHistory').addEventListener('click', () => {
+  if (!confirm('Удалить все сохранённые партии? Это не отменить.')) return;
+  writeHistory([]); renderHistory();
+});
+
+/* ---------- выгрузка результатов ---------- */
+const pad2 = x => String(x).padStart(2, '0');
+const stamp = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+const dateRu = d => d.toLocaleString('ru-RU', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+
+/* текст — в порядке строк блокнота */
+function resultText(details) {
+  const ps = state.players, st = standing();
+  const head = `Каскадия · ${cardsLine()}`;
+  const tn = tieNote(st, false);
+  return head + '\n' + (tn ? tn + '\n' : '') + '\n' + order(st).map(i => {
+    const p = ps[i], v = p.v, s = st.sc[i], L = [p.name || 'Без имени'];
+    ANIMALS.forEach(a => {
+      if (v[a.id] == null) return;
+      const c = p.calc[a.id];
+      L.push(`${a.name} ${v[a.id]}` + (details && c && c.k === cardKey(a.id) ? ` (${calcSummary(cardOf(a.id), c)})` : ''));
+    });
+    L.push(`Животные ${s.wild}`);
+    HABS.forEach(h => {
+      if (v[h.id] == null) return;
+      const b = s.bonus[h.id];
+      L.push(details ? `${h.name} ${v[h.id]}${b ? ' + ' + b + ' лидерство' : ''}` : `${h.name} ${v[h.id]}${b ? '+' + b : ''}`);
+    });
+    L.push(`Ареалы ${s.hab}`);
+    if (v.pine) L.push(`Шишки ${v.pine}`);
+    L.push(String(st.totals[i]) + (ps.length === 1 && soloRank(st.totals[i]) ? ' — ' + soloRank(st.totals[i]) : ''));
+    return L.join('\n');
+  }).join('\n\n') + '\n';
+}
+
+function resultData(now) {
+  const ps = state.players, st = standing();
+  return {
+    game:'Каскадия', exportedAt:now.toISOString(), exportedAtLocal:dateRu(now),
+    variant:state.mode === 'cards' ? 'карты целей' : state.mode === 'family' ? 'семейный' : 'средней сложности',
+    cards:state.mode === 'cards' ? Object.fromEntries(ANIMALS.map(a => [a.id, RU[state.cards[a.id]]])) : null,
+    tiebreak:st.tiedPoints ? {byNatureTokens:!st.shared, winners:st.fin.map(i => ps[i].name)} : null,
+    soloRank:ps.length === 1 ? soloRank(st.totals[0]) : undefined,
+    players:order(st).map(i => {
+      const p = ps[i], v = p.v, s = st.sc[i];
+      return {
+        name:p.name, color:COLORS[p.color][1], place:placeOf(st, i), winner:st.isLead(i), total:s.total,
+        wildlife:Object.fromEntries(ANIMALS.map(a => [a.id, {name:a.name, points:v[a.id] || 0,
+          calc:p.calc[a.id] && p.calc[a.id].k === cardKey(a.id) ? calcSummary(cardOf(a.id), p.calc[a.id]) : null}])),
+        wildlifeTotal:s.wild,
+        habitats:Object.fromEntries(HABS.map(h => [h.id, {name:h.name, largest:v[h.id] || 0, bonus:s.bonus[h.id], points:(v[h.id] || 0) + s.bonus[h.id]}])),
+        habitatsTotal:s.hab,
+        natureTokens:s.pine
+      };
+    })
+  };
+}
+
+const textDlg = $('#textDlg'), txtSheet = $('#txtSheet'), txtCounts = $('#txtCounts'), txtSay = $('#txtSay');
+const COUNTS_KEY = 'cascadia-text-details';
+try { txtCounts.checked = localStorage.getItem(COUNTS_KEY) === '1'; } catch (e) {}
+const paintText = () => { txtSheet.textContent = resultText(txtCounts.checked); };
+$('#expTxt').addEventListener('click', () => { paintText(); txtSay.textContent = ''; openDlg(textDlg); });
+txtCounts.addEventListener('change', () => {
+  try { localStorage.setItem(COUNTS_KEY, txtCounts.checked ? '1' : '0'); } catch (e) {}
+  paintText();
+});
+$('#txtCopy').addEventListener('click', async () => {
+  const text = resultText(txtCounts.checked);
+  try {
+    if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+    else {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    txtSay.textContent = 'Скопировано — вставляйте куда нужно.';
+  } catch (e) { txtSay.textContent = 'Скопировать не вышло: выделите текст выше вручную.'; }
+});
+$('#txtFile').addEventListener('click', () => {
+  download(new Blob(['﻿' + resultText(txtCounts.checked).replace(/\n/g, '\r\n')], {type:'text/plain;charset=utf-8'}), `cascadia-${stamp(new Date())}.txt`);
+});
+$('#expJson').addEventListener('click', () => {
+  const now = new Date();
+  download(new Blob([JSON.stringify(resultData(now), null, 2)], {type:'application/json'}), `cascadia-${stamp(now)}.json`);
+});
+textDlg.addEventListener('click', e => { if (e.target === textDlg || e.target.closest('[data-close]')) closeDlg(textDlg); });
+
+/* --- картинка: листок блокнота, заполненный от руки --- */
+const PICS = {};
+const loadPic = src => new Promise(res => {
+  if (PICS[src]) return res(PICS[src]);
+  const im = new Image();
+  im.onload = () => { PICS[src] = im; res(im); };
+  im.onerror = () => res(null);
+  im.src = src;
+});
+/* разметка img/pad.jpg (767 × 1888): колонки игроков и строки, в пикселях картинки */
+const PAD_COLS = [[193, 321], [322, 452], [453, 583], [584, 723]];
+const PAD_ROWS = {head:[50, 169], bear:[174, 284], elk:[285, 396], salmon:[397, 509], hawk:[510, 621], fox:[622, 734], wild:[735, 846],
+  mountain:[881, 989], forest:[990, 1102], prairie:[1103, 1214], wetland:[1215, 1327], river:[1328, 1439], hab:[1440, 1549],
+  pine:[1577, 1702], total:[1734, 1843]};
+const HAND = 'Caveat, "Segoe Print", "Comic Sans MS", cursive';
+
+/* детерминированное «дрожание» руки: одна и та же партия рисуется одинаково */
+const jitter = (seed) => { const x = Math.sin(seed * 12.9898) * 43758.5453; return x - Math.floor(x) - .5; };
+
+async function buildImage(now) {
+  try {
+    await Promise.all(['700 60px Bitter', '700 50px Caveat', '600 50px Caveat', '400 26px "PT Sans"', '700 26px "PT Sans"']
+      .map(f => document.fonts.load(f, '0123456789АаБбВвЁё—×+')));
+  } catch (e) {}
+  const pad = await loadPic('img/pad.jpg');
+  if (!pad) throw new Error('не загрузился листок блокнота');
+  const paper = await loadPic('img/paper.jpg');
+  const icons = {};
+  await Promise.all(ANIMALS.map(async a => { icons[a.id] = await loadPic(`img/${a.id}.png`); }));
+
+  const ps = state.players, st = standing(), K = 1.5, M = 44;
+  const PW = 767 * K, PH = 1888 * K, W = PW + M * 2;
+  const tn = tieNote(st, false);
+  const solo = ps.length === 1 ? soloRank(st.totals[0]) : null;
+  const note = tn || (solo ? `Одиночная игра: ${st.totals[0]} — ${solo}` : '');
+  const TOP = M + 210 + (note ? 44 : 0);
+  const H = TOP + PH + 64;
+
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#EDE4D3'; ctx.fillRect(0, 0, W, H);
+  if (paper) { ctx.save(); ctx.fillStyle = ctx.createPattern(paper, 'repeat'); ctx.fillRect(0, 0, W, H); ctx.restore(); }
+
+  /* шапка */
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  ctx.fillStyle = '#3E6B2F'; ctx.font = '700 66px Bitter, Georgia, serif';
+  ctx.fillText('КАСКАДИЯ', M, M + 60);
+  ctx.fillStyle = '#6B5A40'; ctx.font = '400 26px "PT Sans", sans-serif';
+  ctx.fillText('Итоги партии · ' + dateRu(now), M, M + 100);
+  /* карты целей: жетон животного + буква */
+  let x = M;
+  const cy = M + 158;
+  if (state.mode === 'cards') {
+    ANIMALS.forEach(a => {
+      if (icons[a.id]) ctx.drawImage(icons[a.id], x, cy - 28, 56, 56);
+      ctx.fillStyle = '#2E2418'; ctx.font = '700 36px Bitter, Georgia, serif'; ctx.textBaseline = 'middle';
+      ctx.fillText(RU[state.cards[a.id]], x + 64, cy + 2);
+      x += 64 + ctx.measureText(RU[state.cards[a.id]]).width + 30;
+    });
+  } else {
+    ANIMALS.forEach(a => { if (icons[a.id]) ctx.drawImage(icons[a.id], x, cy - 28, 56, 56); x += 62; });
+    ctx.fillStyle = '#2E2418'; ctx.font = '700 28px "PT Sans", sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText(state.mode === 'family' ? 'семейный вариант' : 'вариант средней сложности', x + 10, cy + 2);
+  }
+  if (note) {
+    ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#3E6B2F'; ctx.font = '700 25px "PT Sans", sans-serif';
+    ctx.fillText(fitText(ctx, note, W - M * 2), M, M + 236);
+  }
+
+  /* листок */
+  ctx.save(); ctx.shadowColor = 'rgba(40,25,10,.35)'; ctx.shadowBlur = 22; ctx.shadowOffsetY = 6;
+  ctx.drawImage(pad, M, TOP, PW, PH); ctx.restore();
+  const X = v => M + v * K, Y = v => TOP + v * K;
+
+  /* пишем «от руки» — с лёгким наклоном и сдвигом */
+  let seed = 1;
+  const hand = (text, cx, cy, size, color, maxW) => {
+    ctx.save();
+    const j1 = jitter(seed++), j2 = jitter(seed++), j3 = jitter(seed++);
+    ctx.translate(cx + j1 * 5, cy + j2 * 4); ctx.rotate(j3 * .07);
+    let s = size;
+    ctx.font = `700 ${s}px ${HAND}`;
+    while (maxW && s > 20 && ctx.measureText(text).width > maxW) { s -= 2; ctx.font = `700 ${s}px ${HAND}`; }
+    ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  };
+  const INK = '#23408E';
+  ps.forEach((p, i) => {
+    const [x0, x1] = PAD_COLS[i], w = (x1 - x0) * K, cx = X((x0 + x1) / 2);
+    const mid = r => Y((PAD_ROWS[r][0] + PAD_ROWS[r][1]) / 2);
+    const s = st.sc[i], ink = COLORS[p.color][4];
+    hand(p.name || 'Без имени', cx, mid('head'), 50, ink, w - 18);
+    ANIMALS.forEach(a => { if (p.v[a.id] != null) hand(String(p.v[a.id]), cx, mid(a.id), 64, INK); });
+    hand(String(s.wild), cx, mid('wild'), 64, INK);
+    HABS.forEach(h => {
+      if (p.v[h.id] == null) return;
+      const [y0, y1] = PAD_ROWS[h.id], hh = (y1 - y0) * K, b = s.bonus[h.id];
+      /* в ячейке ареала диагональ: слева сверху — размер, справа снизу — бонус */
+      hand(String(p.v[h.id]), X(x0) + w * .34, Y(y0) + hh * .38, 58, INK);
+      hand(b ? String(b) : '–', X(x0) + w * .79, Y(y0) + hh * .74, 44, INK);
+    });
+    hand(String(s.hab), cx, mid('hab'), 64, INK);
+    hand(String(s.pine), cx, mid('pine'), 64, INK);
+    hand(String(s.total), cx, mid('total'), 72, INK);
+    if (st.isLead(i)) {
+      /* победителя обводим, как ручкой на листке */
+      ctx.save(); ctx.strokeStyle = '#B2412F'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.ellipse(cx, mid('total'), w * .36, 58, -.06, .15, Math.PI * 2 + .45);
+      ctx.stroke(); ctx.restore();
+    }
+  });
+
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  ctx.font = '400 21px "PT Sans", sans-serif'; ctx.fillStyle = 'rgba(80,62,38,.8)';
+  ctx.fillText('Каскадия · счётный лист', M, H - 22);
+  if (/^https?:$/.test(location.protocol)) {
+    ctx.textAlign = 'right';
+    ctx.fillText(location.host + location.pathname.replace(/index\.html$/, ''), W - M, H - 22);
+  }
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('браузер не смог сохранить картинку')), 'image/png'));
+}
+function fitText(ctx, text, max) {
+  if (ctx.measureText(text).width <= max) return text;
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + '…').width > max) t = t.slice(0, -1);
+  return t + '…';
+}
+
+const exportDlg = $('#exportDlg'), exportImg = $('#exportImg'), imgWarn = $('#imgWarn');
+let exportFile = null;
+$('#expImg').addEventListener('click', async e => {
+  const btn = e.currentTarget, label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Рисую…';
+  openDlg(exportDlg);
+  try {
+    const now = new Date(), blob = await buildImage(now);
+    exportFile = new File([blob], `cascadia-${stamp(now)}.png`, {type:'image/png'});
+    if (exportImg.src.startsWith('blob:')) URL.revokeObjectURL(exportImg.src);
+    exportImg.src = URL.createObjectURL(blob);
+    imgWarn.hidden = true;
+    $('#shareImg').hidden = !(navigator.canShare && navigator.canShare({files:[exportFile]}));
+  } catch (err) {
+    exportFile = null; exportImg.removeAttribute('src'); $('#shareImg').hidden = true;
+    imgWarn.hidden = false;
+    imgWarn.textContent = location.protocol === 'file:'
+      ? 'Картинка не рисуется, когда страница открыта с диска: браузер запрещает холсту читать локальные файлы. На GitHub Pages всё заработает — а пока выгрузите текстом.'
+      : 'Не получилось нарисовать картинку: ' + err.message + '. Попробуйте выгрузить текстом.';
+  }
+  btn.disabled = false; btn.textContent = label;
+});
+$('#saveImg').addEventListener('click', () => { if (exportFile) download(exportFile, exportFile.name); });
+$('#shareImg').addEventListener('click', async () => {
+  try { await navigator.share({files:[exportFile], title:'Каскадия — итоги партии'}); } catch (e) {}
+});
+exportDlg.addEventListener('click', e => { if (e.target === exportDlg || e.target.closest('[data-close]')) closeDlg(exportDlg); });
+
+/* ---------- работа без сети ---------- */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('../../sw.js').catch(() => {}));
+}
+
+renderAll();
+})();
+</script>
+</body>
+</html>

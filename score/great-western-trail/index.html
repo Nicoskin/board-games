@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Счётный лист Великого Западного Пути</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="img/icon.png" sizes="any">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<meta name="theme-color" content="#1C2A3C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ВЗП">
+<meta name="description" content="Подсчёт победных очков в настольной игре «Великий Западный Путь» (второе издание) с подсказками из правил">
+<meta property="og:title" content="Счётный лист Великого Западного Пути">
+<meta property="og:description" content="Подсчёт победных очков в «Великом Западном Пути», второе издание">
+<meta property="og:image" content="img/cover.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Podkova:wght@500;700&family=PT+Sans:wght@400;700&display=swap">
+<style>
+:root{
+  --ground:#E6D7B8; --surface:#FBF5E6; --surface-2:#F1E5CA; --ink:#1D2530; --muted:#6B604E;
+  --line:#CDB88E; --accent:#1F3A5C; --accent-ink:#F8F0DC; --accent-soft:#DDE4EC;
+  --gold:#D9801A; --focus:#C2410C; --shadow:rgba(40,30,15,.18);
+  --board:#1C2A3C; --board-ink:#F6ECD6; --board-cell:rgba(255,244,219,.08);
+  --display:Podkova, Georgia, "Times New Roman", serif;
+  --body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E141C; --surface:#17202B; --surface-2:#202B38; --ink:#EEE4CF; --muted:#A79A84;
+    --line:#34424F; --accent:#F0A143; --accent-ink:#1A1206; --accent-soft:#2B394A;
+    --gold:#F2AE4A; --focus:#8FB8F2; --shadow:rgba(0,0,0,.45);
+    --board:#111C29; --board-cell:rgba(255,244,219,.07);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E141C; --surface:#17202B; --surface-2:#202B38; --ink:#EEE4CF; --muted:#A79A84;
+  --line:#34424F; --accent:#F0A143; --accent-ink:#1A1206; --accent-soft:#2B394A;
+  --gold:#F2AE4A; --focus:#8FB8F2; --shadow:rgba(0,0,0,.45);
+  --board:#111C29; --board-cell:rgba(255,244,219,.07);
+}
+:root[data-theme="dark"]{color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+body{margin:0;color:var(--ink);font:400 16px/1.45 var(--body);-webkit-text-size-adjust:100%;
+  background:var(--ground) url("img/parchment.jpg") repeat;background-size:420px;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{background-blend-mode:multiply} }
+:root[data-theme="dark"] body{background-blend-mode:multiply}
+button,input{font:inherit;color:inherit}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* У степпера и переключателей overflow:hidden — обводку фокуса рисуем внутрь. */
+.stepper :focus-visible,.seg :focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--focus)}
+h1,h2,h3{text-wrap:balance}
+img{max-width:100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.board,.stepper,.seg,.owner,.vp,.hint-btn,.tot,.secnav,.ico,.mtile{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* ---------- щит победных очков ---------- */
+.vp{--s:44px;position:relative;flex:none;width:var(--s);height:calc(var(--s) * 50 / 44);display:grid;place-items:center}
+.vp svg{position:absolute;inset:0;width:100%;height:100%}
+.vp b{position:relative;transform:translateY(-7%);font:700 calc(var(--s) * .46)/1 var(--display);
+  font-variant-numeric:lining-nums tabular-nums;color:#FFF8E8;text-shadow:0 1px 2px rgba(70,30,0,.85),0 0 3px rgba(70,30,0,.5);letter-spacing:-.02em}
+.vp.empty svg{opacity:.3;filter:grayscale(1)}
+.vp.empty b{color:#FFF1D2;font-weight:500}
+.vp.neg svg{filter:grayscale(1) brightness(.85)}
+.vp.neg b{color:#FFD2C8;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.vp.sm{--s:34px}
+.vp.md{--s:40px}
+
+/* ---------- шапка ---------- */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--ground) 90%,transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.top-row{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:calc(7px + env(safe-area-inset-top)) 14px 3px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand img{width:40px;height:40px;border-radius:9px;flex:none;box-shadow:0 1px 3px var(--shadow)}
+.brand h1{margin:0;font:700 25px/1 var(--display);letter-spacing:.01em}
+.brand small{display:block;font-size:11.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase}
+.secnav{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:5px 10px 7px;scrollbar-width:none}
+.secnav::-webkit-scrollbar{display:none}
+.secnav a{flex:none;padding:6px 14px;border-radius:999px;color:var(--ink);text-decoration:none;font-weight:700;font-size:15px}
+.secnav a[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.btn{font-weight:700;font-size:15px;padding:9px 14px;min-height:42px;border-radius:8px;border:1.5px solid var(--accent);
+  background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.danger{background:transparent;color:#B4311F;border-color:#B4311F}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn.danger{color:#F08A78;border-color:#F08A78} }
+:root[data-theme="dark"] .btn.danger{color:#F08A78;border-color:#F08A78}
+.btn:disabled{opacity:.6;cursor:progress}
+.linkbtn{border:0;background:none;padding:6px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px}
+
+/* ---------- раскладка ---------- */
+/* minmax(0,1fr), а не auto: иначе колонка растягивается по min-content
+   самой широкой карточки и страница уезжает вбок на телефоне. */
+.layout{max-width:1180px;margin:0 auto;padding:6px 10px 20px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){
+  .layout{grid-template-columns:minmax(0,1fr) 404px;align-items:start;padding-inline:16px}
+  .results{position:sticky;top:104px;max-height:calc(100vh - 186px);overflow:auto}
+}
+.group{scroll-margin-top:100px}
+.group > h2{margin:18px 4px 8px;font:700 26px/1.1 var(--display)}
+.cats{display:grid;gap:10px;margin-top:10px}
+
+/* ---------- табло: тёмно-синее, как жетоны начальника станции ---------- */
+.board{background:var(--board);border-radius:14px;padding:10px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.4),inset 0 0 26px rgba(0,0,0,.35),0 2px 6px var(--shadow)}
+.board.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:7px}
+.bcell{display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 5px 9px;border-radius:10px;background:var(--board-cell);text-align:center}
+.bcell .bico{height:46px;display:flex;align-items:center;justify-content:center;gap:4px}
+.bcell .bico img{height:46px;width:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.bcell .bico img.wide{height:40px}
+.bcell small{color:var(--board-ink);font-weight:700;font-size:13.5px;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.bcell em{font-style:normal;color:#F8C779;font-size:12.5px;line-height:1.15}
+.board.masters{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:7px}
+.board.masters .bcell img{width:100%;max-width:120px;height:auto}
+
+/* ---------- карточки категорий ---------- */
+.cat{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 1px 3px var(--shadow)}
+.cat-h{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center}
+.ico{position:relative;width:52px;height:52px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;overflow:hidden}
+.ico img{width:44px;height:44px;display:block;object-fit:contain}
+.ico img[src$="money.png"]{width:50px}
+.ico .num{position:absolute;left:3px;top:2px;font:700 11px/1 var(--body);color:var(--muted)}
+.cat-h h3{margin:0;font:700 19px/1.15 var(--body);display:flex;align-items:center;gap:6px}
+.donemark{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:700}
+.rule{display:block;font-size:13.5px;color:var(--muted);line-height:1.25;margin-top:2px}
+.hint-btn{min-height:38px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.hint-btn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media (max-width:420px){ .cat-h{grid-template-columns:44px minmax(0,1fr) auto} .ico{width:44px;height:44px} .ico img{width:38px;height:38px} .hint-btn{padding:6px 9px;font-size:13px} }
+
+.plist{list-style:none;margin:8px 0 0;padding:0}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:10px;align-items:center;padding:8px 0}
+.prow + .prow{border-top:1px solid var(--line)}
+.pname{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;min-width:0}
+.pname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdot{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
+.pn{color:var(--pn-l)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .pn{color:var(--pn-d)} }
+:root[data-theme="dark"] .pn{color:var(--pn-d)}
+.prow.wide{grid-template-columns:minmax(0,1fr) 44px}
+.rctrl{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.rctrl.start{justify-content:flex-start}
+.mini{display:flex;align-items:center;gap:7px}
+.mini > span{font-size:14px;color:var(--muted);line-height:1.15;max-width:120px}
+.mini > b{font-size:14px;color:var(--muted);font-weight:400;white-space:nowrap}
+.calc{font:700 15px var(--body);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.stepper{display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);flex:none}
+.stepper button{width:46px;height:46px;border:0;background:var(--surface-2);font:700 26px/1 var(--body);cursor:pointer;color:var(--ink)}
+.stepper button:active{background:var(--accent-soft)}
+.stepper input{width:54px;text-align:center;border:0;border-inline:1.5px solid var(--line);background:var(--surface);font:700 21px var(--body);
+  font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield;padding:0;border-radius:0}
+.stepper input::placeholder{color:var(--muted);font-weight:400}
+.stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.stepper.sm button{width:38px;height:40px;font-size:21px}
+.stepper.sm input{width:44px;font-size:18px}
+/* деньги и сложные суммы набирают с клавиатуры, а не кнопками */
+.stepper.lg input{width:96px;font-size:23px;letter-spacing:.02em}
+@media (max-width:360px){ .stepper button{width:40px} .stepper input{width:46px} .stepper.sm button{width:34px} .stepper.lg input{width:78px} }
+
+/* переключатель «да / нет» и владелец жетона */
+.toggle{display:inline-flex;align-items:center;gap:9px;min-height:46px;padding:5px 14px 5px 6px;border-radius:10px;border:1.5px solid var(--line);
+  background:var(--surface);cursor:pointer;font-weight:700;font-size:15px;color:var(--muted)}
+.toggle img{width:36px;height:36px;opacity:.35;filter:grayscale(.9)}
+.toggle[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.toggle[aria-pressed="true"] img{opacity:1;filter:none}
+.owners{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.owner{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:6px 14px;border-radius:10px;border:1.5px solid var(--line);
+  background:var(--surface);cursor:pointer;font-weight:700;font-size:16px;max-width:100%}
+.owner span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.owner[aria-pressed="true"]{background:var(--pc);border-color:var(--pc);color:var(--pc-ink)}
+.owner[aria-pressed="true"] .pn{color:inherit}
+.owner.none{color:var(--muted)}
+.owner.none[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--line);color:var(--ink)}
+
+/* жетоны начальника станции у игрока */
+.mtiles{display:flex;flex-wrap:wrap;gap:6px}
+.mtile{width:64px;height:48px;padding:0;border:2px solid transparent;border-radius:9px;background:none;cursor:pointer;display:grid;place-items:center}
+.mtile img{width:60px;height:auto;opacity:.32;filter:grayscale(.9)}
+.mtile[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+.mtile[aria-pressed="true"] img{opacity:1;filter:none}
+.mrows{grid-column:1 / -1;display:grid;gap:8px}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 10px;border-radius:10px;background:var(--surface-2)}
+.mrow > img{width:56px;height:auto;flex:none}
+.mrow .mtxt{flex:1 1 140px;font-size:14px;line-height:1.25;color:var(--muted)}
+.mrow .mtxt b{color:var(--ink)}
+.mrow .mins{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.mempty{grid-column:1 / -1;margin:0;font-size:14px;color:var(--muted)}
+
+/* подсказка */
+.hint{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);gap:12px 18px;align-items:start;
+  background:var(--surface-2);border-radius:10px;padding:12px;margin-top:10px}
+@media (max-width:640px){ .hint{grid-template-columns:1fr} }
+.hint-art img{display:block;width:100%;max-width:300px;height:auto;border-radius:9px;box-shadow:0 2px 6px var(--shadow)}
+.hint-art img.icon{max-width:120px;margin:0 auto;box-shadow:none}
+.hint-art figcaption{margin-top:5px;font-size:12.5px;color:var(--muted);text-align:center}
+.hint-text p{margin:0 0 8px;max-width:62ch}
+.hint-text p:last-child{margin-bottom:0}
+.hint-text ul{margin:0 0 8px;padding-left:20px}
+.hint-text li{margin-bottom:3px}
+.hint-text .ex{font-weight:700}
+.eq{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:6px}
+.eq-item{margin:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.eq-ico{position:relative;width:56px;height:56px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);display:grid;place-items:center}
+.eq-ico img{width:44px;height:44px;object-fit:contain}
+.eq-ico b{position:absolute;top:-8px;right:-8px;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:var(--accent);color:var(--accent-ink);
+  font-size:13px;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.eq-item figcaption{font-size:12px;color:var(--muted);text-align:center;max-width:80px;line-height:1.15}
+.op{font:700 24px var(--display);color:var(--muted);align-self:flex-start;margin-top:14px}
+.eq-res{align-self:flex-start;margin-top:8px;font-weight:700;font-size:17px;padding:7px 11px;border-radius:8px;background:var(--accent-soft);white-space:nowrap}
+.note{display:flex;gap:9px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:10px;
+  background:var(--surface-2);border-left:4px solid var(--gold);font-size:14.5px;line-height:1.35}
+.note img{width:34px;height:34px;flex:none;object-fit:contain}
+
+/* ---------- итоги ---------- */
+.results{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;scroll-margin-top:100px;box-shadow:0 1px 3px var(--shadow)}
+.results > h2{margin:0 0 10px;font:700 25px/1.1 var(--display)}
+.podium{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.ptot{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:10px;padding:10px 12px;
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.ptot .pmeeple{grid-row:span 2;width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.2)}
+.ptname{font-weight:700;display:flex;align-items:baseline;gap:2px;min-width:0}
+.ptname .pn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptot b{font:700 32px/1 var(--display);font-variant-numeric:tabular-nums}
+.ptot.lead{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+.ptot em{flex:none;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-left:5px}
+.tie{border:1.5px solid var(--gold);border-radius:11px;padding:10px 12px;margin-bottom:10px;background:color-mix(in srgb,var(--gold) 14%,var(--surface));font-size:15px;line-height:1.3}
+.rgroup{margin-top:16px}
+.rgroup h3{margin:0 2px 6px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.rscroll{overflow-x:auto;border-radius:14px}
+.rtable{display:grid;gap:4px;padding:8px;min-width:calc(170px + var(--n) * 46px)}
+.rrow{display:grid;grid-template-columns:34px minmax(0,1fr) repeat(var(--n),38px);gap:8px;align-items:center;padding:4px 8px;border-radius:9px;background:var(--board-cell)}
+.rrow.rhead{background:none;padding-block:0}
+.rhp{display:grid;place-items:center}
+.rhp i{display:block;width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)}
+.ricon img{width:32px;height:32px;display:block;object-fit:contain}
+.rname{color:var(--board-ink);font-weight:700;font-size:14.5px;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.rrow.rtotal{background:rgba(0,0,0,.3)}
+.rrow.rtotal .rname{font:700 19px var(--display)}
+.rtv{text-align:center;font:700 19px var(--body);font-variant-numeric:tabular-nums;color:var(--board-ink);text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.rtv.lead{color:#FFC35C}
+
+/* нижняя панель */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:2px solid var(--line);
+  box-shadow:0 -6px 20px var(--shadow);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+.dock-in{max-width:1180px;margin:0 auto;display:flex;gap:8px;overflow-x:auto}
+.tot{flex:1 0 auto;min-width:126px;display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 12px;border-radius:10px;
+  background:var(--surface-2);color:var(--ink);text-decoration:none}
+.tot span{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.tot b{margin-left:auto;font:700 24px/1 var(--display);font-variant-numeric:tabular-nums}
+.tot.lead{box-shadow:inset 0 0 0 1.5px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+
+/* диалоги */
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,calc(100% - 20px));max-height:calc(100% - 40px);
+  background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(10,16,24,.65)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--line)}
+.dlg-h h2{margin:0;font:700 22px var(--display)}
+.dlg-b{padding:4px 16px 12px;overflow:auto;max-height:66vh}
+.dlg-b.pad{padding:12px 16px}
+.pedit{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pedit input{width:100%;min-width:0;font:700 18px var(--body);padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface-2)}
+.swatches{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sw{width:32px;height:32px;border-radius:50%;padding:0;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.sw[aria-checked="true"]{box-shadow:0 0 0 2.5px var(--ink)}
+.swatches .linkbtn{margin-left:auto}
+.dlg-f{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 16px;border-top:1.5px solid var(--line)}
+
+.export{margin-top:18px;padding-top:14px;border-top:1.5px solid var(--line)}
+.export h3{margin:0 2px 8px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.export-btns{display:flex;flex-wrap:wrap;gap:8px}
+.export-btns .btn{flex:1 1 auto}
+#exportImg{display:block;width:100%;height:auto;border-radius:10px;background:var(--surface-2)}
+.opt{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-weight:700;cursor:pointer;line-height:1.3}
+.opt input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--accent)}
+.sheet{margin:0;padding:12px;border-radius:10px;background:var(--surface-2);border:1.5px solid var(--line);
+  font:400 15px/1.5 ui-monospace,"Cascadia Mono",Consolas,"PT Sans",monospace;white-space:pre-wrap;overflow-x:auto;max-height:46vh}
+.saymsg{margin:10px 2px 0;font-size:14px;color:var(--muted);min-height:1.2em}
+.warn{margin:0 0 12px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);font-size:14px;line-height:1.35}
+
+/* ---------- история партий ---------- */
+.hisnote{font-size:13.5px;color:var(--muted);align-self:center;flex:1 1 auto;line-height:1.3}
+.hgame{border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:9px;background:var(--surface-2)}
+.hhead{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+.hhead time{font-size:13px;color:var(--muted);flex:1 1 auto}
+.hhead .linkbtn{flex:none;padding:0;font-size:13px}
+.hrow{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:15.5px}
+.hrow i{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
+.hrow span{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow b{font-variant-numeric:tabular-nums;font-size:17px}
+.hrow.win{font-weight:700}
+.hrow.win span::after{content:" 🏆";font-size:13px}
+.hempty{margin:0;color:var(--muted);line-height:1.4}
+
+footer{max-width:1180px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:14px}
+footer p{margin:0 0 6px;max-width:78ch}
+.theme{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 12px}
+.theme > span{font-weight:700}
+.theme .seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.theme .seg button{height:40px;padding:0 14px;border:0;background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer}
+.theme .seg button + button{border-left:1.5px solid var(--line)}
+.theme .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.home{flex:none;align-self:center;display:grid;place-items:center;width:30px;height:40px;margin:0 -4px 0 -8px;border-radius:9px;color:var(--muted);text-decoration:none}
+.home:active{background:var(--surface-2)}
+@media (max-width:400px){.home + img{display:none}}
+</style>
+</head>
+<body>
+<script>
+/* Тема: «авто» следует за системой. Samsung Internet (и «авто-тёмная тема» Chrome) в тёмном
+   режиме не сообщают prefers-color-scheme, а сами перекрашивают светлую страницу — выходит
+   грязно-коричневая каша. Ловим это и включаем свою тёмную тему; с color-scheme:dark
+   браузер такую страницу уже не трогает. Выбор можно задать вручную внизу страницы. */
+(() => {
+  let pref = 'auto';
+  try { pref = localStorage.getItem('gwt2-theme') || 'auto'; } catch (e) {}
+  const forcedDark = () => {
+    try {
+      const el = document.createElement('div');
+      el.style.cssText = 'display:none;background-color:canvas;color-scheme:light';
+      document.body.appendChild(el);
+      const bg = getComputedStyle(el).backgroundColor;
+      el.remove();
+      return bg !== 'rgb(255, 255, 255)';
+    } catch (e) { return false; }
+  };
+  window.applyTheme = p => {
+    const root = document.documentElement;
+    if (p === 'light' || p === 'dark') root.dataset.theme = p;
+    else if (forcedDark()) root.dataset.theme = 'dark';
+    else delete root.dataset.theme;
+  };
+  applyTheme(pref);
+})();
+</script>
+
+<header class="top">
+  <div class="top-row">
+    <div class="brand"><a class="home" href="../../#score" aria-label="Все игры" title="Все игры"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <img src="img/icon.png" alt="" width="40" height="40">
+      <div><h1>Великий Западный Путь</h1><small>Счётный лист · 2-е издание</small></div>
+    </div>
+    <button type="button" class="btn ghost" id="openPlayers">Игроки</button>
+  </div>
+  <nav class="secnav" id="secnav" aria-label="Разделы подсчёта"></nav>
+</header>
+
+<main class="layout">
+  <div id="cats"></div>
+  <section class="results" id="results" aria-labelledby="resTitle">
+    <h2 id="resTitle">Итоги партии</h2>
+    <div id="tiebreak"></div>
+    <div class="podium" id="podium"></div>
+    <div id="rgroups"></div>
+    <div class="export">
+      <h3>Выгрузить результаты</h3>
+      <div class="export-btns">
+        <button type="button" class="btn" id="expTxt">Текст</button>
+        <button type="button" class="btn ghost" id="expImg">Картинка</button>
+        <button type="button" class="btn ghost" id="expJson">JSON</button>
+      </div>
+    </div>
+    <div class="export">
+      <h3>Архив</h3>
+      <div class="export-btns">
+        <button type="button" class="btn ghost" id="openHistory">История партий</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="theme"><span id="themeLbl">Тема</span>
+    <div class="seg" role="group" aria-labelledby="themeLbl" id="themeSeg">
+      <button type="button" data-theme-set="auto">Авто</button>
+      <button type="button" data-theme-set="light">Светлая</button>
+      <button type="button" data-theme-set="dark">Тёмная</button>
+    </div></div>
+  <p>Правила подсчёта и иллюстрации — из правил «Великого Западного Пути», второе издание. Очки и имена игроков сохраняются только в вашем браузере и никуда не отправляются.</p>
+</footer>
+
+<nav class="dock" aria-label="Текущий счёт"><div class="dock-in" id="dock"></div></nav>
+
+<dialog id="playersDlg" aria-labelledby="dlgTitle">
+  <div class="dlg-h"><h2 id="dlgTitle">Игроки</h2><button type="button" class="btn ghost" data-close>Готово</button></div>
+  <div class="dlg-b" id="dlgBody"></div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="addPlayer">+ Добавить игрока</button>
+    <button type="button" class="btn danger" id="resetScores">Новая партия</button>
+  </div>
+</dialog>
+
+<dialog id="textDlg" aria-labelledby="txtTitle">
+  <div class="dlg-h"><h2 id="txtTitle">Текст итогов</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <label class="opt"><input type="checkbox" id="txtCounts"> Показывать, из чего сложилось: $63 → 12, 14−4 и т. п.</label>
+    <pre class="sheet" id="txtSheet"></pre>
+    <p class="saymsg" id="txtSay"></p>
+  </div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="txtFile">Скачать .txt</button>
+    <button type="button" class="btn" id="txtCopy">Копировать</button>
+  </div>
+</dialog>
+
+<dialog id="historyDlg" aria-labelledby="hisTitle">
+  <div class="dlg-h"><h2 id="hisTitle">История партий</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad" id="historyBody"></div>
+  <div class="dlg-f">
+    <span class="hisnote" id="hisNote"></span>
+    <button type="button" class="btn danger" id="clearHistory">Очистить историю</button>
+  </div>
+</dialog>
+
+<dialog id="exportDlg" aria-labelledby="expTitle">
+  <div class="dlg-h"><h2 id="expTitle">Картинка итогов</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <p class="warn" id="imgWarn" hidden></p>
+    <label class="opt"><input type="checkbox" id="expDetails"> Показывать, из чего сложились очки</label>
+    <img id="exportImg" alt="Итоги партии">
+  </div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="shareImg" hidden>Поделиться</button>
+    <button type="button" class="btn" id="saveImg">Скачать PNG</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+const STORE = 'gwt2-scorer-v1';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const plural = (n, f) => { const a = Math.abs(n) % 100, b = a % 10; return a > 10 && a < 20 ? f[2] : b > 1 && b < 5 ? f[1] : b === 1 ? f[0] : f[2]; };
+const ochk = n => plural(n, ['очко', 'очка', 'очков']);
+
+/* щит победных очков — как на жетонах и в блокноте игры */
+const SHIELD_D = 'M5 6.5C13 3.8 31 3.8 39 6.5L38 24C37 35.5 30 42.5 22 47 14 42.5 7 35.5 6 24Z';
+const SHIELD_IN = 'M9.4 9.6C16 7.7 28 7.7 34.6 9.6L33.8 24C33 33 28 38.6 22 42.2 16 38.6 11 33 10.2 24Z';
+const SHIELD = `<svg viewBox="0 0 44 50" aria-hidden="true">
+  <path d="${SHIELD_D}" fill="#E8861F" stroke="#5E300C" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="${SHIELD_IN}" fill="#F29A2E" stroke="#FBCB76" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M9.4 9.6C16 7.7 28 7.7 34.6 9.6L34.3 15C27.6 13.4 16.4 13.4 9.7 15Z" fill="#FFC062" opacity=".55"/></svg>`;
+const vpCls = n => n == null ? ' empty' : n < 0 ? ' neg' : '';
+const vp = (n, cls = '') => `<span class="vp${vpCls(n)}${cls}">${SHIELD}<b>${n == null ? '—' : n}</b></span>`;
+
+const COLORS = {
+  /* [фишка, название, текст на фишке, имя на светлом фоне, имя на тёмном фоне] */
+  red:   ['#BE3A2B', 'Красный', '#FFFFFF', '#A93124', '#F0937F'],
+  blue:  ['#2C6CB5', 'Синий',   '#FFFFFF', '#255C9C', '#8FBAF2'],
+  white: ['#F3F0E8', 'Белый',   '#2A2010', '#5E5A52', '#F4F1EA'],
+  yellow:['#DFAE1E', 'Жёлтый',  '#2A2010', '#7E6108', '#EFC84C']
+};
+const dot = p => `<i class="pdot" style="background:${COLORS[p.color][0]}"></i>`;
+const pnStyle = p => `--pn-l:${COLORS[p.color][3]};--pn-d:${COLORS[p.color][4]}`;
+const pn = p => `<span class="pn" style="${pnStyle(p)}">${esc(p.name || 'Без имени')}</span>`;
+const img = (n, a = '', cls = '') => `<img src="img/${n}" alt="${esc(a)}"${cls ? ` class="${cls}"` : ''} loading="lazy">`;
+const png = (n, a, cls) => img(n + '.png', a, cls);
+
+/* ---------- жетоны начальника станции: индивидуальные задачи (правила, стр. 18) ---------- */
+const MASTERS = [
+  {id:'workers',    name:'Рабочие',     rule:'<b>1 ПО</b> за каждого рабочего на планшете, включая нарисованных на самом планшете',
+   ins:[['c_workers', 'рабочих на планшете', 30]], f:c => c.c_workers || 0,
+   show:c => `${c.c_workers || 0} × 1`},
+  {id:'objectives', name:'Цели',        rule:'<b>3 ПО</b> за каждые 2 карточки в зоне персональных целей — выполненные или нет',
+   ins:[['c_objectives', 'карточек целей', 30]], f:c => Math.floor((c.c_objectives || 0) / 2) * 3,
+   show:c => `⌊${c.c_objectives || 0} / 2⌋ × 3`},
+  {id:'hazards',    name:'Опасности',   rule:'<b>3 ПО</b> за каждые 2 жетона опасности перед вами, любого типа',
+   ins:[['c_hazards', 'жетонов опасности', 18]], f:c => Math.floor((c.c_hazards || 0) / 2) * 3,
+   show:c => `⌊${c.c_hazards || 0} / 2⌋ × 3`},
+  {id:'bandits',    name:'Бандиты',     rule:'<b>3 ПО</b> за каждую пару: 1 зелёный + 1 оранжевый жетон бандитов',
+   ins:[['c_bg', 'зелёных бандитов', 11], ['c_bo', 'оранжевых бандитов', 11]],
+   f:c => Math.min(c.c_bg || 0, c.c_bo || 0) * 3, show:c => `${Math.min(c.c_bg || 0, c.c_bo || 0)} ${plural(Math.min(c.c_bg || 0, c.c_bo || 0), ['пара', 'пары', 'пар'])} × 3`},
+  {id:'certs',      name:'Сертификаты', rule:'<b>3 ПО</b> за каждые 2 сертификата — временные и постоянные вместе',
+   ins:[['c_certs', 'сертификатов', 20]], f:c => Math.floor((c.c_certs || 0) / 2) * 3,
+   show:c => `⌊${c.c_certs || 0} / 2⌋ × 3`},
+  {id:'stations',   name:'Станции',     rule:'<b>3 ПО</b> за каждые 2 станции, на которых лежат ваши диски',
+   ins:[['c_stations', 'станций с вашим диском', 14]], f:c => Math.floor((c.c_stations || 0) / 2) * 3,
+   show:c => `⌊${c.c_stations || 0} / 2⌋ × 3`},
+  {id:'buildings',  name:'Постройки',   rule:'<b>2 ПО</b> за каждый ваш жетон частной постройки на поле',
+   ins:[['c_buildings', 'частных построек', 12]], f:c => (c.c_buildings || 0) * 2,
+   show:c => `${c.c_buildings || 0} × 2`}
+];
+const MASTER = Object.fromEntries(MASTERS.map(m => [m.id, m]));
+
+/* ---------- 11 пунктов блокнота (правила, стр. 18) ---------- */
+const CATS = [
+  {id:'money', n:1, kind:'money', name:'Деньги', short:'Деньги', ico:'money', max:999,
+   rule:'1 ПО за каждые неизрасходованные $5 — наберите сумму',
+   hint:() => ({art:png('money', '5 долларов : 1 очко', 'icon'),
+     text:['Пересчитайте свои деньги. <b>Каждые полные $5 — 1 победное очко</b>, остаток меньше $5 очков не даёт.',
+           'Денег к концу партии бывает много, поэтому просто нажмите на поле и наберите сумму — очки сайт посчитает сам.'],
+     eq:[{ico:'money', n:'$63', cap:'денег'}], eqRes:'63 ÷ 5 → 12 ПО'})},
+  {id:'buildings', n:2, kind:'unit', name:'Частные постройки', short:'Постройки', ico:'building', max:99,
+   rule:'Сумма очков на ваших жетонах частных построек на поле',
+   hint:() => ({art:img('ex-building.jpg', 'Жетоны частных построек с очками') + '<figcaption>Очки — в оранжевом щите на жетоне постройки</figcaption>',
+     text:['Сложите числа в щитах на <b>каждом вашем жетоне частной постройки</b>, выставленном на игровое поле.'],
+     eq:[{ico:'building', n:1, cap:'постройка'}, {op:'+'}, {ico:'building', n:3, cap:'постройка'}, {op:'+'}, {ico:'building', n:5, cap:'постройка'}],
+     eqRes:'9 ПО'})},
+  {id:'cities', n:3, kind:'pm', name:'Города', short:'Города', ico:'city', max:99,
+   rule:'Очки, открытые дисками на городах, минус штрафы',
+   hint:() => ({art:img('ex-city.jpg', 'Клетки городов с дисками игрока') + '<figcaption>Значения под городами и между соседними городами</figcaption>',
+     text:['Получите столько очков, сколько вы <b>открыли своими дисками на городах</b>: число под клеткой города, а число между двумя городами — только если ваши диски лежат на <b>обоих</b> соседних городах.',
+           'Отрицательные значения (например, −6 за каждый ваш диск в Канзас-Сити) впишите во второе поле — они вычитаются, итог может быть и отрицательным. Подробнее — стр. 10–11 правил.'],
+     ex:'Пример из правил: Маша открыла 6 ПО за Филадельфию и 4 ПО между Филадельфией и Питсбургом. Диска в Толидо у неё нет, поэтому ещё 8 ПО она не получает.',
+     eq:[{ico:'city', n:6, cap:'Филадельфия'}, {op:'+'}, {ico:'city', n:4, cap:'между городами'}], eqRes:'10 ПО'})},
+  {id:'stations', n:4, kind:'unit', name:'Ж/д станции', short:'Станции', ico:'station', max:99,
+   rule:'Сумма очков у станций, на которых лежит ваш диск',
+   hint:() => ({art:img('ex-station.jpg', 'Ж/д станции с дисками игрока') + '<figcaption>Число в щите рядом со станцией</figcaption>',
+     text:['Сложите числа, указанные рядом с <b>каждой ж/д станцией</b>, на которой лежит ваш диск.'],
+     eq:[{ico:'station', n:2, cap:'станция'}, {op:'+'}, {ico:'station', n:3, cap:'станция'}], eqRes:'5 ПО'})},
+  {id:'hazards', n:5, kind:'unit', name:'Опасности', short:'Опасности', ico:'hazard', max:72,
+   rule:'Сумма очков на жетонах опасности перед вами',
+   hint:() => ({art:img('ex-hazard.jpg', 'Жетоны опасности: наводнение, камнепад, засуха') + '<figcaption>На каждом жетоне 2, 3 или 4 ПО</figcaption>',
+     text:['Сложите очки, изображённые на <b>жетонах опасности</b>, лежащих перед вами: наводнения, засухи и камнепады.',
+           'Жетоны бандитов сами очков не дают — они нужны только для задачи начальника станции.'],
+     eq:[{ico:'hazard', n:2, cap:'наводнение'}, {op:'+'}, {ico:'hazard', n:3, cap:'камнепад'}, {op:'+'}, {ico:'hazard', n:2, cap:'засуха'}], eqRes:'7 ПО'})},
+  {id:'cattle', n:6, kind:'unit', name:'Карточки скота', short:'Скот', ico:'cattle', max:99,
+   rule:'Сумма очков на карточках скота во всей колоде',
+   hint:() => ({art:img('ex-cattle.jpg', 'Карточки скота с победными очками') + '<figcaption>Очки — в щите внизу карточки</figcaption>',
+     text:['Соберите <b>всю колоду</b>: стопку карточек, руку и сброс. Найдите все карточки скота с победными очками и сложите их.'],
+     eq:[{ico:'cattle', n:2, cap:'карточка'}, {op:'+'}, {ico:'cattle', n:3, cap:'карточка'}, {op:'+'}, {ico:'cattle', n:3, cap:'карточка'}, {op:'+'}, {ico:'cattle', n:7, cap:'карточка'}], eqRes:'15 ПО'})},
+  {id:'objectives', n:7, kind:'pm', name:'Карточки целей', short:'Цели', ico:'objective', max:99,
+   rule:'Выполненные цели плюс, невыполненные минус',
+   hint:() => ({art:img('ex-objective.jpg', 'Карточки целей') + '<figcaption>Слева — очки за выполнение, справа — штраф</figcaption>',
+     text:['Найдите в колоде оставшиеся карточки целей. Для каждой решите: убрать её из игры или положить в зону персональных целей. Карточки, которые уже лежат в зоне целей, считаются обязательно.',
+           'Каждую карточку проверяйте отдельно — одна задача засчитывается только одной карточке. <b>Выполненные</b>: сложите их очки в первое поле. <b>Невыполненные</b>: штраф из серого щита — во второе. У стартовых целей штрафа нет.'],
+     ex:'Пример из правил: Маша выполнила 4 карточки — 3 + 5 + 5 + 5 = 18 ПО. Не хватило бы одного диска в Нью-Йорке — было бы 3 + 5 − 3 + 5 = 10 ПО.',
+     eq:[{ico:'objective', n:18, cap:'выполнены'}, {op:'−'}, {ico:'objective', n:3, cap:'штраф'}], eqRes:'15 ПО'})},
+  {id:'master', n:8, kind:'master', name:'Начальник станции', short:'Начальник станции', ico:'master',
+   rule:'Индивидуальные задачи с ваших жетонов начальника станции',
+   hint:() => ({art:png('master', 'Жетон начальника станции', 'icon'),
+     text:['Отметьте жетоны начальника станции, которые лежат перед вами, и введите то, что просит задача на нижней части жетона. Очки сайт посчитает сам.',
+           'Эти задачи <b>полностью независимы</b> от задач на карточках целей: одна и та же постройка или опасность может работать и там, и там.']})},
+  {id:'w56', n:9, kind:'unit', per:4, name:'Рабочие на 5–6-й клетке', short:'Рабочие 5–6', ico:'worker', max:6,
+   rule:'4 ПО за каждого рабочего на 5-й и 6-й клетке ряда',
+   hint:() => ({art:img('ex-workers.jpg', 'Ряды рабочих на планшете') + '<figcaption>Пятая и шестая клетки ряда</figcaption>',
+     text:['Посчитайте рабочих, стоящих на <b>пятой и шестой клетках</b> каждого ряда рабочих вашего планшета — ковбоев, строителей и инженеров. Каждый приносит <b>4 ПО</b>.'],
+     eq:[{ico:'worker', n:2, cap:'рабочих'}, {op:'×'}, {ico:'worker', n:4, cap:'ПО'}], eqRes:'8 ПО'})},
+  {id:'disc', n:10, kind:'flag', pts:3, name:'Диск с клетки планшета', short:'Диск с планшета', ico:'disc',
+   rule:'3 ПО, если вы сняли диск с этой клетки планшета',
+   hint:() => ({art:img('ex-disc.jpg', 'Клетка планшета со щитом 3'),
+     text:['На планшете игрока есть клетка диска со щитом <b>3</b> — правая из пары клеток, увеличивающих лимит шагов пастуха. Если вы сняли с неё диск, получите <b>3 ПО</b>.',
+           'Левая клетка этой пары даёт не очки, а $3 сразу, когда вы снимаете с неё диск.']})},
+  {id:'market', n:11, kind:'owner', pts:2, name:'Жетон рынка труда', short:'Рынок труда', ico:'market',
+   rule:'2 ПО тому, перед кем лежит жетон рынка труда',
+   hint:() => ({art:img('ex-market.jpg', 'Рынок труда и его жетон') + '<figcaption>Жетон съезжает по зелёной стрелке — и игра заканчивается</figcaption>',
+     text:['Жетон рынка труда забирает игрок, который выложил рабочего на последнюю клетку рынка труда и тем запустил конец игры. Этот игрок получает <b>2 ПО</b>.',
+           'После этого у остальных игроков есть ещё по одному ходу.']})}
+];
+const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+const GROUPS = [
+  {id:'board', title:'Поле',    nav:'Поле',    cats:['money', 'buildings', 'cities', 'stations', 'hazards']},
+  {id:'deck',  title:'Колода',  nav:'Колода',  cats:['cattle', 'objectives']},
+  {id:'player', title:'Планшет и жетоны', nav:'Планшет', cats:['master', 'w56', 'disc', 'market']}
+];
+
+const CELL = {
+  money:'$5 = 1 ПО', buildings:'числа на постройках', cities:'плюс и минус', stations:'числа у станций', hazards:'2, 3 или 4 за жетон',
+  cattle:'вся колода', objectives:'+ выполненные, − невыполненные',
+  master:'задачи жетонов', w56:'4 ПО за рабочего', disc:'3 ПО', market:'2 ПО'
+};
+function boardHTML(g) {
+  if (g.id === 'player') return `<div class="board masters" role="group" aria-label="Задачи жетонов начальника станции">${MASTERS.map(m =>
+    `<div class="bcell">${png('m-' + m.id, m.name)}<small>${m.name}</small></div>`).join('')}</div>`;
+  return `<div class="board cells" role="group" aria-label="Что считается в разделе «${g.title}»">${g.cats.map(id => { const c = CAT[id];
+    return `<div class="bcell"><span class="bico">${png(c.ico, c.name, c.id === 'money' ? 'wide' : '')}</span><small>${c.n}. ${c.short}</small><em>${CELL[id]}</em></div>`; }).join('')}</div>`;
+}
+
+/* ---------- состояние ---------- */
+const uid = () => 'p' + Math.random().toString(36).slice(2, 9);
+const COUNT_KEYS = ['c_workers', 'c_objectives', 'c_hazards', 'c_bg', 'c_bo', 'c_certs', 'c_stations', 'c_buildings'];
+const blank = () => Object.assign({money:null, buildings:null, cities:null, cities_m:null, stations:null, hazards:null,
+  cattle:null, objectives:null, objectives_m:null, w56:null, disc:false, mt:[]},
+  Object.fromEntries(COUNT_KEYS.map(k => [k, null])));
+const mkPlayer = (name, color) => ({id:uid(), name, color, v:blank()});
+/* market — id игрока, у которого жетон рынка труда */
+const freshState = () => ({players:[mkPlayer('Игрок 1', 'red'), mkPlayer('Игрок 2', 'blue')], market:null});
+
+/* Имена и цвета игроков дублируются в куки на 400 дней (больше браузеры не разрешают),
+   очки текущей партии хранятся в localStorage. */
+const COOKIE = 'gwt2_players', COOKIE_DAYS = 400;
+function readPlayersCookie() {
+  try {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + COOKIE + '=([^;]*)'));
+    if (!m) return null;
+    const list = JSON.parse(decodeURIComponent(m[1]));
+    if (!Array.isArray(list)) return null;
+    const ok = list.filter(x => x && typeof x.n === 'string').slice(0, 4);
+    return ok.length ? ok : null;
+  } catch (e) { return null; }
+}
+function writePlayersCookie() {
+  try {
+    const data = encodeURIComponent(JSON.stringify(state.players.map(p => ({n:p.name, c:p.color}))));
+    const path = location.pathname.replace(/[^/]*$/, '') || '/';
+    document.cookie = `${COOKIE}=${data}; max-age=${COOKIE_DAYS * 86400}; path=${path}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+  } catch (e) {}
+}
+
+let state;
+try {
+  const raw = JSON.parse(localStorage.getItem(STORE));
+  if (raw && Array.isArray(raw.players) && raw.players.length) {
+    raw.players.forEach(p => {
+      p.id = p.id || uid(); p.v = Object.assign(blank(), p.v); if (!COLORS[p.color]) p.color = 'blue';
+      if (!Array.isArray(p.v.mt)) p.v.mt = [];
+      p.v.mt = p.v.mt.filter(id => MASTER[id]);
+    });
+    state = {players:raw.players, market:raw.market || null};
+  }
+} catch (e) {}
+if (!state) {
+  const saved = readPlayersCookie();
+  state = saved ? {players:saved.map(x => mkPlayer(x.n, COLORS[x.c] ? x.c : 'blue')), market:null} : freshState();
+}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} writePlayersCookie(); };
+writePlayersCookie(); /* продлеваем срок куки при каждом заходе */
+const byId = id => state.players.find(p => p.id === id);
+
+const masterPts = (v, id) => MASTER[id].f(v);
+function points(p, c) {
+  const v = p.v;
+  switch (c.kind) {
+    case 'money':  return v.money == null ? null : Math.floor(v.money / 5);
+    case 'unit':   return v[c.id] == null ? null : v[c.id] * (c.per || 1);
+    case 'pm':     return v[c.id] == null && v[c.id + '_m'] == null ? null : (v[c.id] || 0) - (v[c.id + '_m'] || 0);
+    case 'master': return v.mt.length ? v.mt.reduce((s, id) => s + masterPts(v, id), 0) : null;
+    case 'flag':   return v.disc ? c.pts : null;
+    case 'owner':  return state.market === p.id ? c.pts : null;
+  }
+  return null;
+}
+const total = p => CATS.reduce((s, c) => s + (points(p, c) || 0), 0);
+
+/* ---------- отрисовка ---------- */
+const catsEl = $('#cats'), dock = $('#dock'), secnav = $('#secnav'), podium = $('#podium'), rgroups = $('#rgroups'), tieEl = $('#tiebreak');
+const openHints = new Set();
+
+const stepper = (key, pid, val, min, max, label, size) =>
+  `<div class="stepper${size ? ' ' + size : ''}"><button type="button" data-step="-1" aria-label="${esc(label)}: меньше">−</button>` +
+  `<input type="number" inputmode="numeric" pattern="[0-9]*" placeholder="—" enterkeyhint="done" data-key="${key}" data-pid="${pid}" value="${val ?? ''}" min="${min}" max="${max}" aria-label="${esc(label)}">` +
+  `<button type="button" data-step="1" aria-label="${esc(label)}: больше">+</button></div>`;
+
+function hintHTML(c) {
+  const h = c.hint(), open = openHints.has(c.id);
+  const eq = h.eq ? `<div class="eq">${h.eq.map(e => e.op
+      ? `<span class="op">${e.op}</span>`
+      : `<figure class="eq-item"><span class="eq-ico">${png(e.ico)}<b>${e.n}</b></span><figcaption>${e.cap}</figcaption></figure>`).join('')}
+    ${h.eqRes ? `<span class="eq-res">= ${h.eqRes}</span>` : ''}</div>` : '';
+  return `<div class="hint" id="hint-${c.id}"${open ? '' : ' hidden'}>
+    <figure class="hint-art" style="margin:0">${h.art || ''}</figure>
+    <div class="hint-text">${h.text.map(t => `<p>${t}</p>`).join('')}${h.ex ? `<p class="ex">${h.ex}</p>` : ''}${eq}</div></div>`;
+}
+
+function masterRows(p) {
+  const v = p.v;
+  if (!v.mt.length) return `<p class="mempty">Отметьте жетоны, которые лежат перед игроком. Нет жетонов — пропустите.</p>`;
+  return `<div class="mrows">${MASTERS.filter(m => v.mt.includes(m.id)).map(m => `<div class="mrow">
+      ${png('m-' + m.id, m.name)}
+      <span class="mtxt">${m.rule}</span>
+      <div class="mins">${m.ins.map(([key, label, max]) =>
+        `<label class="mini"><span>${label}</span>${stepper(key, p.id, v[key], 0, max, label + ': ' + p.name, 'sm')}</label>`).join('')}
+        <span class="calc" data-mcalc="${m.id}" data-pid="${p.id}"></span></div>
+    </div>`).join('')}</div>`;
+}
+
+function catHTML(c) {
+  const open = openHints.has(c.id), ps = state.players;
+  const head = `<header class="cat-h">
+      <div class="ico">${png(c.ico, c.name)}<span class="num">${c.n}</span></div>
+      <div><h3>${c.name}<span class="donemark" data-done="${c.id}" hidden title="Посчитано у всех">✓</span></h3><span class="rule">${c.rule}</span></div>
+      <button type="button" class="hint-btn" aria-expanded="${open}" aria-controls="hint-${c.id}">${open ? 'Скрыть' : 'Как считать'}</button>
+    </header>`;
+  const name = p => `<span class="pname">${dot(p)}${pn(p)}</span>`;
+  const pts = p => `<output class="vp" data-pts="${c.id}" data-pid="${p.id}">${SHIELD}<b>—</b></output>`;
+  let body;
+  if (c.kind === 'money') {
+    body = `<ul class="plist">${ps.map(p => `<li class="prow wide">${name(p)}${pts(p)}
+      <div class="rctrl"><label class="mini"><span>долларов</span>${stepper('money', p.id, p.v.money, 0, c.max, 'Деньги: ' + p.name, 'lg')}</label>
+        <span class="calc" data-calc="${c.id}" data-pid="${p.id}"></span></div></li>`).join('')}</ul>`;
+  } else if (c.kind === 'pm') {
+    const [plusL, minusL] = c.id === 'cities' ? ['открыто', '− штрафы'] : ['выполнены', '− штрафы'];
+    body = `<ul class="plist">${ps.map(p => `<li class="prow wide">${name(p)}${pts(p)}
+      <div class="rctrl start">
+        <label class="mini"><span>${plusL}</span>${stepper(c.id, p.id, p.v[c.id], 0, c.max, c.name + ', ' + plusL + ': ' + p.name, 'sm')}</label>
+        <label class="mini"><span>${minusL}</span>${stepper(c.id + '_m', p.id, p.v[c.id + '_m'], 0, c.max, c.name + ', ' + minusL + ': ' + p.name, 'sm')}</label>
+      </div></li>`).join('')}</ul>`;
+  } else if (c.kind === 'master') {
+    body = `<ul class="plist">${ps.map(p => `<li class="prow wide">${name(p)}${pts(p)}
+      <div class="rctrl start"><div class="mtiles" role="group" aria-label="Жетоны начальника станции: ${esc(p.name)}">${MASTERS.map(m =>
+        `<button type="button" class="mtile" data-mt="${m.id}" data-pid="${p.id}" aria-pressed="${p.v.mt.includes(m.id)}" title="${m.name}">${png('m-' + m.id, m.name)}</button>`).join('')}</div></div>
+      ${masterRows(p)}</li>`).join('')}</ul>`;
+  } else if (c.kind === 'flag') {
+    body = `<ul class="plist">${ps.map(p => `<li class="prow">${name(p)}
+      <button type="button" class="toggle" data-flag="${p.id}" aria-pressed="${!!p.v.disc}">${png('disc')}<span>${p.v.disc ? 'Снят' : 'Не снят'}</span></button>${pts(p)}</li>`).join('')}</ul>`;
+  } else if (c.kind === 'owner') {
+    body = `<div class="owners" role="group" aria-label="У кого жетон рынка труда">${ps.map(p =>
+        `<button type="button" class="owner" data-owner="${p.id}" aria-pressed="${state.market === p.id}" style="--pc:${COLORS[p.color][0]};--pc-ink:${COLORS[p.color][2]}">${dot(p)}${pn(p)}</button>`).join('')}
+      <button type="button" class="owner none" data-owner="" aria-pressed="${!state.market}">Ни у кого</button></div>`;
+  } else {
+    body = `<ul class="plist">${ps.map(p => `<li class="prow">${name(p)}${stepper(c.id, p.id, p.v[c.id], 0, c.max, c.name + ': ' + p.name)}${pts(p)}</li>`).join('')}</ul>`;
+  }
+  return `<article class="cat" id="cat-${c.id}">${head}${hintHTML(c)}${body}</article>`;
+}
+
+function renderAll() {
+  catsEl.innerHTML = GROUPS.map(g => `<section class="group" id="g-${g.id}" aria-labelledby="gh-${g.id}">
+    <h2 id="gh-${g.id}">${g.title}</h2>${boardHTML(g)}
+    <div class="cats">${g.cats.map(id => catHTML(CAT[id])).join('')}</div></section>`).join('');
+  secnav.innerHTML = GROUPS.map((g, i) => `<a href="#g-${g.id}" data-nav="g-${g.id}" aria-current="${i === 0}">${g.nav}</a>`).join('')
+    + '<a href="#results" data-nav="results" aria-current="false">Итоги</a>';
+  update(); spy();
+}
+
+function isDone(c) {
+  const ps = state.players;
+  if (c.kind === 'master' || c.kind === 'flag') return false; /* «нет» тут — нормальный ответ, отмечать нечего */
+  if (c.kind === 'owner') return state.market != null;
+  return ps.every(p => p.v[c.id] != null);
+}
+
+function update() {
+  const ps = state.players;
+  ps.forEach(p => CATS.forEach(c => {
+    const el = catsEl.querySelector(`[data-pts="${c.id}"][data-pid="${p.id}"]`); if (!el) return;
+    const n = points(p, c);
+    el.querySelector('b').textContent = n == null ? '—' : n;
+    el.classList.toggle('empty', n == null);
+    el.classList.toggle('neg', n != null && n < 0);
+  }));
+  ps.forEach(p => {
+    const m = catsEl.querySelector(`[data-calc="money"][data-pid="${p.id}"]`);
+    if (m) m.textContent = p.v.money == null ? '' : `÷ 5 → ${Math.floor(p.v.money / 5)}` + (p.v.money % 5 ? ` (остаток $${p.v.money % 5})` : '');
+    MASTERS.forEach(mm => {
+      const el = catsEl.querySelector(`[data-mcalc="${mm.id}"][data-pid="${p.id}"]`);
+      if (el) el.textContent = `${mm.show(p.v)} = ${masterPts(p.v, mm.id)} ПО`;
+    });
+  });
+  CATS.forEach(c => {
+    const dm = catsEl.querySelector(`[data-done="${c.id}"]`); if (dm) dm.hidden = !isDone(c);
+  });
+  const st = standing();
+  renderDock(st); renderResults(st);
+}
+
+/* По правилам при равенстве очков объявляется ничья — победителей несколько. */
+function standing() {
+  const ps = state.players, totals = ps.map(total), max = Math.max(...totals);
+  const live = ps.length > 1 && totals.some(t => t !== 0);
+  const winners = live ? ps.map((p, i) => i).filter(i => totals[i] === max) : [];
+  return {totals, max, winners, tied:winners.length > 1, isLead:i => winners.includes(i)};
+}
+
+function renderDock(st) {
+  dock.innerHTML = state.players.map((p, i) =>
+    `<a class="tot${st.isLead(i) ? ' lead' : ''}" href="#results">${dot(p)}${pn(p)}<b>${st.totals[i]}</b></a>`).join('');
+}
+
+function renderResults(st) {
+  const ps = state.players, {totals, isLead} = st;
+  tieEl.innerHTML = st.tied ? `<div class="tie"><b>Ничья:</b> ${st.max} ${ochk(st.max)} у ${st.winners.length} игроков. По правилам при равенстве очков победителей несколько.</div>` : '';
+  podium.innerHTML = ps.map((p, i) => `<div class="ptot${isLead(i) ? ' lead' : ''}">
+    <i class="pmeeple" style="background:${COLORS[p.color][0]}"></i>
+    <span class="ptname">${pn(p)}${isLead(i) ? '<em>лидер</em>' : ''}</span><b>${totals[i]}</b></div>`).join('');
+  rgroups.innerHTML = GROUPS.map(g => `<div class="rgroup"><h3>${g.title}</h3><div class="rscroll">
+    <div class="board rtable" style="--n:${ps.length}" role="table" aria-label="${g.title}">
+      <div class="rrow rhead" role="row"><span role="columnheader"><span class="sr">Значок</span></span>
+        <span role="columnheader"><span class="sr">Категория</span></span>
+        ${ps.map(p => `<span class="rhp" role="columnheader" title="${esc(p.name)}"><i style="background:${COLORS[p.color][0]}"></i><span class="sr">${esc(p.name)}</span></span>`).join('')}</div>
+      ${g.cats.map(id => { const c = CAT[id];
+        return `<div class="rrow" role="row"><span class="ricon" role="cell">${png(c.ico)}</span>
+          <span class="rname" role="rowheader">${c.short}</span>
+          ${ps.map(p => `<span role="cell">${vp(points(p, c), ' sm')}</span>`).join('')}</div>`; }).join('')}
+    </div></div></div>`).join('')
+    + `<div class="rgroup"><div class="rscroll"><div class="board rtable" style="--n:${ps.length}" role="table" aria-label="Итого">
+      <div class="rrow rtotal" role="row"><span class="ricon" role="cell">${vp('Σ', ' sm')}</span>
+        <span class="rname" role="rowheader">Итого</span>
+        ${ps.map((p, i) => `<span class="rtv${isLead(i) ? ' lead' : ''}" role="cell">${totals[i]}</span>`).join('')}</div>
+    </div></div></div>`;
+}
+
+let observer;
+function spy() {
+  if (!('IntersectionObserver' in window)) return;
+  if (observer) observer.disconnect();
+  const set = id => secnav.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', String(a.dataset.nav === id)));
+  observer = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) set(e.target.id); }), {rootMargin:'-35% 0px -60% 0px'});
+  /* на широком экране итоги «прилипли» сбоку и видны всегда — следим только за разделами */
+  const sel = matchMedia('(min-width:1000px)').matches ? '.group' : '.group, #results';
+  document.querySelectorAll(sel).forEach(s => observer.observe(s));
+}
+
+/* ---------- ввод ---------- */
+const clamp = (n, inp) => Math.min(+inp.max, Math.max(+inp.min, n));
+const changed = () => { save(); update(); };
+
+/* перерисовать одну карточку, не теряя прокрутку (нужно, когда меняется набор полей) */
+function rerenderCat(id, focusSel) {
+  const el = document.getElementById('cat-' + id); if (!el) return;
+  el.outerHTML = catHTML(CAT[id]);
+  update();
+  if (focusSel) { const f = document.querySelector(focusSel); if (f) f.focus({preventScroll:true}); }
+}
+
+catsEl.addEventListener('click', e => {
+  const step = e.target.closest('[data-step]');
+  if (step) {
+    const inp = step.parentElement.querySelector('input'), d = +step.dataset.step;
+    const now = inp.value === '' ? null : parseInt(inp.value, 10);
+    const n = clamp(now == null || isNaN(now) ? (d > 0 ? 1 : 0) : now + d, inp);
+    inp.value = n; byId(inp.dataset.pid).v[inp.dataset.key] = n; changed(); return;
+  }
+  const hb = e.target.closest('.hint-btn');
+  if (hb) {
+    const id = hb.getAttribute('aria-controls'), h = document.getElementById(id), open = h.hidden;
+    h.hidden = !open; hb.setAttribute('aria-expanded', String(open)); hb.textContent = open ? 'Скрыть' : 'Как считать';
+    const cid = id.slice(5); if (open) openHints.add(cid); else openHints.delete(cid);
+    return;
+  }
+  const mt = e.target.closest('[data-mt]');
+  if (mt) {
+    const v = byId(mt.dataset.pid).v, id = mt.dataset.mt;
+    v.mt = v.mt.includes(id) ? v.mt.filter(x => x !== id) : MASTERS.map(m => m.id).filter(x => x === id || v.mt.includes(x));
+    save(); rerenderCat('master', `[data-mt="${id}"][data-pid="${mt.dataset.pid}"]`); return;
+  }
+  const fl = e.target.closest('[data-flag]');
+  if (fl) {
+    const p = byId(fl.dataset.flag); p.v.disc = !p.v.disc;
+    fl.setAttribute('aria-pressed', String(p.v.disc)); fl.querySelector('span').textContent = p.v.disc ? 'Снят' : 'Не снят';
+    changed(); return;
+  }
+  const ow = e.target.closest('[data-owner]');
+  if (ow) {
+    const id = ow.dataset.owner || null;
+    state.market = state.market === id ? null : id;
+    catsEl.querySelectorAll('[data-owner]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.owner || null) === state.market)));
+    changed();
+  }
+});
+catsEl.addEventListener('input', e => {
+  const inp = e.target.closest('[data-key]'); if (!inp) return;
+  const p = byId(inp.dataset.pid);
+  if (inp.value === '') { p.v[inp.dataset.key] = null; changed(); return; }
+  const n = parseInt(inp.value, 10); if (isNaN(n)) return;
+  p.v[inp.dataset.key] = clamp(n, inp); changed();
+});
+catsEl.addEventListener('change', e => {
+  const inp = e.target.closest('[data-key]');
+  if (inp) inp.value = byId(inp.dataset.pid).v[inp.dataset.key] ?? '';
+});
+catsEl.addEventListener('focusin', e => { if (e.target.matches('[data-key]')) e.target.select(); });
+
+/* ---------- игроки ---------- */
+const dlg = $('#playersDlg'), dlgBody = $('#dlgBody');
+const openDlg = d => d.showModal ? d.showModal() : d.setAttribute('open', '');
+const closeDlg = d => d.close ? d.close() : d.removeAttribute('open');
+function renderDialog() {
+  dlgBody.innerHTML = state.players.map(p => `<div class="pedit">
+    <input class="pn" style="${pnStyle(p)}" value="${esc(p.name)}" maxlength="24" data-name="${p.id}" aria-label="Имя игрока" enterkeyhint="done">
+    <div class="swatches" role="radiogroup" aria-label="Цвет: ${esc(p.name)}">
+      ${Object.entries(COLORS).map(([k, [hex, label]]) =>
+        `<button type="button" class="sw" role="radio" aria-checked="${p.color === k}" aria-label="${label}" data-color="${k}" data-pid="${p.id}" style="background:${hex}"></button>`).join('')}
+      ${state.players.length > 1 ? `<button type="button" class="linkbtn" data-remove="${p.id}">удалить</button>` : ''}
+    </div></div>`).join('');
+  $('#addPlayer').hidden = state.players.length >= 4;
+}
+$('#openPlayers').addEventListener('click', () => { renderDialog(); openDlg(dlg); });
+dlg.addEventListener('click', e => {
+  if (e.target === dlg || e.target.closest('[data-close]')) { closeDlg(dlg); return; }
+  const sw = e.target.closest('[data-color]');
+  if (sw) { byId(sw.dataset.pid).color = sw.dataset.color; save(); renderDialog(); renderAll(); return; }
+  const rm = e.target.closest('[data-remove]');
+  if (rm) {
+    const p = byId(rm.dataset.remove);
+    if (!confirm(`Удалить игрока «${p.name}»?`)) return;
+    state.players = state.players.filter(q => q !== p);
+    if (state.market === p.id) state.market = null;
+    save(); renderDialog(); renderAll();
+  }
+});
+dlgBody.addEventListener('input', e => {
+  const inp = e.target.closest('[data-name]'); if (!inp) return;
+  byId(inp.dataset.name).name = inp.value; save(); renderAll();
+});
+$('#addPlayer').addEventListener('click', () => {
+  const used = state.players.map(p => p.color);
+  state.players.push(mkPlayer('Игрок ' + (state.players.length + 1), Object.keys(COLORS).find(k => !used.includes(k)) || 'blue'));
+  save(); renderDialog(); renderAll();
+});
+$('#resetScores').addEventListener('click', () => {
+  if (!confirm('Начать новую партию? Счёт уедет в «Историю партий», лист очистится, игроки останутся.')) return;
+  const kept = archiveGame();      /* законченная партия уезжает в архив */
+  state.players.forEach(p => { p.v = blank(); });
+  state.market = null;
+  save(); renderAll(); closeDlg(dlg); window.scrollTo({top:0});
+  if (kept) setTimeout(() => alert('Партия сохранена в «Историю партий».'), 60);
+});
+
+/* ---------- история партий ---------- */
+const HISTORY = 'gwt2-history', HIST_MAX = 60;
+const readHistory = () => { try { const h = JSON.parse(localStorage.getItem(HISTORY)); return Array.isArray(h) ? h : []; } catch (e) { return []; } };
+const writeHistory = h => { try { localStorage.setItem(HISTORY, JSON.stringify(h.slice(0, HIST_MAX))); } catch (e) {} };
+
+/* Партия попадает в архив в момент «Новой партии» — это и есть её конец. */
+function archiveGame() {
+  const st = standing();
+  if (!st.totals.some(t => t !== 0)) return false;
+  const h = readHistory();
+  h.unshift({
+    at: new Date().toISOString(),
+    players: order(st).map(i => ({
+      name: state.players[i].name || 'Без имени', color: state.players[i].color, total: st.totals[i], win: st.isLead(i)
+    }))
+  });
+  writeHistory(h);
+  return true;
+}
+
+const historyDlg = $('#historyDlg'), historyBody = $('#historyBody'), hisNote = $('#hisNote');
+function renderHistory() {
+  const h = readHistory();
+  $('#clearHistory').hidden = !h.length;
+  if (!h.length) {
+    hisNote.textContent = '';
+    historyBody.innerHTML = `<p class="hempty">Пока пусто. Партия попадёт сюда, когда вы нажмёте «Новая партия» — счёт сохранится, а лист очистится.</p>`;
+    return;
+  }
+  /* Показываем весь зачёт, а не только лидера: при равенстве побед
+     «чаще всех побеждает X» выбирал бы одного из равных наугад. */
+  const wins = {};
+  h.forEach(g => g.players.forEach(p => { if (p.win) wins[p.name] = (wins[p.name] || 0) + 1; }));
+  const table = Object.entries(wins).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'));
+  hisNote.textContent = `${h.length} ${plural(h.length, ['партия', 'партии', 'партий'])}`
+    + (table.length ? ' · победы: ' + table.map(([n, w]) => `${n} ${w}`).join(', ') : '');
+  historyBody.innerHTML = h.map((g, k) => `<div class="hgame">
+    <div class="hhead"><time datetime="${esc(g.at)}">${dateRu(new Date(g.at))}</time>
+      <button type="button" class="linkbtn" data-del="${k}">удалить</button></div>
+    ${g.players.map(p => `<div class="hrow${p.win ? ' win' : ''}">
+      <i style="background:${(COLORS[p.color] || COLORS.blue)[0]}"></i>
+      <span>${esc(p.name)}</span><b>${p.total}</b></div>`).join('')}
+  </div>`).join('');
+}
+$('#openHistory').addEventListener('click', () => { renderHistory(); openDlg(historyDlg); });
+historyDlg.addEventListener('click', e => {
+  if (e.target === historyDlg || e.target.closest('[data-close]')) { closeDlg(historyDlg); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); }
+});
+$('#clearHistory').addEventListener('click', () => {
+  if (!confirm('Удалить все сохранённые партии? Это не отменить.')) return;
+  writeHistory([]); renderHistory();
+});
+
+/* ---------- выгрузка результатов ---------- */
+const pad2 = x => String(x).padStart(2, '0');
+const stamp = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+const dateRu = d => d.toLocaleString('ru-RU', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+const placeOf = (totals, i) => 1 + totals.filter(t => t > totals[i]).length;
+const order = st => state.players.map((p, i) => i).sort((a, b) => st.totals[b] - st.totals[a]);
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+
+/* из чего сложились очки категории — для текста и картинки */
+function detail(p, c) {
+  const v = p.v;
+  if (c.kind === 'money') return v.money == null ? '' : `$${v.money}`;
+  if (c.kind === 'pm') return v[c.id + '_m'] ? `${v[c.id] || 0}−${v[c.id + '_m']}` : '';
+  if (c.id === 'w56') return v.w56 ? `${v.w56}×4` : '';
+  if (c.kind === 'master') return v.mt.map(id => `${MASTER[id].name.toLowerCase()} ${masterPts(v, id)}`).join(', ');
+  return '';
+}
+
+/* текст в том же виде, в каком его пишут на листочке */
+function resultText(counts) {
+  const ps = state.players, st = standing();
+  return order(st).map(i => {
+    const p = ps[i], L = [p.name || 'Без имени'];
+    CATS.forEach(c => {
+      const n = points(p, c); if (!n) return;
+      const d = counts ? detail(p, c) : '';
+      L.push(`${c.short} ${d ? d + ' ' : ''}${n}`);
+    });
+    L.push(String(st.totals[i]));
+    return L.join('\n');
+  }).join('\n\n') + '\n';
+}
+
+function resultData(now) {
+  const ps = state.players, st = standing(), totals = st.totals;
+  return {
+    game:'Великий Западный Путь (2-е издание)',
+    exportedAt:now.toISOString(),
+    exportedAtLocal:dateRu(now),
+    tie:st.tied,
+    players:order(st).map(i => {
+      const p = ps[i], v = p.v;
+      return {
+        name:p.name, color:COLORS[p.color][1], place:placeOf(totals, i), winner:st.isLead(i), total:totals[i],
+        money:{dollars:v.money || 0, points:points(p, CAT.money) || 0},
+        buildings:points(p, CAT.buildings) || 0,
+        cities:{unlocked:v.cities || 0, penalties:v.cities_m || 0, points:points(p, CAT.cities) || 0},
+        stations:points(p, CAT.stations) || 0,
+        hazards:points(p, CAT.hazards) || 0,
+        cattle:points(p, CAT.cattle) || 0,
+        objectives:{completed:v.objectives || 0, penalties:v.objectives_m || 0, points:points(p, CAT.objectives) || 0},
+        stationMaster:{tiles:v.mt.map(id => ({task:MASTER[id].name, points:masterPts(v, id)})), points:points(p, CAT.master) || 0},
+        workers56:{count:v.w56 || 0, points:points(p, CAT.w56) || 0},
+        discBonus:points(p, CAT.disc) || 0,
+        jobMarketToken:points(p, CAT.market) || 0
+      };
+    })
+  };
+}
+
+/* --- текстовый диалог --- */
+const textDlg = $('#textDlg'), txtSheet = $('#txtSheet'), txtCounts = $('#txtCounts'), txtSay = $('#txtSay');
+const COUNTS_KEY = 'gwt2-text-counts';
+try { txtCounts.checked = localStorage.getItem(COUNTS_KEY) === '1'; } catch (e) {}
+const paintText = () => { txtSheet.textContent = resultText(txtCounts.checked); };
+$('#expTxt').addEventListener('click', () => { paintText(); txtSay.textContent = ''; openDlg(textDlg); });
+txtCounts.addEventListener('change', () => {
+  try { localStorage.setItem(COUNTS_KEY, txtCounts.checked ? '1' : '0'); } catch (e) {}
+  paintText();
+});
+$('#txtCopy').addEventListener('click', async () => {
+  const text = resultText(txtCounts.checked);
+  try {
+    if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+    else {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    txtSay.textContent = 'Скопировано — вставляйте куда нужно.';
+  } catch (e) { txtSay.textContent = 'Скопировать не вышло: выделите текст выше вручную.'; }
+});
+$('#txtFile').addEventListener('click', () => {
+  const now = new Date();
+  download(new Blob(['﻿' + resultText(txtCounts.checked).replace(/\n/g, '\r\n')], {type:'text/plain;charset=utf-8'}), `gwt-${stamp(now)}.txt`);
+});
+$('#expJson').addEventListener('click', () => {
+  const now = new Date();
+  download(new Blob([JSON.stringify(resultData(now), null, 2)], {type:'application/json'}), `gwt-${stamp(now)}.json`);
+});
+textDlg.addEventListener('click', e => { if (e.target === textDlg || e.target.closest('[data-close]')) closeDlg(textDlg); });
+
+/* --- картинка --- */
+const ICONS = {};
+const loadIcon = src => new Promise(res => {
+  if (ICONS[src]) return res(ICONS[src]);
+  const im = new Image();
+  im.onload = () => { ICONS[src] = im; res(im); };
+  im.onerror = () => res(null);
+  im.src = src;
+});
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function fitText(ctx, text, max) {
+  if (ctx.measureText(text).width <= max) return text;
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + '…').width > max) t = t.slice(0, -1);
+  return t + '…';
+}
+/* щит очков — тот же контур, что и в SVG (система координат 44×50) */
+const SHIELD_PATH = new Path2D(SHIELD_D), SHIELD_IN_PATH = new Path2D(SHIELD_IN);
+function drawShield(ctx, cx, cy, w, n) {
+  const k = w / 44, empty = n == null, neg = !empty && n < 0;
+  ctx.save();
+  ctx.translate(cx - w / 2, cy - (w * 50 / 44) / 2); ctx.scale(k, k);
+  ctx.fillStyle = empty ? '#4F5965' : neg ? '#7E7A72' : '#E8861F'; ctx.fill(SHIELD_PATH);
+  ctx.lineWidth = 2.4; ctx.lineJoin = 'round'; ctx.strokeStyle = empty ? '#2A323C' : neg ? '#3E3B37' : '#5E300C'; ctx.stroke(SHIELD_PATH);
+  ctx.fillStyle = empty ? '#58626F' : neg ? '#8C8880' : '#F29A2E'; ctx.fill(SHIELD_IN_PATH);
+  ctx.lineWidth = 1.3; ctx.strokeStyle = empty ? '#6E7884' : neg ? '#B5B0A6' : '#FBCB76'; ctx.stroke(SHIELD_IN_PATH);
+  ctx.restore();
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `700 ${w * .46}px Podkova, Georgia, serif`;
+  ctx.fillStyle = empty ? '#C9CED6' : neg ? '#FFD2C8' : '#FFF8E8';
+  ctx.shadowColor = 'rgba(70,30,0,.85)'; ctx.shadowBlur = 3 * k; ctx.shadowOffsetY = k;
+  ctx.fillText(empty ? '—' : String(n), cx, cy - w * .05);
+  ctx.restore();
+}
+function drawBoard(ctx, x, y, w, h, r) {
+  rrect(ctx, x, y, w, h, r);
+  ctx.save(); ctx.clip();
+  ctx.fillStyle = '#1C2A3C'; ctx.fillRect(x, y, w, h);
+  const g = ctx.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * .2, x + w / 2, y + h / 2, Math.max(w, h) * .75);
+  g.addColorStop(0, 'rgba(120,160,210,.12)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+
+async function buildImage(now, details) {
+  try {
+    await Promise.all(['700 60px Podkova', '700 30px "PT Sans"', '400 30px "PT Sans"']
+      .map(f => document.fonts.load(f, '0123456789АаБбВвЁё—×−$')));
+  } catch (e) {}
+  const icons = {};
+  await Promise.all(CATS.map(async c => { icons[c.ico] = await loadIcon(`img/${c.ico}.png`); }));
+
+  const ps = state.players, n = ps.length, st = standing(), totals = st.totals, ord = order(st);
+  const isLead = st.isLead;
+  const tieNote = st.tied ? `Ничья: ${st.max} ${ochk(st.max)} у ${st.winners.length} игроков — победителей несколько` : '';
+  const W = 1080, P = 46, inner = W - P * 2;
+  const cardsTop = P + (tieNote ? 168 : 136);
+  const perRow = Math.min(n, 2), gap = 16, cardW = (inner - gap * (perRow - 1)) / perRow, cardH = 132, cardRows = Math.ceil(n / perRow);
+  const colW = Math.min(details ? 170 : 132, Math.floor((inner - (details ? 330 : 420)) / n));
+  const rowH = 64, headH = 92, totalH = 92;
+  const tableTop = cardsTop + cardRows * (cardH + gap) + 16;
+  const H = tableTop + headH + CATS.length * rowH + 14 + totalH + 66;
+
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#E6D7B8'; ctx.fillRect(0, 0, W, H);
+  const pg = ctx.createLinearGradient(0, 0, 0, H);
+  pg.addColorStop(0, 'rgba(255,248,230,.55)'); pg.addColorStop(1, 'rgba(150,115,60,.18)');
+  ctx.fillStyle = pg; ctx.fillRect(0, 0, W, H);
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#1C2A3C'; ctx.font = '700 54px Podkova, Georgia, serif'; ctx.fillText('Великий Западный Путь', P, P + 52);
+  ctx.fillStyle = '#6B604E'; ctx.font = '400 27px "PT Sans", sans-serif';
+  ctx.fillText('Итоги партии · ' + dateRu(now), P, P + 96);
+  if (tieNote) {
+    ctx.fillStyle = '#A85A0C'; ctx.font = '700 23px "PT Sans", sans-serif';
+    ctx.fillText(tieNote, P, P + 134);
+  }
+
+  ord.forEach((i, k) => {
+    const p = ps[i], x = P + (k % perRow) * (cardW + gap), y = cardsTop + Math.floor(k / perRow) * (cardH + gap);
+    const win = isLead(i);
+    drawBoard(ctx, x, y, cardW, cardH, 16);
+    if (win) { ctx.lineWidth = 4; ctx.strokeStyle = '#F0A143'; rrect(ctx, x + 2, y + 2, cardW - 4, cardH - 4, 15); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(x + 44, y + cardH / 2, 26, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS[p.color][0]; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke();
+    const tx = x + 84, tw = cardW - 84 - 16;
+    ctx.textAlign = 'left';
+    ctx.font = '400 19px "PT Sans", sans-serif'; ctx.fillStyle = win ? '#F8C779' : 'rgba(246,236,214,.8)';
+    ctx.fillText(`${placeOf(totals, i)} место${win ? ' · победа' : ''}`, tx, y + 34);
+    ctx.font = '700 28px "PT Sans", sans-serif'; ctx.fillStyle = '#F6ECD6';
+    ctx.fillText(fitText(ctx, p.name || 'Без имени', tw), tx, y + 70);
+    ctx.font = '700 44px Podkova, Georgia, serif'; ctx.fillStyle = win ? '#FFC35C' : '#F6ECD6';
+    ctx.fillText(String(totals[i]), tx, y + 116);
+    const numW = ctx.measureText(String(totals[i])).width;
+    ctx.font = '400 22px "PT Sans", sans-serif'; ctx.fillStyle = 'rgba(246,236,214,.8)';
+    ctx.fillText(ochk(totals[i]), tx + numW + 9, y + 116);
+  });
+
+  const colX = i => W - P - 10 - (n - i) * colW + colW / 2;
+  let y = tableTop;
+  drawBoard(ctx, P, y, inner, headH - 14, 13);
+  ps.forEach((p, i) => {
+    ctx.beginPath(); ctx.arc(colX(i), y + 26, 15, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS[p.color][0]; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.font = '700 22px "PT Sans", sans-serif'; ctx.fillStyle = '#F6ECD6';
+    ctx.fillText(fitText(ctx, p.name || '—', colW - 8), colX(i), y + 68);
+  });
+  y += headH;
+  CATS.forEach(c => {
+    const h = rowH - 8, cy = y + h / 2;
+    drawBoard(ctx, P, y, inner, h, 11);
+    const ic = icons[c.ico];
+    if (ic) { const s = Math.min(44 / ic.width, 44 / ic.height); ctx.drawImage(ic, P + 34 - ic.width * s / 2, cy - ic.height * s / 2, ic.width * s, ic.height * s); }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '700 24px "PT Sans", sans-serif'; ctx.fillStyle = '#F6ECD6';
+    ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1;
+    ctx.fillText(fitText(ctx, `${c.n}. ${c.short}`, colX(0) - colW / 2 - (P + 68) - 8), P + 68, cy + 1);
+    ctx.shadowColor = 'transparent';
+    ps.forEach((p, i) => {
+      const px = details ? colX(i) + colW / 2 - 30 : colX(i);
+      drawShield(ctx, px, cy, 40, points(p, c));
+      if (!details) return;
+      let txt = detail(p, c); if (!txt) return;
+      if (c.kind === 'master') txt = p.v.mt.length + ' ' + plural(p.v.mt.length, ['жетон', 'жетона', 'жетонов']);
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.font = '700 19px "PT Sans", sans-serif'; ctx.fillStyle = '#F6ECD6';
+      ctx.shadowColor = 'rgba(0,0,0,.7)'; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1;
+      ctx.fillText(fitText(ctx, txt, colW - 64), px - 26, cy + 1);
+      ctx.shadowColor = 'transparent';
+    });
+    y += rowH;
+  });
+  y += 14;
+  const th = totalH - 10, ty = y + th / 2;
+  drawBoard(ctx, P, y, inner, th, 13);
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#F6ECD6'; ctx.font = '700 36px Podkova, Georgia, serif';
+  ctx.fillText('Итого', P + 20, ty);
+  ps.forEach((p, i) => {
+    ctx.textAlign = 'center'; ctx.font = '700 42px Podkova, Georgia, serif';
+    ctx.fillStyle = isLead(i) ? '#FFC35C' : '#F6ECD6';
+    ctx.fillText(String(totals[i]), colX(i), ty + 2);
+  });
+
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  ctx.font = '400 19px "PT Sans", sans-serif'; ctx.fillStyle = 'rgba(60,50,35,.75)';
+  ctx.fillText('Великий Западный Путь · счётный лист', P, H - 28);
+  if (/^https?:$/.test(location.protocol)) {
+    ctx.textAlign = 'right';
+    ctx.fillText(location.host + location.pathname.replace(/index\.html$/, ''), W - P, H - 28);
+  }
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('браузер не смог сохранить картинку')), 'image/png'));
+}
+
+const exportDlg = $('#exportDlg'), exportImg = $('#exportImg'), imgWarn = $('#imgWarn'), expDetails = $('#expDetails');
+const DETAILS_KEY = 'gwt2-export-details';
+let exportFile = null;
+try { expDetails.checked = localStorage.getItem(DETAILS_KEY) === '1'; } catch (e) {}
+async function renderExport() {
+  const now = new Date(), blob = await buildImage(now, expDetails.checked);
+  exportFile = new File([blob], `gwt-${stamp(now)}.png`, {type:'image/png'});
+  if (exportImg.src.startsWith('blob:')) URL.revokeObjectURL(exportImg.src);
+  exportImg.src = URL.createObjectURL(blob);
+  imgWarn.hidden = true;
+  $('#shareImg').hidden = !(navigator.canShare && navigator.canShare({files:[exportFile]}));
+}
+const exportFailed = err => {
+  exportFile = null; exportImg.removeAttribute('src'); $('#shareImg').hidden = true;
+  imgWarn.hidden = false;
+  imgWarn.textContent = location.protocol === 'file:'
+    ? 'Картинка не рисуется, когда страница открыта с диска: браузер запрещает холсту читать локальные файлы. На GitHub Pages всё заработает — а пока выгрузите текстом.'
+    : 'Не получилось нарисовать картинку: ' + err.message + '. Попробуйте выгрузить текстом.';
+};
+$('#expImg').addEventListener('click', async e => {
+  const btn = e.currentTarget, label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Рисую…';
+  openDlg(exportDlg);
+  try { await renderExport(); } catch (err) { exportFailed(err); }
+  btn.disabled = false; btn.textContent = label;
+});
+expDetails.addEventListener('change', async () => {
+  try { localStorage.setItem(DETAILS_KEY, expDetails.checked ? '1' : '0'); } catch (e) {}
+  expDetails.disabled = true;
+  try { await renderExport(); } catch (err) { exportFailed(err); }
+  expDetails.disabled = false;
+});
+$('#saveImg').addEventListener('click', () => { if (exportFile) download(exportFile, exportFile.name); });
+$('#shareImg').addEventListener('click', async () => {
+  try { await navigator.share({files:[exportFile], title:'Великий Западный Путь — итоги партии'}); } catch (e) {}
+});
+exportDlg.addEventListener('click', e => { if (e.target === exportDlg || e.target.closest('[data-close]')) closeDlg(exportDlg); });
+
+/* ---------- тема ---------- */
+const themeSeg = $('#themeSeg'), THEME_KEY = 'gwt2-theme';
+const paintTheme = p => themeSeg.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeSet === p)));
+let themePref = 'auto';
+try { themePref = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) {}
+paintTheme(themePref);
+themeSeg.addEventListener('click', e => {
+  const b = e.target.closest('[data-theme-set]'); if (!b) return;
+  themePref = b.dataset.themeSet;
+  try { localStorage.setItem(THEME_KEY, themePref); } catch (e) {}
+  applyTheme(themePref); paintTheme(themePref);
+});
+
+/* ---------- работа без сети ---------- */
+/* Регистрируем только по http(s): с диска service worker не разрешён. */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('../../sw.js').catch(() => {}));
+}
+
+renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Настольные игры: счёт и правила</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Счётные листы и правила настольных игр: работает на телефоне и без интернета">
+<meta name="theme-color" content="#F1EADB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15130F" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Настолки">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{
+  --ground:#F1EADB; --surface:#FFFAF0; --surface-2:#E9DFCA; --ink:#2A2118; --muted:#74624F;
+  --line:#DDCFB5; --accent:#2B4A3F; --accent-ink:#F6F3E8; --shadow:rgba(60,40,10,.10);
+  --tabs-h:62px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#15130F; --surface:#211D17; --surface-2:#2C261E; --ink:#EFE5D6; --muted:#AD9E88;
+    --line:#3A3127; --accent:#8FC1AB; --accent-ink:#11201A; --shadow:rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:16px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent}
+.wrap{max-width:760px;margin:0 auto;
+  padding:calc(18px + env(safe-area-inset-top)) 16px calc(var(--tabs-h) + env(safe-area-inset-bottom) + 24px)}
+h1{margin:0 0 14px;font-size:26px;line-height:1.15;letter-spacing:-.01em}
+.list{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0;padding:0;list-style:none}
+.card{display:flex;align-items:center;gap:14px;min-height:84px;padding:10px 14px 10px 10px;
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 1px 2px var(--shadow);color:inherit;text-decoration:none}
+.card:active{background:var(--surface-2)}
+.card img{flex:none;width:64px;height:64px;border-radius:13px;object-fit:cover;background:var(--surface-2)}
+.card img.top{object-position:50% 14%}
+.card img.logo{object-fit:contain;background:#5A111C;padding:5px}
+.card b{display:block;font-size:17px;line-height:1.2}
+.card span{display:block;margin-top:3px;color:var(--muted);font-size:13.5px;line-height:1.3}
+.card::after{content:"";flex:none;margin-left:auto;width:9px;height:9px;
+  border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg);opacity:.6}
+.card > div{min-width:0}
+
+.offline{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;color:var(--muted);font-size:13.5px}
+.offline button{font:inherit;font-weight:600;color:var(--accent);background:none;
+  border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.offline button:disabled{opacity:.6;cursor:default}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;justify-content:center;
+  padding-bottom:env(safe-area-inset-bottom);
+  background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line)}
+.tabs button{flex:1;max-width:380px;height:var(--tabs-h);border:0;background:none;color:var(--muted);
+  font:600 12.5px/1 inherit;font-family:inherit;display:grid;place-content:center;justify-items:center;gap:6px;cursor:pointer}
+.tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-selected="true"]{color:var(--accent)}
+.tabs button:focus-visible,.card:focus-visible,.offline button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <section id="panel-score" role="tabpanel" aria-labelledby="tab-score">
+    <h1>Подсчёт очков</h1>
+    <ul class="list">
+      <li><a class="card" href="score/7-wonders-duel/">
+        <img src="score/7-wonders-duel/img/icon-192.png" alt="" width="64" height="64">
+        <div><b>7 чудес: Дуэль</b><span>Счётный лист · 2 игрока</span></div></a></li>
+      <li><a class="card" href="score/agricola/">
+        <img src="score/agricola/icon-192.png" alt="" width="64" height="64">
+        <div><b>Агрикола</b><span>Счётный лист · издание 2016</span></div></a></li>
+      <li><a class="card" href="score/great-western-trail/">
+        <img src="score/great-western-trail/img/icon-192.png" alt="" width="64" height="64">
+        <div><b>Великий Западный Путь</b><span>Счётный лист · 2-е издание</span></div></a></li>
+      <li><a class="card" href="score/star-realms/">
+        <img src="score/star-realms/icons/icon-192.png" alt="" width="64" height="64">
+        <div><b>Звёздные империи</b><span>Счётчик влияния · 2–4 игрока</span></div></a></li>
+      <li><a class="card" href="score/cascadia/">
+        <img src="score/cascadia/img/icon-192.png" alt="" width="64" height="64">
+        <div><b>Каскадия</b><span>Счётный лист · 1–4 игрока</span></div></a></li>
+      <li><a class="card" href="score/orleans/">
+        <img src="score/orleans/img/icon-192.png" alt="" width="64" height="64">
+        <div><b>Орлеан</b><span>Счётный лист</span></div></a></li>
+    </ul>
+  </section>
+
+  <section id="panel-rules" role="tabpanel" aria-labelledby="tab-rules" hidden>
+    <h1>Правила</h1>
+    <ul class="list">
+      <li><a class="card" href="rules/7-wonders-duel.html">
+        <img class="top" src="rules/img/7wd/cover.jpg" alt="" width="64" height="64">
+        <div><b>7 чудес: Дуэль</b><span>2 игрока · 3 эпохи · военная, научная или гражданская победа</span></div></a></li>
+      <li><a class="card" href="rules/castles-of-burgundy.html">
+        <img class="logo" src="rules/img/cob/logo.jpg" alt="" width="64" height="64">
+        <div><b>Замки Бургундии</b><span>1–4 игрока · 5 фаз по 5 раундов · все дополнения</span></div></a></li>
+      <li><a class="card" href="rules/cascadia.html">
+        <img class="top" src="rules/img/csc/cover.jpg" alt="" width="64" height="64">
+        <div><b>Каскадия</b><span>1–4 игрока · мозаика из ареалов и животных · 20 ходов</span></div></a></li>
+    </ul>
+    <div class="offline" id="offline" hidden>
+      <button type="button" id="saveRules">Сохранить для офлайна</button>
+      <span id="saveNote">Картинки из буклетов, около 32 МБ</span>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist" aria-label="Разделы">
+  <button type="button" role="tab" id="tab-score" aria-controls="panel-score" data-tab="score">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
+    Подсчёт очков
+  </button>
+  <button type="button" role="tab" id="tab-rules" aria-controls="panel-rules" data-tab="rules">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-2-1.6-4.6-2-8-2v14c3.4 0 6 .4 8 2 2-1.6 4.6-2 8-2V4c-3.4 0-6 .4-8 2z"/><path d="M12 6v14"/></svg>
+    Правила
+  </button>
+</nav>
+
+<script>
+/* ---------- вкладки ---------- */
+const TAB_KEY = 'boardgames-tab';
+const tabs = [...document.querySelectorAll('.tabs button')];
+function show(name, remember) {
+  if (name !== 'rules') name = 'score';
+  tabs.forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
+  document.getElementById('panel-score').hidden = name !== 'score';
+  document.getElementById('panel-rules').hidden = name !== 'rules';
+  if (remember) {
+    try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
+    history.replaceState(null, '', '#' + name);
+  }
+  scrollTo(0, 0);
+}
+function initial() {
+  const h = location.hash.slice(1);
+  if (h === 'score' || h === 'rules') return h;
+  try { return localStorage.getItem(TAB_KEY); } catch (e) { return null; }
+}
+tabs.forEach(b => b.addEventListener('click', () => show(b.dataset.tab, true)));
+addEventListener('hashchange', () => show(location.hash.slice(1), true));
+/* кнопка «назад» со страницы игры возвращает на ту вкладку, с которой уходили */
+addEventListener('pageshow', () => show(initial(), !!location.hash));
+show(initial(), !!location.hash);
+
+/* ---------- офлайн ---------- */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+/* Счётчики кладутся в кэш сами при установке. Правила — это сотни картинок из буклетов,
+   поэтому их сохраняем по кнопке: читаем страницы правил и складываем всё, на что они ссылаются. */
+const MEDIA = 'bg-media';
+const RULES = ['7-wonders-duel', 'castles-of-burgundy', 'cascadia'];
+const SAVED_KEY = 'boardgames-rules-saved';
+const box = document.getElementById('offline'), btn = document.getElementById('saveRules'), note = document.getElementById('saveNote');
+
+if ('caches' in window && location.protocol.startsWith('http')) {
+  box.hidden = false;
+  let saved = null;
+  try { saved = localStorage.getItem(SAVED_KEY); } catch (e) {}
+  if (saved) { btn.textContent = 'Обновить сохранённое'; note.textContent = 'Правила сохранены для офлайна'; }
+  btn.addEventListener('click', saveRules);
+}
+
+async function saveRules() {
+  btn.disabled = true;
+  try {
+    const cache = await caches.open(MEDIA);
+    const urls = new Set();
+    for (const p of RULES) {
+      const page = `rules/${p}.html`;
+      const res = await fetch(page, {cache: 'no-cache'});
+      if (!res.ok) throw new Error(page);
+      const html = await res.clone().text();
+      await cache.put(page, res);
+      for (const m of html.matchAll(/(?:src|href|data-zoom)="((?:img|assets)\/[^"#]+)"/g)) urls.add('rules/' + m[1]);
+    }
+    const list = [...urls];
+    let done = 0, failed = 0;
+    const worker = async () => {
+      while (list.length) {
+        const u = list.pop();
+        try {
+          if (!(await cache.match(u))) {
+            const r = await fetch(u);
+            if (!r.ok) throw new Error(u);
+            await cache.put(u, r);
+          }
+        } catch (e) { failed++; }
+        note.textContent = `Сохраняю: ${++done} из ${urls.size}`;
+      }
+    };
+    await Promise.all(Array.from({length: 6}, worker));
+    if (failed) throw new Error('failed ' + failed);
+    try { localStorage.setItem(SAVED_KEY, '1'); } catch (e) {}
+    btn.textContent = 'Обновить сохранённое';
+    note.textContent = 'Готово: правила открываются без интернета';
+  } catch (e) {
+    note.textContent = 'Не получилось сохранить всё. Проверьте интернет и попробуйте ещё раз';
+  }
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>

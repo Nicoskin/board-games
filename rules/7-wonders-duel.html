@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#8a5a12">
+<title>7 Чудес: Дуэль — правила</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏛️%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=13">
+</head>
+<body class="game-7wd">
+<header class="top">
+  <div class="top-row">
+    <a class="icon-btn" href="../#rules" aria-label="Все игры">←</a>
+    <div class="top-title">7 Чудес: Дуэль</div>
+    <button id="toc-btn" class="icon-btn" aria-label="Оглавление">☰ <span>Разделы</span></button>
+  </div>
+  <div class="search-row">
+    <input id="q" type="search" placeholder="Поиск: торговля, сброс, гильдия…" autocomplete="off" enterkeyhint="search">
+    <button id="q-clear" aria-label="Очистить" hidden>✕</button>
+  </div>
+</header>
+<div id="results" hidden></div>
+<nav id="toc" aria-label="Оглавление">
+  <div class="toc-head">Оглавление <button class="icon-btn toc-close" aria-label="Закрыть">✕</button></div>
+  <ol id="toc-list"></ol>
+</nav>
+<div id="scrim"></div>
+
+<main data-game="7wd">
+  <h1>7 Чудес: Дуэль</h1>
+  <p class="lead">Антуан Боза и Бруно Катала. Игра для двоих. Метка «стр. N» открывает страницу оригинального буклета.</p>
+  <div class="chips">
+    <a href="#quick">Шпаргалка</a>
+    <a href="#turn">Ход игры</a>
+    <a href="#trade">Торговля</a>
+    <a href="#chains">Цепочки</a>
+    <a href="#military">Военное дело</a>
+    <a href="#science">Наука</a>
+    <a href="#end">Подсчёт очков</a>
+    <a href="#wonders">Чудеса</a>
+    <a href="#age-layout">Раскладка эпох</a>
+  </div>
+
+  <!-- ================= ШПАРГАЛКА ================= -->
+  <section id="quick" data-keys="кратко памятка шпаргалка">
+    <h2>Шпаргалка</h2>
+    <div class="cheat">
+      <div>
+        <h4>Ваш ход</h4>
+        <ul>
+          <li>Возьмите <b>доступную</b> карту (её ничто не перекрывает) и сделайте одно из трёх:</li>
+          <li><b>1) Постройте здание</b> — заплатите его стоимость.</li>
+          <li><b>2) Сбросьте карту</b> — получите 2 <img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монета" title="монета"> + 1 <img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монета" title="монета"> за каждую свою <span class="dot yellow"></span>жёлтую карту.</li>
+          <li><img width="72" height="53" class="ic" src="img/7wd/icons/pyramid.png" alt="чудо света" title="чудо света"> <b>3) Постройте чудо</b> — подложите карту под чудо и заплатите стоимость <i>чуда</i>.</li>
+          <li>Затем откройте карты, которые стали доступны.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Ресурсы и торговля</h4>
+        <ul>
+          <li><img width="72" height="71" class="ic" src="img/7wd/icons/wood.png" alt="дерево" title="дерево"><img width="72" height="71" class="ic" src="img/7wd/icons/stone.png" alt="камень" title="камень"><img width="72" height="72" class="ic" src="img/7wd/icons/clay.png" alt="глина" title="глина"> сырьё — <span class="dot brown"></span>коричневые карты; <img width="71" height="72" class="ic" src="img/7wd/icons/glass.png" alt="стекло" title="стекло"><img width="72" height="71" class="ic" src="img/7wd/icons/papyrus.png" alt="папирус" title="папирус"> товары — <span class="dot grey"></span>серые.</li>
+          <li>Ресурсы <b>не тратятся</b> — они есть у вас каждый ход.</li>
+          <li>Не хватает? Купите у банка: <b>цена = 2 <img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монета" title="монета"> + число таких символов на коричневых и серых картах соперника</b>.</li>
+          <li>Жёлтые карты «<img width="72" height="71" class="ic" src="img/7wd/icons/stone.png" alt="ресурс" title="ресурс">1 <img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монета" title="монета">» — этот ресурс всегда стоит 1 монету.</li>
+          <li>Белый символ цепочки на вашей карте → следующее здание цепочки <b>бесплатно</b>.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Мгновенная победа</h4>
+        <ul>
+          <li><img width="69" height="72" class="ic" src="img/7wd/icons/shield.png" alt="щит" title="щит"> Каждый щит — шаг маркера конфликта к сопернику. Дошёл до его столицы — <b>военная победа</b>.</li>
+          <li><img width="60" height="72" class="ic" src="img/7wd/icons/sci-globe.png" alt="армиллярная сфера" title="армиллярная сфера"> <img width="72" height="71" class="ic" src="img/7wd/icons/sci-wheel.png" alt="колесо" title="колесо"> <img width="72" height="58" class="ic" src="img/7wd/icons/sci-sundial.png" alt="солнечные часы" title="солнечные часы"> <img width="71" height="72" class="ic" src="img/7wd/icons/sci-mortar.png" alt="ступка" title="ступка"> <img width="72" height="65" class="ic" src="img/7wd/icons/sci-compass.png" alt="циркуль" title="циркуль"> <img width="66" height="72" class="ic" src="img/7wd/icons/sci-quill.png" alt="перо" title="перо"> <img width="71" height="72" class="ic" src="img/7wd/icons/sci-scales.png" alt="весы" title="весы"></li>
+          <li>Пара одинаковых научных символов → берите жетон прогресса. <b>6 разных</b> символов — <b>научная победа</b>.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Конец эпохи и игры</h4>
+        <ul>
+          <li><img width="72" height="53" class="ic" src="img/7wd/icons/pyramid.png" alt="чудо света" title="чудо света"> За партию строится только <b>7 чудес</b>, восьмое — в коробку.</li>
+          <li><img width="69" height="72" class="ic" src="img/7wd/icons/shield.png" alt="щит" title="щит"> Кто слабее в военном деле, выбирает, кто начнёт следующую эпоху.</li>
+          <li><img width="72" height="68" class="ic" src="img/7wd/icons/laurel.png" alt="победные очки" title="победные очки"> Очки: военный трек (0/2/5/10) + карты + чудеса + жетоны прогресса + 1 очко за каждые 3 <img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монета" title="монета">.</li>
+          <li>Ничья → побеждает тот, у кого больше <img width="72" height="68" class="ic" src="img/7wd/icons/laurel.png" alt="очки" title="очки"> на <span class="dot blue"></span>синих картах.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ОБ ИГРЕ ================= -->
+  <section id="about">
+    <h2>Об игре <a class="src" data-zoom="img/7wd/page-03.jpg" href="img/7wd/page-03.jpg">стр. 2–3</a></h2>
+    <p>Игра для двоих в мире «7 чудес». Она использует основные механики старшей игры, но предлагает новый подход, специально для дуэли.</p>
+
+    <section id="components" data-keys="состав компоненты комплектация">
+      <h3>Состав игры</h3>
+      <figure><img width="1200" height="903" src="img/7wd/components.jpg" alt="Компоненты игры" loading="lazy"><figcaption>Компоненты игры</figcaption></figure>
+      <ul>
+        <li>1 игровое поле</li>
+        <li>23 карты I эпохи, 23 карты II эпохи, 20 карт III эпохи</li>
+        <li>7 карт гильдий</li>
+        <li>12 карт чудес</li>
+        <li>4 военных жетона</li>
+        <li>10 жетонов прогресса</li>
+        <li>1 маркер конфликта</li>
+        <li>31 монета (14 номиналом 1, 10 номиналом 3 и 7 номиналом 6)</li>
+        <li>1 блокнот для подсчёта очков, 1 книга правил, 1 памятка</li>
+      </ul>
+    </section>
+
+    <section id="goal" data-keys="цель игры описание победа три способа">
+      <h3>Описание и цель игры</h3>
+      <p>Каждый игрок — лидер цивилизации, возводящий здания и чудеса света. Всё, что построил игрок, вместе называется его <b>«городом»</b>.</p>
+      <p>Партия длится <b>три эпохи</b>. В каждой используется своя колода (I, потом II, потом III). Каждая карта эпохи — здание. За эпоху каждый игрок сыграет примерно по 10 карт: зарабатывает монеты, усиливает армию, делает научные открытия и обустраивает город.</p>
+      <p>Победить можно тремя способами:</p>
+      <ul>
+        <li><b>военное превосходство</b> — в любой момент, игра сразу заканчивается;</li>
+        <li><b>научное превосходство</b> — в любой момент, игра сразу заканчивается;</li>
+        <li><b>гражданская победа</b> — если к концу III эпохи никто не победил, выигрывает набравший больше победных очков.</li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- ================= ЭЛЕМЕНТЫ ИГРЫ ================= -->
+  <section id="elements">
+    <h2>Элементы игры <a class="src" data-zoom="img/7wd/page-04.jpg" href="img/7wd/page-04.jpg">стр. 4–5</a></h2>
+
+    <section id="el-wonder" data-keys="карта чуда света название стоимость эффект">
+      <h3>Карта чуда света</h3>
+      <p>Большие карты — чудеса света античной эпохи. У каждого есть название, стоимость строительства (слева) и игровой эффект (справа).</p>
+      <figure class="narrow"><img width="584" height="284" src="img/7wd/wonder-card.jpg" alt="Карта чуда света" loading="lazy"><figcaption>Название, стоимость, эффект</figcaption></figure>
+    </section>
+
+    <section id="el-board" data-keys="поле зоны ячейки столица трек">
+      <h3>Поле</h3>
+      <p>Поле отражает военное соперничество двух городов. Оно разделено на <b>зоны (9)</b> и <b>ячейки (19)</b>. Крайние ячейки с каждой стороны — <b>столицы</b> игроков. На поле кладут военные жетоны и жетоны прогресса, доступные в этой партии.</p>
+      <figure><img width="719" height="374" src="img/7wd/board.jpg" alt="Игровое поле" loading="lazy"><figcaption>Жетоны прогресса, военные жетоны, зоны, ячейки, начальная позиция маркера и победные очки за военное преимущество</figcaption></figure>
+    </section>
+
+    <section id="el-tokens" data-keys="военные жетоны жетоны прогресса маркер конфликта монеты">
+      <h3>Жетоны, маркер и монеты</h3>
+      <div class="fig-row">
+        <figure><img width="404" height="105" src="img/7wd/military-tokens.jpg" alt="Военные жетоны" loading="lazy"><figcaption>Военные жетоны</figcaption></figure>
+        <figure><img width="584" height="209" src="img/7wd/progress-tokens.jpg" alt="Жетоны прогресса" loading="lazy"><figcaption>Жетоны прогресса</figcaption></figure>
+      </div>
+      <p><b>Военные жетоны</b> — выгода, которую получает город, закрепивший военное преимущество над соперником.</p>
+      <p><b>Жетоны прогресса</b> — эффекты, которые можно получить, собрав пару одинаковых научных символов.</p>
+      <div class="fig-row">
+        <figure class="tiny"><img width="180" height="180" src="img/7wd/conflict-marker.jpg" alt="Маркер конфликта" loading="lazy"><figcaption>Маркер конфликта</figcaption></figure>
+        <figure class="tiny"><img width="389" height="165" src="img/7wd/coins.jpg" alt="Монеты" loading="lazy"><figcaption>Монеты 6, 3, 1</figcaption></figure>
+      </div>
+      <p><b>Маркер конфликта</b> показывает на поле военное преимущество одного города над другим.</p>
+      <p><b>Монетами</b> оплачивают строительство некоторых зданий и покупку ресурсов через торговлю. Городская казна (накопленные монеты) приносит очки в конце игры.</p>
+    </section>
+
+    <section id="el-cards" data-keys="карты эпох гильдий типы зданий цвета коричневые серые синие зелёные жёлтые красные фиолетовые">
+      <h3>Карты эпох и гильдий</h3>
+      <p>Все карты эпох и гильдий — здания. У них есть название, игровой эффект и стоимость.</p>
+      <figure class="tiny"><img width="404" height="299" src="img/7wd/age-card.jpg" alt="Карта эпохи" loading="lazy"><figcaption>Эффект, стоимость, название</figcaption></figure>
+      <p>7 типов зданий различаются по цвету:</p>
+      <ul style="list-style:none;padding-left:0">
+        <li><span class="dot brown"></span><b>Сырьё</b> (коричневые) — производят ресурсы: <img width="72" height="71" class="ic" src="img/7wd/icons/wood.png" alt="дерево" title="дерево"> дерево, <img width="72" height="71" class="ic" src="img/7wd/icons/stone.png" alt="камень" title="камень"> камень, <img width="72" height="72" class="ic" src="img/7wd/icons/clay.png" alt="глина" title="глина"> глину.</li>
+        <li><span class="dot grey"></span><b>Товары</b> (серые) — производят ресурсы: <img width="71" height="72" class="ic" src="img/7wd/icons/glass.png" alt="стекло" title="стекло"> стекло, <img width="72" height="71" class="ic" src="img/7wd/icons/papyrus.png" alt="папирус" title="папирус"> папирус.</li>
+        <li><span class="dot blue"></span><b>Гражданские здания</b> (синие) — приносят победные очки <img width="72" height="68" class="ic" src="img/7wd/icons/laurel.png" alt="победные очки" title="победные очки">.</li>
+        <li><span class="dot green"></span><b>Научные здания</b> (зелёные) — приносят победные очки <img width="72" height="68" class="ic" src="img/7wd/icons/laurel.png" alt="победные очки" title="победные очки"> и дают научный символ: <img width="60" height="72" class="ic" src="img/7wd/icons/sci-globe.png" alt="армиллярная сфера" title="армиллярная сфера"> <img width="72" height="71" class="ic" src="img/7wd/icons/sci-wheel.png" alt="колесо" title="колесо"> <img width="72" height="58" class="ic" src="img/7wd/icons/sci-sundial.png" alt="солнечные часы" title="солнечные часы"> <img width="71" height="72" class="ic" src="img/7wd/icons/sci-mortar.png" alt="ступка" title="ступка"> <img width="72" height="65" class="ic" src="img/7wd/icons/sci-compass.png" alt="циркуль" title="циркуль"> <img width="66" height="72" class="ic" src="img/7wd/icons/sci-quill.png" alt="перо" title="перо"></li>
+        <li><span class="dot yellow"></span><b>Торговые здания</b> (жёлтые) — дают монеты <img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монеты" title="монеты">, производят ресурсы, меняют правила торговли, иногда приносят очки.</li>
+        <li><span class="dot red"></span><b>Военные здания</b> (красные) — увеличивают военную мощь <img width="69" height="72" class="ic" src="img/7wd/icons/shield.png" alt="щит" title="щит"> (щиты).</li>
+        <li><span class="dot purple"></span><b>Гильдии</b> (фиолетовые) — приносят очки в зависимости от условий.</li>
+      </ul>
+      <figure class="narrow"><img width="689" height="569" src="img/7wd/building-types.jpg" alt="Типы зданий с символами" loading="lazy"><figcaption>Типы зданий с символами</figcaption></figure>
+      <div class="note"><b>Примечание.</b> В колоде III эпохи нет сырья (коричневых) и товаров (серых), зато в неё замешиваются гильдии (фиолетовые).</div>
+    </section>
+
+    <section id="el-cost" data-keys="стоимость карт бесплатно условие бесплатного строительства">
+      <h3>Стоимость карт</h3>
+      <p>Стоимость указана в области под цветной полосой. Если там пусто — здание бесплатное.</p>
+      <figure><img width="689" height="269" src="img/7wd/cost-examples.jpg" alt="Примеры стоимости" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> «Лесоповал» бесплатен, «Каменный карьер» стоит 1 монету, на «Бани» нужен 1 камень, для «Арены» — 1 глина, 1 камень и 1 дерево.</div>
+      <p>Начиная со II эпохи, у некоторых зданий кроме стоимости есть <b>условие бесплатного строительства</b>: если игрок раньше построил здание, указанное символом, строительство бесплатно.</p>
+      <figure class="tiny"><img width="195" height="269" src="img/7wd/chain-cost.jpg" alt="Коневоды" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> «Коневоды» требуют 1 глину и 1 дерево ИЛИ наличия «Конюшен».</div>
+    </section>
+  </section>
+
+  <!-- ================= ПОДГОТОВКА ================= -->
+  <section id="setup" data-keys="подготовка начало раскладка">
+    <h2>Подготовка <a class="src" data-zoom="img/7wd/page-06.jpg" href="img/7wd/page-06.jpg">стр. 6–7</a></h2>
+    <ol>
+      <li>Положите поле сбоку игровой зоны, между игроками.</li>
+      <li>Поставьте маркер конфликта на нейтральную ячейку в середине поля.</li>
+      <li>Положите 4 военных жетона на их места лицом вверх.</li>
+      <li>Перемешайте жетоны прогресса, случайно возьмите 5 и положите на поле лицом вверх. Остальные верните в коробку.</li>
+      <li>Каждый игрок берёт из банка <b>7 монет</b>.</li>
+    </ol>
+    <figure><img width="1153" height="479" src="img/7wd/setup-board.jpg" alt="Подготовка поля" loading="lazy"><figcaption>Подготовка поля</figcaption></figure>
+
+    <section id="wonder-draft" data-keys="выбор чудес драфт первый игрок">
+      <h3>Фаза выбора чудес света</h3>
+      <ol>
+        <li>Определите первого игрока.</li>
+        <li>Перемешайте 12 карт чудес.</li>
+        <li>Положите 4 случайных чуда лицом вверх между игроками.</li>
+        <li>Первый игрок выбирает 1 чудо.</li>
+        <li>Второй игрок выбирает 2 чуда.</li>
+        <li>Первый игрок берёт оставшееся.</li>
+        <li>Положите ещё 4 чуда и повторите, <b>но начинает второй игрок</b>.</li>
+      </ol>
+      <p>В итоге у каждого 4 чуда — положите их колонкой слева в своей игровой зоне.</p>
+      <div class="brief"><b>Первая партия</b>Вместо выбора чудес возьмите готовые наборы.<br>
+        <b style="display:inline;text-transform:none;letter-spacing:0;color:inherit">Первый игрок:</b> Пирамиды, Александрийский маяк, Храм Артемиды, Статуя Зевса.<br>
+        <b style="display:inline;text-transform:none;letter-spacing:0;color:inherit">Второй игрок:</b> Большой цирк, Пирей, Аппиева дорога, Колосс.</div>
+      <figure><img width="1200" height="252" src="img/7wd/first-game-wonders.jpg" alt="Наборы чудес для первой партии" loading="lazy"><figcaption>Наборы для первой партии: слева — первый игрок, справа — второй</figcaption></figure>
+    </section>
+
+    <section id="decks" data-keys="колода на эпоху убрать 3 карты гильдии">
+      <h3>Одна колода на эпоху</h3>
+      <p>Не глядя уберите в коробку <b>по 3 карты из каждой колоды эпохи</b>. Затем случайно возьмите <b>3 карты гильдий</b> и не глядя добавьте их в колоду III эпохи. Остальные гильдии — в коробку.</p>
+      <figure class="narrow"><img width="689" height="839" src="img/7wd/deck-removal.jpg" alt="Подготовка колод" loading="lazy"></figure>
+    </section>
+
+    <section id="age-layout" data-keys="расположение карт структура раскладка пирамида лицом вверх вниз">
+      <h3>Расположение карт в зависимости от эпохи <a class="src" data-zoom="img/7wd/page-20.jpg" href="img/7wd/page-20.jpg">стр. 20</a></h3>
+      <p>В начале каждой эпохи перемешайте её колоду и разложите <b>20 карт</b> по схеме. Белые карты — <b>лицом вверх</b>, закрашенные — <b>лицом вниз</b>. Удобно начинать с места, отмеченного стрелкой.</p>
+      <figure><img width="1300" height="1023" src="img/7wd/age-layout.jpg" alt="Раскладка карт по эпохам" loading="lazy"><figcaption>I эпоха — пирамида, II — перевёрнутая пирамида, III — «башня»</figcaption></figure>
+    </section>
+  </section>
+
+  <!-- ================= ПРАВИЛА СТРОИТЕЛЬСТВА ================= -->
+  <section id="building">
+    <h2>Правила строительства <a class="src" data-zoom="img/7wd/page-08.jpg" href="img/7wd/page-08.jpg">стр. 8–9</a></h2>
+    <p>Для большинства зданий нужны ресурсы. Некоторые здания бесплатны, другие оплачиваются монетами, у некоторых есть условие бесплатного строительства. Для всех чудес света нужны ресурсы.</p>
+
+    <section id="free-build" data-keys="бесплатное строительство">
+      <h3>Бесплатное строительство</h3>
+      <p>У некоторых карт нет стоимости — они строятся бесплатно.</p>
+      <figure class="tiny"><img width="224" height="299" src="img/7wd/free-build.jpg" alt="Бесплатный Лесоповал" loading="lazy"><figcaption>Бесплатный «Лесоповал»</figcaption></figure>
+    </section>
+
+    <section id="resource-cost" data-keys="стоимость в ресурсах производство ресурсы не тратятся">
+      <h3>Стоимость в ресурсах и производство</h3>
+      <p>Чтобы построить здание, нужно <b>произвести</b> нужные ресурсы И/ИЛИ <b>купить</b> их у банка через торговлю.</p>
+      <p>Ресурсы производят коричневые, серые, некоторые жёлтые карты и некоторые чудеса света. Если в городе есть все ресурсы, указанные на здании, его можно построить.</p>
+      <figure class="tiny"><img width="150" height="315" src="img/7wd/production.jpg" alt="Производство города" loading="lazy"><figcaption>Город Антуана: 1 камень, 3 глины, 1 папирус</figcaption></figure>
+      <figure class="bleed"><img width="1217" height="593" src="img/7wd/resource-cost.jpg" alt="Бани, Казармы, Аптека" loading="lazy"><figcaption>Бани, Казармы, Аптека</figcaption></figure>
+      <div class="example"><b>Пример.</b> Антуан производит 1 камень, 3 глины и 1 папирус. Он может построить «Бани» (1 камень) или «Казармы» (1 глина). Но без торговли он не построит «Аптеку» (1 стекло).</div>
+      <div class="warn"><b>Обратите внимание:</b> ресурсы <b>не тратятся</b> при строительстве. Их можно использовать каждый ход всю игру. Обычно производство города никогда не уменьшается.</div>
+    </section>
+
+    <section id="trade" data-keys="торговля покупка ресурсов банк цена стоимость ресурса формула">
+      <h3>Торговля</h3>
+      <p>Если не хватает ресурсов, вы всегда можете купить недостающие у банка. Цена каждого ресурса меняется по ходу игры:</p>
+      <div class="formula">СТОИМОСТЬ = 2 + количество символов этого ресурса на коричневых и серых картах в городе соперника</div>
+      <h4>Уточнения</h4>
+      <ul>
+        <li>Цена считается по ресурсам <b>соперника</b>, но платите вы <b>в банк</b>.</li>
+        <li>Число покупок за ход не ограничено.</li>
+        <li>Ресурсы с <b>жёлтых карт и чудес</b> соперника на цену <b>не влияют</b>.</li>
+        <li>Некоторые торговые здания (жёлтые) устанавливают цену определённых ресурсов в <b>1 монету</b>.</li>
+      </ul>
+      <div class="example"><b>Пример.</b> Бруно производит 2 камня в «Каменоломне».
+        <br>• Если Антуан захочет купить камень, он заплатит по 4 монеты за каждый.
+        <br>• Если Бруно понадобится третий камень, он заплатит 2 монеты — на коричневых картах Антуана камня нет.</div>
+      <figure><img width="674" height="344" src="img/7wd/trade-example-1.jpg" alt="Пример торговли: Укрепления" loading="lazy"><figcaption>Бруно строит «Укрепления»: 5 монет</figcaption></figure>
+      <div class="example"><b>Пример.</b> Бруно строит «Укрепления»: 2 камня, 1 глина, 1 папирус. У него есть 2 камня, нужно купить глину и папирус. У Антуана есть 1 глина и нет папируса, поэтому Бруно платит 5 монет: 3 за глину (2+1) и 2 за папирус (2+0).</div>
+      <figure><img width="674" height="359" src="img/7wd/trade-example-2.jpg" alt="Пример торговли: Акведук" loading="lazy"><figcaption>Антуан строит «Акведук»: 12 монет</figcaption></figure>
+      <div class="example"><b>Пример.</b> Антуан строит «Акведук» (3 камня), камня у него нет. Коричневые карты Бруно производят 2 камня, значит камень стоит 4 (2+2). Антуан платит 12 монет.</div>
+    </section>
+
+    <section id="coin-cost" data-keys="стоимость в монетах">
+      <h3>Стоимость в монетах</h3>
+      <p>Некоторые карты стоят монет — их платят в банк.</p>
+      <figure class="tiny"><img width="374" height="105" src="img/7wd/coin-cost.jpg" alt="Стоимость в монетах" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> «Скрипторий» стоит 2 монеты, «Каменный карьер» — 1 монету.</div>
+    </section>
+
+    <section id="coin-resource-cost" data-keys="стоимость в монетах и ресурсах караван-сарай">
+      <h3>Стоимость в монетах и ресурсах</h3>
+      <p>Заплатите монеты в банк, а ресурсы произведите или купите.</p>
+      <figure class="narrow"><img width="494" height="270" src="img/7wd/coin-resource-cost.jpg" alt="Караван-сарай" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> «Караван-сарай» стоит 2 монеты, 1 стекло и 1 папирус. Бруно платит 7 монет: 2 по стоимости, 3 за стекло (Антуан производит 1) и 2 за папирус (у Антуана его нет).</div>
+    </section>
+
+    <section id="chains" data-keys="цепочки цепочка белый символ бесплатное строительство связь">
+      <h3>Условие бесплатного строительства (цепочки)</h3>
+      <p>На некоторых зданиях есть <b>белый символ цепочки</b>. У зданий II и III эпох под стоимостью может быть такой же белый символ. Если этот символ уже есть в вашем городе, новое здание строится <b>бесплатно</b>.</p>
+      <figure class="tiny"><img width="270" height="360" src="img/7wd/chains.jpg" alt="Цепочки: Бани→Акведук, Частокол→Укрепления" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> Антуан построил «Бани». Во II эпохе он построит «Акведук» бесплатно — символ капли есть на «Банях».
+        <br>Бруно построил «Частокол». В III эпохе он бесплатно построит «Укрепления».</div>
+      <p>Полный список цепочек — в разделе <a href="#card-list">«Список карт»</a>.</p>
+    </section>
+  </section>
+
+  <!-- ================= ХОД ИГРЫ ================= -->
+  <section id="turn">
+    <h2>Ход игры <a class="src" data-zoom="img/7wd/page-10.jpg" href="img/7wd/page-10.jpg">стр. 10–11</a></h2>
+    <p>Игра идёт с I по III эпоху. При военной или научной победе партия сразу заканчивается.</p>
+
+    <section id="structure" data-keys="подготовка структуры эпохи 20 карт">
+      <h3>Подготовка структуры</h3>
+      <p>В начале каждой эпохи перемешайте её колоду и разложите 20 карт по схеме (см. <a href="#age-layout">раскладку</a>). Некоторые карты лежат лицом вверх, другие — вниз.</p>
+      <figure class="narrow"><img width="704" height="255" src="img/7wd/structures.jpg" alt="Структуры эпох" loading="lazy"></figure>
+    </section>
+
+    <section id="turn-desc" data-keys="описание хода доступная карта очередь">
+      <h3>Описание хода</h3>
+      <p>Игроки ходят по очереди. I эпоху начинает первый игрок.</p>
+      <p>В свой ход выберите <b>«доступную»</b> карту в структуре и сыграйте её. Доступна карта, которую <b>не перекрывают</b> (даже частично) другие карты.</p>
+      <figure class="tiny"><img width="299" height="210" src="img/7wd/accessible.jpg" alt="Доступные карты" loading="lazy"><figcaption>Доступны только карты нижнего ряда</figcaption></figure>
+      <div class="example"><b>Пример.</b> «Бани», «Каменный карьер», «Лесоповал» и «Скрипторий» доступны, остальные — нет.</div>
+      <p>Выбранную карту можно сыграть одним из трёх способов:</p>
+      <ol>
+        <li><a href="#act-build">Построить здание</a></li>
+        <li><a href="#act-discard">Сбросить карту, чтобы получить монеты</a></li>
+        <li><a href="#act-wonder">Построить чудо света</a></li>
+      </ol>
+      <p>После этого <b>откройте</b> карты, которые стали доступны (те, что лежали лицом вниз).</p>
+      <div class="note"><b>Примечания:</b>
+        <br>• Некоторые чудеса позволяют походить снова. Новый ход начинается после того, как вы откроете новые доступные карты.
+        <br>• Если эффект «ещё один ход» срабатывает в конце эпохи (структура пуста), он теряется.</div>
+    </section>
+
+    <section id="act-build" data-keys="строительство здания построить">
+      <h3>1. Строительство здания</h3>
+      <p>Оплатите стоимость и положите здание перед собой — теперь оно часть вашего города. Для наглядности группируйте здания по цветам.</p>
+      <figure class="narrow"><img width="524" height="240" src="img/7wd/build.jpg" alt="Город, сгруппированный по цветам" loading="lazy"></figure>
+    </section>
+
+    <section id="act-discard" data-keys="сброс карты за монеты сбросить продать 2 монеты жёлтые">
+      <h3>2. Сброс карты за монеты</h3>
+      <p>Сбросьте карту и возьмите из банка <b>2 монеты + 1 монету за каждую жёлтую карту</b> в вашем городе.</p>
+      <p>Сброшенные карты лежат лицом вниз рядом с полем. Смотреть стопку сброса можно в любой момент.</p>
+      <figure class="narrow"><img width="614" height="300" src="img/7wd/discard.jpg" alt="Сброс карты" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> Бруно сбрасывает «Акведук» и получает 4 монеты, так как у него есть «Таверна» и «Склад глины».</div>
+    </section>
+
+    <section id="act-wonder" data-keys="строительство чуда света подложить карту">
+      <h3>3. Строительство чуда света</h3>
+      <p>Оплатите стоимость <b>чуда</b> (а не карты эпохи) и подложите карту эпохи лицом вниз под карту чуда. Сама карта эпохи ничего не даёт — она лишь показывает, что чудо построено.</p>
+      <figure class="narrow"><img width="509" height="299" src="img/7wd/build-wonder.jpg" alt="Строительство Колосса" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> Антуан берёт доступную карту, чтобы построить «Колосс» (3 глины и 1 стекло). Заплатив за «Колосс», он подкладывает карту справа под чудо и сдвигает маркер конфликта на две ячейки.</div>
+    </section>
+
+    <section id="seven-wonders" data-keys="7 чудес не больше восьмое чудо в коробку">
+      <h3>7 чудес, не больше!</h3>
+      <p>За партию можно построить только <b>7 чудес</b>. Как только построено седьмое, оставшееся восьмое сразу возвращается в коробку.</p>
+      <figure class="narrow"><img width="539" height="419" src="img/7wd/seven-wonders.jpg" alt="Восьмое чудо уходит в коробку" loading="lazy"></figure>
+      <div class="example"><b>Пример.</b> Антуан построил «Колосс». В партии построено 7 чудес (4 у Бруно, 3 у Антуана), и Антуан убирает «Пирамиды» в коробку.</div>
+    </section>
+  </section>
+
+  <!-- ================= КОНЕЦ ЭПОХИ ================= -->
+  <section id="age-end" data-keys="конец эпохи кто начинает следующую эпоху военная мощь">
+    <h2>Конец эпохи <a class="src" data-zoom="img/7wd/page-11.jpg" href="img/7wd/page-11.jpg">стр. 11</a></h2>
+    <p>Эпоха заканчивается, когда сыграны все 20 карт её структуры. Подготовьте структуру следующей эпохи.</p>
+    <p><b>Игрок с меньшей военной мощью выбирает, кто начнёт следующую эпоху.</b> Военная мощь меньше у того, на чьей стороне поля стоит маркер конфликта.</p>
+    <p>Если маркер ровно посередине, следующую эпоху начинает тот, кто <b>ходил последним</b> (сыграл последнюю карту предыдущей эпохи).</p>
+  </section>
+
+  <!-- ================= ВОЕННОЕ ДЕЛО ================= -->
+  <section id="military" data-keys="военное дело щиты маркер конфликта военные жетоны зона">
+    <h2>Военное дело <a class="src" data-zoom="img/7wd/page-12.jpg" href="img/7wd/page-12.jpg">стр. 12</a></h2>
+    <p>Каждый <b>щит</b> на военных зданиях (красных) и чудесах позволяет владельцу сразу сдвинуть маркер конфликта <b>на одну ячейку</b> в сторону столицы соперника. Маркер обычно ходит по треку туда и обратно.</p>
+    <p>Когда маркер <b>входит в зону</b>, отмеченную пунктиром, действующий игрок применяет эффект военного жетона этой зоны и убирает жетон в коробку.</p>
+    <figure><img width="1200" height="574" src="img/7wd/military-science-board.jpg" alt="Военный трек и жетоны прогресса" loading="lazy"></figure>
+    <div class="example"><b>Пример.</b> Антуан строит «Стрельбище» (2 щита) и сдвигает маркер на две ячейки к столице соперника. Маркер входит в новую зону — срабатывает военный жетон: Бруно теряет 2 монеты, жетон уходит в коробку.</div>
+    <div class="item"><img width="142" height="165" src="img/7wd/mil-token.jpg" alt="Военные жетоны" loading="lazy"><div>
+      <h4>Военные жетоны: потеря 2 или 5 монет</h4>
+      <p>Соперник теряет 2 или 5 монет (в банк), жетон — в коробку. Если монет не хватает, соперник теряет все оставшиеся.</p>
+    </div></div>
+    <section id="military-win" data-keys="военное превосходство победа столица">
+      <h3>Военное превосходство</h3>
+      <p>Если маркер конфликта встаёт на ячейку <b>со столицей соперника</b>, вы сразу побеждаете.</p>
+    </section>
+  </section>
+
+  <!-- ================= НАУКА ================= -->
+  <section id="science" data-keys="наука прогресс научные символы пара жетон">
+    <h2>Наука и прогресс <a class="src" data-zoom="img/7wd/page-12.jpg" href="img/7wd/page-12.jpg">стр. 12</a></h2>
+    <p>Существует <b>7 разных научных символов</b>.</p>
+    <figure class="narrow"><img width="689" height="135" src="img/7wd/science-symbols.jpg" alt="7 научных символов" loading="lazy"></figure>
+    <p>Каждый раз, когда у вас появляется <b>пара одинаковых</b> научных символов, вы сразу выбираете один из жетонов прогресса на поле. Он остаётся в вашем городе до конца игры.</p>
+    <div class="note"><b>Уточнение.</b> Научные символы есть на научных зданиях (зелёных) и на жетонах прогресса.</div>
+    <section id="science-win" data-keys="научное превосходство 6 разных символов победа">
+      <h3>Научное превосходство</h3>
+      <p>Собрав <b>6 разных научных символов</b>, вы сразу побеждаете.</p>
+    </section>
+  </section>
+
+  <!-- ================= КОНЕЦ ИГРЫ ================= -->
+  <section id="end" data-keys="конец игры победа подсчёт очков гражданская победа ничья">
+    <h2>Конец игры и победа <a class="src" data-zoom="img/7wd/page-13.jpg" href="img/7wd/page-13.jpg">стр. 13</a></h2>
+    <p>Игра сразу заканчивается при военном или научном превосходстве, а иначе — в конце III эпохи.</p>
+    <section id="civil-win" data-keys="гражданская победа подсчёт победных очков монеты казна">
+      <h3>Гражданская победа</h3>
+      <p>Если до конца III эпохи никто не победил превосходством, выигрывает игрок с наибольшим числом победных очков. Сложите:</p>
+      <ul>
+        <li>очки с <b>военного трека</b> (0, 2, 5 или 10 — по позиции маркера);</li>
+        <li>очки <b>зданий</b> (синие, зелёные, жёлтые и фиолетовые карты);</li>
+        <li>очки <b>чудес</b> света;</li>
+        <li>очки <b>жетонов прогресса</b>;</li>
+        <li><b>казну</b>: каждые полные 3 монеты = 1 очко.</li>
+      </ul>
+      <p>При ничьей побеждает игрок с большим числом очков на <b>гражданских зданиях</b> (синих). Если и тут ничья, игроки делят победу.</p>
+    </section>
+  </section>
+
+  <!-- ================= ЖЕТОНЫ ПРОГРЕССА ================= -->
+  <section id="progress" data-keys="жетоны прогресса описание">
+    <h2>Жетоны прогресса <a class="src" data-zoom="img/7wd/page-14.jpg" href="img/7wd/page-14.jpg">стр. 14</a></h2>
+    <div class="item" id="pt-agriculture"><img width="123" height="135" src="img/7wd/pt-agriculture.jpg" alt="Земледелие" loading="lazy"><div>
+      <h4>Земледелие</h4><p>Сразу возьмите 6 монет из банка. Жетон приносит 4 победных очка.</p></div></div>
+    <div class="item" id="pt-architecture"><img width="123" height="149" src="img/7wd/pt-architecture.jpg" alt="Архитектура" loading="lazy"><div>
+      <h4>Архитектура</h4><p>Новые чудеса света стоят вам на 2 ресурса меньше. При каждом строительстве вы сами выбираете, какие это ресурсы.</p></div></div>
+    <div class="item" id="pt-economy"><img width="123" height="150" src="img/7wd/pt-economy.jpg" alt="Экономика" loading="lazy"><div>
+      <h4>Экономика</h4><p>Вы получаете деньги, которые соперник тратит на покупку ресурсов в торговле.</p>
+      <p class="warn">Только деньги за покупку ресурсов. Монеты из стоимости зданий не учитываются.</p>
+      <p class="note">Если у соперника действуют торговые скидки («Склад камня», «Склад дерева», «Склад глины», «Таможня»), вы получаете столько, сколько он реально заплатил.</p></div></div>
+    <div class="item" id="pt-law"><img width="123" height="134" src="img/7wd/pt-law.jpg" alt="Закон" loading="lazy"><div>
+      <h4>Закон</h4><p>Жетон даёт научный символ (весы).</p></div></div>
+    <div class="item" id="pt-masonry"><img width="123" height="149" src="img/7wd/pt-masonry.jpg" alt="Каменная кладка" loading="lazy"><div>
+      <h4>Каменная кладка</h4><p>Новые гражданские здания (синие) стоят вам на 2 ресурса меньше. При каждом строительстве вы выбираете, какие это ресурсы.</p></div></div>
+    <div class="item" id="pt-mathematics"><img width="123" height="135" src="img/7wd/pt-mathematics.jpg" alt="Математика" loading="lazy"><div>
+      <h4>Математика</h4><p>В конце игры 3 победных очка за каждый ваш жетон прогресса (включая этот).</p></div></div>
+    <div class="item" id="pt-philosophy"><img width="123" height="135" src="img/7wd/pt-philosophy.jpg" alt="Философия" loading="lazy"><div>
+      <h4>Философия</h4><p>Жетон приносит 7 победных очков.</p></div></div>
+    <div class="item" id="pt-strategy"><img width="123" height="134" src="img/7wd/pt-strategy.jpg" alt="Стратегия" loading="lazy"><div>
+      <h4>Стратегия</h4><p>Новые военные здания (красные) дают вам 1 дополнительный щит.</p>
+      <p class="example">Новое военное здание с 2 щитами сдвинет маркер конфликта на 3 ячейки.</p>
+      <p class="note">Не действует на чудеса со щитами и на уже построенные военные здания.</p></div></div>
+    <div class="item" id="pt-theology"><img width="123" height="135" src="img/7wd/pt-theology.jpg" alt="Теология" loading="lazy"><div>
+      <h4>Теология</h4><p>Все чудеса, которые вы построите в будущем, получают эффект «Сделайте ещё один ход».</p>
+      <p class="warn">Не суммируется с чудесами, у которых этот эффект уже есть: два дополнительных хода получить нельзя.</p></div></div>
+    <div class="item" id="pt-urbanism"><img width="123" height="134" src="img/7wd/pt-urbanism.jpg" alt="Урбанизм" loading="lazy"><div>
+      <h4>Урбанизм</h4><p>Сразу возьмите 6 монет из банка. Каждый раз, когда строите здание бесплатно по <a href="#chains">цепочке</a>, получайте 4 монеты.</p></div></div>
+  </section>
+
+  <!-- ================= СИМВОЛЫ КАРТ ================= -->
+  <section id="symbols" data-keys="символы карт описание символов значки иконки">
+    <h2>Символы на картах эпох <a class="src" data-zoom="img/7wd/page-15.jpg" href="img/7wd/page-15.jpg">стр. 15</a></h2>
+    <div class="fig-row">
+      <figure><img width="689" height="1183" src="img/7wd/symbols-left.jpg" alt="Символы карт, левая колонка" loading="lazy"></figure>
+      <figure><img width="689" height="1243" src="img/7wd/symbols-right.jpg" alt="Символы карт, правая колонка" loading="lazy"></figure>
+    </div>
+    <ul>
+      <li><img width="72" height="72" class="ic" src="img/7wd/icons/clay.png" alt="глина" title="глина"><img width="72" height="71" class="ic" src="img/7wd/icons/wood.png" alt="дерево" title="дерево"><img width="72" height="71" class="ic" src="img/7wd/icons/stone.png" alt="камень" title="камень"> <b>Сырьё</b> (глина, дерево, камень): карта производит указанное сырьё. Два одинаковых символа — две единицы.</li>
+      <li><img width="71" height="72" class="ic" src="img/7wd/icons/glass.png" alt="стекло" title="стекло"><img width="72" height="71" class="ic" src="img/7wd/icons/papyrus.png" alt="папирус" title="папирус"> <b>Товар</b> (стекло, папирус): карта производит указанный товар.</li>
+      <li><img width="72" height="68" class="ic" src="img/7wd/icons/laurel.png" alt="победные очки" title="победные очки"> <b>Лавровый венок с числом</b>: победные очки.</li>
+      <li><img width="69" height="72" class="ic" src="img/7wd/icons/shield.png" alt="щит" title="щит"> <b>Щиты</b>: военная сила.</li>
+      <li><b>Научный символ</b>: один из 7 символов науки: <img width="60" height="72" class="ic" src="img/7wd/icons/sci-globe.png" alt="армиллярная сфера" title="армиллярная сфера"> <img width="72" height="71" class="ic" src="img/7wd/icons/sci-wheel.png" alt="колесо" title="колесо"> <img width="72" height="58" class="ic" src="img/7wd/icons/sci-sundial.png" alt="солнечные часы" title="солнечные часы"> <img width="71" height="72" class="ic" src="img/7wd/icons/sci-mortar.png" alt="ступка" title="ступка"> <img width="72" height="65" class="ic" src="img/7wd/icons/sci-compass.png" alt="циркуль" title="циркуль"> <img width="66" height="72" class="ic" src="img/7wd/icons/sci-quill.png" alt="перо" title="перо"> <img width="71" height="72" class="ic" src="img/7wd/icons/sci-scales.png" alt="весы (жетон «Закон»)" title="весы (жетон «Закон»)"></li>
+      <li><b>Ресурс с монетой «1»</b>: со <b>следующего хода</b> вы покупаете этот ресурс (или два указанных) у банка по 1 монете.</li>
+      <li><b>Белый символ цепочки</b>: в поздней эпохе вы бесплатно построите карту с этим символом в стоимости.</li>
+      <li><b>Ресурсы через «/»</b>: каждый ход карта производит одну единицу одного из указанных ресурсов (1 из 3 видов сырья или 1 из 2 видов товара). <i>Такое производство не влияет на цены торговли.</i></li>
+      <li><img width="71" height="72" class="ic" src="img/7wd/icons/coin.png" alt="монета" title="монета"> <b>Монета с числом</b>: карта даёт указанное число монет.</li>
+      <li><img width="72" height="53" class="ic" src="img/7wd/icons/pyramid.png" alt="чудо света" title="чудо света"> <b>Пирамида + 2</b>: 2 монеты за каждое чудо в вашем городе.</li>
+      <li><b>Серая карта + 3</b>: 3 монеты за каждую серую карту в вашем городе.</li>
+      <li><b>Коричневая карта + 2</b>: 2 монеты за каждую коричневую карту в вашем городе.</li>
+      <li><b>Жёлтая карта + 1</b>: 1 монета за каждую жёлтую карту (включая эту).</li>
+      <li><b>Красная карта + 1</b>: 1 монета за каждую красную карту.</li>
+    </ul>
+    <div class="note"><b>Уточнение для всех карт.</b> Монеты берутся из банка только один раз — в момент строительства карты.</div>
+  </section>
+
+  <!-- ================= ГИЛЬДИИ ================= -->
+  <section id="guilds" data-keys="гильдии фиолетовые карты">
+    <h2>Карты гильдий <a class="src" data-zoom="img/7wd/page-16.jpg" href="img/7wd/page-16.jpg">стр. 16</a></h2>
+    <div class="fig-row">
+      <figure><img width="689" height="854" src="img/7wd/guilds-left.jpg" alt="Гильдии, левая колонка" loading="lazy"></figure>
+      <figure><img width="704" height="854" src="img/7wd/guilds-right.jpg" alt="Гильдии, правая колонка" loading="lazy"></figure>
+    </div>
+    <section id="g-builders" data-keys="гильдия строителей чудеса"><h3>Гильдия строителей</h3>
+      <p>В конце игры 2 очка за каждое чудо в городе, где <b>чудес больше</b>.</p></section>
+    <section id="g-moneylenders" data-keys="гильдия ростовщиков монеты казна"><h3>Гильдия ростовщиков</h3>
+      <p>В конце игры 1 очко за каждые 3 монеты в казне <b>самого богатого</b> города.</p></section>
+    <section id="g-scientists" data-keys="гильдия учёных зелёные"><h3>Гильдия учёных</h3>
+      <p>При постройке: 1 монета за каждую зелёную карту в городе, где зелёных карт больше. В конце игры: 1 очко за каждую зелёную карту в таком городе.</p></section>
+    <section id="g-shipowners" data-keys="гильдия судовладельцев коричневые серые"><h3>Гильдия судовладельцев</h3>
+      <p>При постройке: 1 монета за каждую коричневую и каждую серую карту в городе, где коричневых и серых карт больше. В конце игры: 1 очко за каждую такую карту в таком городе.</p>
+      <div class="note"><b>Уточнение.</b> Нельзя выбрать один город для коричневых карт, а другой — для серых.</div></section>
+    <section id="g-merchants" data-keys="гильдия торговцев жёлтые"><h3>Гильдия торговцев</h3>
+      <p>При постройке: 1 монета за каждую жёлтую карту в городе, где жёлтых карт больше. В конце игры: 1 очко за каждую жёлтую карту в таком городе.</p></section>
+    <section id="g-magistrates" data-keys="гильдия судей синие"><h3>Гильдия судей</h3>
+      <p>При постройке: 1 монета за каждую синюю карту в городе, где синих карт больше. В конце игры: 1 очко за каждую синюю карту в таком городе.</p></section>
+    <section id="g-tacticians" data-keys="гильдия тактиков красные"><h3>Гильдия тактиков</h3>
+      <p>При постройке: 1 монета за каждую красную карту в городе, где красных карт больше. В конце игры: 1 очко за каждую красную карту в таком городе.</p></section>
+    <div class="note"><b>Уточнения:</b>
+      <br>• Монеты с гильдии берутся из банка один раз — в момент строительства.
+      <br>• В конце игры для очков можно выбрать <b>другой</b> город, не тот, за который получали монеты.</div>
+  </section>
+
+  <!-- ================= ЧУДЕСА ================= -->
+  <section id="wonders" data-keys="чудеса света эффекты список">
+    <h2>Чудеса света <a class="src" data-zoom="img/7wd/page-17.jpg" href="img/7wd/page-17.jpg">стр. 17</a></h2>
+    <p class="lead">Значок ↻ на чуде — «Сразу же сделайте ещё один ход».</p>
+    <div class="item" id="w-appian"><img width="83" height="179" class="tall" src="img/7wd/w-appian.jpg" alt="Аппиева дорога" loading="lazy"><div>
+      <h4>Аппиева дорога (The Appian Way)</h4>
+      <p>Сразу возьмите 3 монеты из банка. Соперник сразу теряет 3 монеты (в банк). Сразу сделайте ещё один ход.</p><p><b>3 очка.</b></p></div></div>
+    <div class="item" id="w-circus"><img width="83" height="195" class="tall" src="img/7wd/w-circus.jpg" alt="Большой цирк" loading="lazy"><div>
+      <h4>Большой цирк (Circus Maximus)</h4>
+      <p>Выберите серую карту (товары), построенную соперником, и отправьте её в сброс. 1 щит.</p><p><b>3 очка.</b></p></div></div>
+    <div class="item" id="w-colossus"><img width="83" height="179" class="tall" src="img/7wd/w-colossus.jpg" alt="Колосс" loading="lazy"><div>
+      <h4>Колосс (The Colossus)</h4>
+      <p>2 щита.</p><p><b>3 очка.</b></p></div></div>
+    <div class="item" id="w-library"><img width="83" height="195" class="tall" src="img/7wd/w-library.jpg" alt="Александрийская библиотека" loading="lazy"><div>
+      <h4>Александрийская библиотека (The Great Library)</h4>
+      <p>Случайно возьмите 3 жетона прогресса из тех, что убрали в начале игры. Выберите и сыграйте один, два других верните в коробку.</p><p><b>4 очка.</b></p></div></div>
+    <div class="item" id="w-lighthouse"><img width="83" height="180" class="tall" src="img/7wd/w-lighthouse.jpg" alt="Александрийский маяк" loading="lazy"><div>
+      <h4>Александрийский маяк (The Great Lighthouse)</h4>
+      <p>Каждый ход производит 1 единицу одного из видов сырья на выбор: камень, глину или дерево. <i>Не влияет на цены торговли.</i></p><p><b>4 очка.</b></p></div></div>
+    <div class="item" id="w-gardens"><img width="83" height="194" class="tall" src="img/7wd/w-gardens.jpg" alt="Висячие сады" loading="lazy"><div>
+      <h4>Висячие сады (The Hanging Gardens)</h4>
+      <p>Сразу возьмите 6 монет из банка. Сразу сделайте ещё один ход.</p><p><b>3 очка.</b></p></div></div>
+    <div class="item" id="w-mausoleum"><img width="75" height="179" class="tall" src="img/7wd/w-mausoleum.jpg" alt="Галикарнасский мавзолей" loading="lazy"><div>
+      <h4>Галикарнасский мавзолей (The Mausoleum)</h4>
+      <p>Возьмите все карты, сброшенные с начала игры, выберите одну и сразу постройте её бесплатно.</p>
+      <p class="note">Карты, убранные при подготовке, не входят в стопку сброса.</p><p><b>2 очка.</b></p></div></div>
+    <div class="item" id="w-piraeus"><img width="75" height="195" class="tall" src="img/7wd/w-piraeus.jpg" alt="Пирей" loading="lazy"><div>
+      <h4>Пирей (Piraeus)</h4>
+      <p>Каждый ход производит 1 единицу товара на выбор: стекло или папирус. <i>Не влияет на цены торговли.</i> Сразу сделайте ещё один ход.</p><p><b>2 очка.</b></p></div></div>
+    <div class="item" id="w-pyramids"><img width="75" height="179" class="tall" src="img/7wd/w-pyramids.jpg" alt="Пирамиды" loading="lazy"><div>
+      <h4>Пирамиды (The Pyramids)</h4>
+      <p><b>9 очков.</b></p></div></div>
+    <div class="item" id="w-sphinx"><img width="75" height="195" class="tall" src="img/7wd/w-sphinx.jpg" alt="Сфинкс" loading="lazy"><div>
+      <h4>Сфинкс (The Sphinx)</h4>
+      <p>Сразу сделайте ещё один ход.</p><p><b>6 очков.</b></p></div></div>
+    <div class="item" id="w-zeus"><img width="75" height="180" class="tall" src="img/7wd/w-zeus.jpg" alt="Статуя Зевса" loading="lazy"><div>
+      <h4>Статуя Зевса (The Statue of Zeus)</h4>
+      <p>Выберите коричневую карту (сырьё), построенную соперником, и отправьте её в сброс. 1 щит.</p><p><b>3 очка.</b></p></div></div>
+    <div class="item" id="w-artemis"><img width="75" height="194" class="tall" src="img/7wd/w-artemis.jpg" alt="Храм Артемиды" loading="lazy"><div>
+      <h4>Храм Артемиды (The Temple of Artemis)</h4>
+      <p>Сразу возьмите 12 монет из банка. Сразу сделайте ещё один ход.</p><p><b>Очков не приносит.</b></p></div></div>
+  </section>
+
+  <!-- ================= СПИСОК КАРТ ================= -->
+  <section id="card-list" data-keys="список карт все карты цепочки конюшни коневоды частокол укрепления бани акведук">
+    <h2>Список карт <a class="src" data-zoom="img/7wd/page-18.jpg" href="img/7wd/page-18.jpg">стр. 18–19</a></h2>
+    <p>Нажмите на картинку, чтобы увеличить.</p>
+    <section id="cards-no-chain" data-keys="лесоповал лесозаготовка месторождение глины глиняный карьер каменоломня каменный карьер стекольное дело пресс сторожевая башня мастерская аптека склад камня склад глины склад дерева лесопилка кирпичное дело разработка камня стеклодув сушильня стены форум караван-сарай таможня трибунал арсенал преторий академия студия торговая палата порт оружейная дворец ратуша обелиск">
+      <h3>Карты без цепочек</h3>
+      <figure><img width="1200" height="1109" src="img/7wd/card-list-1.jpg" alt="Список карт без цепочек" loading="lazy"><figcaption>I, II, III эпохи и гильдии</figcaption></figure>
+    </section>
+    <section id="cards-chain" data-keys="конюшни коневоды казармы гарнизон частокол укрепления стрельбище осадная мастерская плац цирк скрипторий библиотека фармацевт диспансер школа университет лаборатория обсерватория театр статуя сады алтарь храм пантеон бани акведук трибуна сенат таверна маяк пивоварня арена">
+      <h3>Карты с цепочками</h3>
+      <figure><img width="1200" height="1161" src="img/7wd/card-list-2.jpg" alt="Список карт с цепочками" loading="lazy"><figcaption>Цепочки между эпохами (символ посередине)</figcaption></figure>
+      <div class="table-wrap"><table>
+        <tr><th>I эпоха</th><th>II эпоха</th><th>III эпоха</th></tr>
+        <tr><td><span class="dot red"></span>Конюшни</td><td>Коневоды</td><td></td></tr>
+        <tr><td><span class="dot red"></span>Казармы</td><td>Гарнизон</td><td></td></tr>
+        <tr><td><span class="dot red"></span>Частокол</td><td>—</td><td>Укрепления</td></tr>
+        <tr><td></td><td><span class="dot red"></span>Стрельбище</td><td>Осадная мастерская</td></tr>
+        <tr><td></td><td><span class="dot red"></span>Плац</td><td>Цирк</td></tr>
+        <tr><td><span class="dot green"></span>Скрипторий</td><td>Библиотека</td><td></td></tr>
+        <tr><td><span class="dot green"></span>Фармацевт</td><td>Диспансер</td><td></td></tr>
+        <tr><td></td><td><span class="dot green"></span>Школа</td><td>Университет</td></tr>
+        <tr><td></td><td><span class="dot green"></span>Лаборатория</td><td>Обсерватория</td></tr>
+        <tr><td><span class="dot blue"></span>Театр</td><td>Статуя</td><td>Сады</td></tr>
+        <tr><td><span class="dot blue"></span>Алтарь</td><td>Храм</td><td>Пантеон</td></tr>
+        <tr><td><span class="dot blue"></span>Бани</td><td>Акведук</td><td></td></tr>
+        <tr><td></td><td><span class="dot blue"></span>Трибуна</td><td>Сенат</td></tr>
+        <tr><td><span class="dot yellow"></span>Таверна</td><td>—</td><td>Маяк</td></tr>
+        <tr><td></td><td><span class="dot yellow"></span>Пивоварня</td><td>Арена</td></tr>
+      </table></div>
+    </section>
+  </section>
+
+  <!-- ================= СТРАНИЦЫ ОРИГИНАЛА ================= -->
+  <section id="pages">
+    <h2>Страницы оригинального буклета</h2>
+    <p class="lead">Листайте страницы свайпом влево-вправо. Нажмите на страницу, чтобы открыть её на весь экран — там тоже можно листать.</p>
+    <div class="pages-wrap">
+      <div class="pages-carousel" data-gallery>
+        <a class="pg" href="img/7wd/page-01.jpg" data-zoom="img/7wd/page-01.jpg" data-caption="Страница 1 из 20"><img width="900" height="900" src="img/7wd/page-01-m.jpg" alt="Страница 1" loading="lazy">1</a>
+        <a class="pg" href="img/7wd/page-02.jpg" data-zoom="img/7wd/page-02.jpg" data-caption="Страница 2 из 20"><img width="900" height="900" src="img/7wd/page-02-m.jpg" alt="Страница 2" loading="lazy">2</a>
+        <a class="pg" href="img/7wd/page-03.jpg" data-zoom="img/7wd/page-03.jpg" data-caption="Страница 3 из 20"><img width="900" height="900" src="img/7wd/page-03-m.jpg" alt="Страница 3" loading="lazy">3</a>
+        <a class="pg" href="img/7wd/page-04.jpg" data-zoom="img/7wd/page-04.jpg" data-caption="Страница 4 из 20"><img width="900" height="900" src="img/7wd/page-04-m.jpg" alt="Страница 4" loading="lazy">4</a>
+        <a class="pg" href="img/7wd/page-05.jpg" data-zoom="img/7wd/page-05.jpg" data-caption="Страница 5 из 20"><img width="900" height="900" src="img/7wd/page-05-m.jpg" alt="Страница 5" loading="lazy">5</a>
+        <a class="pg" href="img/7wd/page-06.jpg" data-zoom="img/7wd/page-06.jpg" data-caption="Страница 6 из 20"><img width="900" height="900" src="img/7wd/page-06-m.jpg" alt="Страница 6" loading="lazy">6</a>
+        <a class="pg" href="img/7wd/page-07.jpg" data-zoom="img/7wd/page-07.jpg" data-caption="Страница 7 из 20"><img width="900" height="900" src="img/7wd/page-07-m.jpg" alt="Страница 7" loading="lazy">7</a>
+        <a class="pg" href="img/7wd/page-08.jpg" data-zoom="img/7wd/page-08.jpg" data-caption="Страница 8 из 20"><img width="900" height="900" src="img/7wd/page-08-m.jpg" alt="Страница 8" loading="lazy">8</a>
+        <a class="pg" href="img/7wd/page-09.jpg" data-zoom="img/7wd/page-09.jpg" data-caption="Страница 9 из 20"><img width="900" height="900" src="img/7wd/page-09-m.jpg" alt="Страница 9" loading="lazy">9</a>
+        <a class="pg" href="img/7wd/page-10.jpg" data-zoom="img/7wd/page-10.jpg" data-caption="Страница 10 из 20"><img width="900" height="900" src="img/7wd/page-10-m.jpg" alt="Страница 10" loading="lazy">10</a>
+        <a class="pg" href="img/7wd/page-11.jpg" data-zoom="img/7wd/page-11.jpg" data-caption="Страница 11 из 20"><img width="900" height="900" src="img/7wd/page-11-m.jpg" alt="Страница 11" loading="lazy">11</a>
+        <a class="pg" href="img/7wd/page-12.jpg" data-zoom="img/7wd/page-12.jpg" data-caption="Страница 12 из 20"><img width="900" height="900" src="img/7wd/page-12-m.jpg" alt="Страница 12" loading="lazy">12</a>
+        <a class="pg" href="img/7wd/page-13.jpg" data-zoom="img/7wd/page-13.jpg" data-caption="Страница 13 из 20"><img width="900" height="900" src="img/7wd/page-13-m.jpg" alt="Страница 13" loading="lazy">13</a>
+        <a class="pg" href="img/7wd/page-14.jpg" data-zoom="img/7wd/page-14.jpg" data-caption="Страница 14 из 20"><img width="900" height="900" src="img/7wd/page-14-m.jpg" alt="Страница 14" loading="lazy">14</a>
+        <a class="pg" href="img/7wd/page-15.jpg" data-zoom="img/7wd/page-15.jpg" data-caption="Страница 15 из 20"><img width="900" height="900" src="img/7wd/page-15-m.jpg" alt="Страница 15" loading="lazy">15</a>
+        <a class="pg" href="img/7wd/page-16.jpg" data-zoom="img/7wd/page-16.jpg" data-caption="Страница 16 из 20"><img width="900" height="900" src="img/7wd/page-16-m.jpg" alt="Страница 16" loading="lazy">16</a>
+        <a class="pg" href="img/7wd/page-17.jpg" data-zoom="img/7wd/page-17.jpg" data-caption="Страница 17 из 20"><img width="900" height="900" src="img/7wd/page-17-m.jpg" alt="Страница 17" loading="lazy">17</a>
+        <a class="pg" href="img/7wd/page-18.jpg" data-zoom="img/7wd/page-18.jpg" data-caption="Страница 18 из 20"><img width="900" height="900" src="img/7wd/page-18-m.jpg" alt="Страница 18" loading="lazy">18</a>
+        <a class="pg" href="img/7wd/page-19.jpg" data-zoom="img/7wd/page-19.jpg" data-caption="Страница 19 из 20"><img width="900" height="900" src="img/7wd/page-19-m.jpg" alt="Страница 19" loading="lazy">19</a>
+        <a class="pg" href="img/7wd/page-20.jpg" data-zoom="img/7wd/page-20.jpg" data-caption="Страница 20 из 20"><img width="900" height="900" src="img/7wd/page-20-m.jpg" alt="Страница 20" loading="lazy">20</a>
+      </div>
+      <div class="pc-bar"><button class="icon-btn pc-prev" aria-label="Предыдущая страница">‹</button><span class="pc-count"></span><button class="icon-btn pc-next" aria-label="Следующая страница">›</button></div>
+    </div>
+  </section>
+</main>
+<script src="assets/app.js?v=13"></script>
+</body>
+</html>

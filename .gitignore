@@ -1,0 +1,11 @@
+# Локальные настройки Claude Code (сервер для предпросмотра)
+.claude/
+
+# Системный мусор
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Редакторы
+.vscode/
+.idea/

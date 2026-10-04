@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2f6b3a">
+<title>Каскадия — правила</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🦌%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=13">
+</head>
+<body class="game-csc">
+<header class="top">
+  <div class="top-row">
+    <a class="icon-btn" href="../#rules" aria-label="Все игры">←</a>
+    <div class="top-title">Каскадия</div>
+    <button id="toc-btn" class="icon-btn" aria-label="Оглавление">☰ <span>Разделы</span></button>
+  </div>
+  <div class="search-row">
+    <input id="q" type="search" placeholder="Поиск: перенаселение, лисицы, заповедник…" autocomplete="off" enterkeyhint="search">
+    <button id="q-clear" aria-label="Очистить" hidden>✕</button>
+  </div>
+</header>
+<div id="results" hidden></div>
+<nav id="toc" aria-label="Оглавление">
+  <div class="toc-head">Оглавление <button class="icon-btn toc-close" aria-label="Закрыть">✕</button></div>
+  <ol id="toc-list"></ol>
+</nav>
+<div id="scrim"></div>
+
+<main data-game="csc">
+  <h1>Каскадия</h1>
+  <p class="lead">Рэнди Флинн. 1–4 игрока. Вы собираете мозаику ареалов Тихоокеанского Северо-Запада и заселяете её животными. Метка «стр. N» открывает страницу оригинального буклета.</p>
+  <div class="chips">
+    <a href="#quick">Шпаргалка</a>
+    <a href="#turn">Ход игры</a>
+    <a href="#tile-kinds">Виды жетонов</a>
+    <a href="#scoring">Подсчёт очков</a>
+    <a href="#goals">Карты целей</a>
+    <a href="#solo">Одиночная игра</a>
+    <a href="#variants">Варианты</a>
+    <a href="#achievements">Достижения</a>
+  </div>
+
+  <section id="quick" data-keys="кратко памятка шпаргалка">
+    <h2>Шпаргалка</h2>
+    <div class="cheat">
+      <div>
+        <h4>Ваш ход</h4>
+        <ul>
+          <li>Возьмите <b>одну из 4 пар</b>: жетон ареалов + фишка животного.</li>
+          <li>Добавьте жетон и фишку в свою экосистему, в любом порядке.</li>
+          <li>Выложите в игровую зону новый жетон из стопки и новую фишку из мешочка.</li>
+          <li>Партия — ровно <b>20 ходов</b> у каждого.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Куда класть</h4>
+        <ul>
+          <li><b>Жетон:</b> хотя бы одной стороной к своему жетону. Нельзя класть поверх и сдвигать выложенные.</li>
+          <li><b>Фишка:</b> только на жетон, где нарисован её вид, и только если на жетоне нет другой фишки.</li>
+          <li>Фишка на <img width="194" height="220" class="ic" src="img/csc/icons/tile-reserve.png" alt="заповедник" title="заповедник"> <b>заповедник</b> → возьмите <img width="81" height="115" class="ic" src="img/csc/icons/nature.png" alt="жетон природы" title="жетон природы"> жетон природы.</li>
+          <li>Некуда или не хотите ставить фишку — верните её в мешочек.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Перенаселение и жетоны природы</h4>
+        <ul>
+          <li><b>4 одинаковые</b> фишки в зоне — обновите их обязательно.</li>
+          <li><b>3 одинаковые</b> — решает активный игрок, 1 раз в ход.</li>
+          <li>Потратьте <img width="81" height="115" class="ic" src="img/csc/icons/nature.png" alt="жетон природы" title="жетон природы">, чтобы взять <b>любой жетон + любую фишку</b> или обновить любое число фишек.</li>
+          <li>В конце игры каждый непотраченный <img width="81" height="115" class="ic" src="img/csc/icons/nature.png" alt="жетон природы" title="жетон природы"> = <b>1 очко</b>.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Очки в конце</h4>
+        <ul>
+          <li><b>Карты целей</b> — по 1 на каждый вид животных.</li>
+          <li><b>Ареалы</b> — 1 очко за жетон в наибольшем ареале каждого типа: <img width="42" height="52" class="ic" src="img/csc/icons/h-mountain.png" alt="горы" title="горы"><img width="42" height="52" class="ic" src="img/csc/icons/h-forest.png" alt="леса" title="леса"><img width="42" height="52" class="ic" src="img/csc/icons/h-prairie.png" alt="прерии" title="прерии"><img width="42" height="52" class="ic" src="img/csc/icons/h-wetland.png" alt="болота" title="болота"><img width="42" height="52" class="ic" src="img/csc/icons/h-river.png" alt="реки" title="реки"></li>
+          <li><b>Лидерство в ареалах</b> — за самые большие ареалы среди всех игроков.</li>
+          <li><b>Жетоны природы</b> — по 1 очку.</li>
+          <li>Ничья → побеждает тот, у кого больше жетонов природы.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2>Об игре <a class="src" data-zoom="img/csc/page-02.jpg" href="img/csc/page-02.jpg">стр. 2</a></h2>
+    <p>В «Каскадии» игроки соревнуются в создании многообразных экосистем Тихоокеанского Северо-Запада, выкладывая из жетонов ареалов и фишек диких животных удивительные мозаики. В каждой партии цели игры, связанные с местной фауной, сочетаются неповторимым образом.</p>
+    <p>Игроки заселяют свои экосистемы животными в соответствии с условиями на картах целей и попутно соревнуются в создании крупных природных ареалов. Уделяйте внимание и формируемым ареалам, и населяющим их животным, чтобы обустроить наиболее гармоничную экосистему в Каскадии.</p>
+    <div class="brief"><b>Кратко</b>Тихоокеанский Северо-Запад, он же Каскадия, — регион между Тихим океаном и Скалистыми горами: Британская Колумбия, Айдахо, Орегон и Вашингтон.</div>
+
+    <section id="components" data-keys="состав компоненты комплектация">
+      <h3>Состав игры <a class="src" data-zoom="img/csc/page-03.jpg" href="img/csc/page-03.jpg">стр. 3</a></h3>
+      <div class="fig-row">
+        <figure><img width="694" height="298" src="img/csc/components-tiles.jpg" alt="Жетоны ареалов" loading="lazy"><figcaption>85 жетонов ареалов, в том числе 25 жетонов заповедников: горы, леса, прерии, болота и реки</figcaption></figure>
+        <figure><img width="843" height="446" src="img/csc/start-tiles.jpg" alt="Начальные жетоны" loading="lazy"><figcaption>5 начальных жетонов ареалов</figcaption></figure>
+      </div>
+      <div class="fig-row">
+        <figure><img width="529" height="347" src="img/csc/animal-tokens.jpg" alt="Фишки животных" loading="lazy"><figcaption>100 фишек животных: по 20 медведей, оленей, лососей, ястребов и лисиц</figcaption></figure>
+        <figure><img width="810" height="364" src="img/csc/goal-cards-photo.jpg" alt="Карты целей" loading="lazy"><figcaption>21 карта целей: по 4 на каждый вид животных и 1 для вариантов игры</figcaption></figure>
+      </div>
+      <div class="fig-row">
+        <figure class="tiny"><img width="463" height="463" src="img/csc/nature-tokens.jpg" alt="Жетоны природы" loading="lazy"><figcaption>25 жетонов природы — шишки Дугласовой пихты</figcaption></figure>
+        <figure class="tiny"><img width="397" height="446" src="img/csc/bag.jpg" alt="Мешочек" loading="lazy"><figcaption>Мешочек для фишек животных</figcaption></figure>
+        <figure class="tiny"><img width="298" height="463" src="img/csc/notepad.jpg" alt="Блокнот" loading="lazy"><figcaption>Блокнот для подсчёта очков</figcaption></figure>
+      </div>
+    </section>
+  </section>
+
+  <section id="setup" data-keys="подготовка начало раскладка">
+    <h2>Подготовка к игре <a class="src" data-zoom="img/csc/page-04.jpg" href="img/csc/page-04.jpg">стр. 4</a></h2>
+    <ol>
+      <li>Поместите все <b>фишки животных</b> в мешочек и перемешайте их.
+        <div class="note"><b>Примечание:</b> если хотите, чтобы при игре с 1–3 участниками животные разных видов были представлены более равномерно, положите в мешочек по 5 фишек каждого вида за участника, а не все фишки. Однако при этом некоторые достижения станут недоступны.</div></li>
+      <li>Оставьте в игре нужное число <b>жетонов ареалов</b>. Выберите их случайно, не глядя на лицевую сторону:
+        <div class="table-wrap"><table>
+          <tr><th>Игроков</th><td>2</td><td>3</td><td>4</td></tr>
+          <tr><th>Жетонов в игре</th><td>43</td><td>63</td><td>83</td></tr>
+          <tr><th>Вернуть в коробку</th><td>42</td><td>22</td><td>2</td></tr>
+        </table></div>
+        <p>То есть <b>20 жетонов за игрока + 3</b>. Перемешайте выбранные жетоны и сложите их в стопки — любое количество — лицевой стороной вниз так, чтобы все могли дотянуться.</p></li>
+      <li>Случайно выберите по <b>1 карте цели</b> для каждого из 5 видов животных и положите их в центр. Остальные верните в коробку.
+        <div class="brief"><b>Первая партия</b>Используйте карты, помеченные буквой «А» в правом нижнем углу.</div></li>
+      <li>Каждый игрок берёт случайный <b>начальный жетон ареалов</b> и кладёт перед собой лицом вверх. Остальные начальные жетоны — в коробку.</li>
+      <li>Возьмите <b>4 жетона ареалов</b> из любых стопок и положите лицом вверх в игровую зону.</li>
+      <li>Возьмите <b>4 фишки животных</b> из мешочка по одной и положите слева направо рядом с жетонами так, чтобы получилось <b>4 пары</b>.</li>
+      <li>Сложите <b>жетоны природы</b> так, чтобы все могли дотянуться.</li>
+      <li>Первым игроком становится тот, кто последним видел любое животное из игры. Можно выбрать и случайно.</li>
+    </ol>
+    <figure><img width="1200" height="740" src="img/csc/setup.jpg" alt="Раскладка на столе" loading="lazy"><figcaption>Так выглядит стол после подготовки</figcaption></figure>
+    <p class="muted">Особенности подготовки к одиночной игре — в разделе <a href="#solo">«Одиночная игра»</a>.</p>
+  </section>
+
+  <section id="overview" data-keys="краткое описание игры экосистема">
+    <h2>Краткое описание игры <a class="src" data-zoom="img/csc/page-05.jpg" href="img/csc/page-05.jpg">стр. 5</a></h2>
+    <p>Участники ходят по очереди, начиная с первого игрока и далее по часовой стрелке, пока не наступит конец партии.</p>
+    <p>В свой ход игрок выбирает <b>пару из жетона ареалов и фишки животного</b> и добавляет их к своей экосистеме. <i>Экосистема — это совокупность всех жетонов и фишек у игрока, включая его начальный жетон ареалов.</i></p>
+    <p>В конце каждого хода на место взятых жетона и фишки выкладывается новый жетон из любой стопки и новая фишка из мешочка.</p>
+    <p>Партия завершается, если в конце хода игрока нельзя выложить новый жетон ареалов, так как стопки опустели. <b>Каждый участник сделает ровно 20 ходов.</b> После этого игроки подсчитывают очки, и побеждает тот, у кого их больше.</p>
+  </section>
+
+  <section id="turn">
+    <h2>Ход игры <a class="src" data-zoom="img/csc/page-06.jpg" href="img/csc/page-06.jpg">стр. 6–7</a></h2>
+
+    <section id="choose-pair" data-keys="выбор пары жетон фишка">
+      <h3>1. Выберите жетон ареалов и фишку животного</h3>
+      <p>В начале хода в центре игровой зоны лежат <b>4 жетона ареалов</b> и <b>4 фишки животных</b>, объединённые в пары — они называются <i>существующими</i>. Вы выберете одну из 4 пар.</p>
+      <figure><img width="744" height="330" src="img/csc/pairs.jpg" alt="Четыре пары" loading="lazy"><figcaption>Четыре существующие пары: А, Б, В и Г</figcaption></figure>
+    </section>
+
+    <section id="overcrowding" data-keys="перенаселение обновление фишек одинаковые">
+      <h3>Перенаселение животных</h3>
+      <p>Прежде чем выбрать пару, проверьте, нет ли перенаселения.</p>
+      <h4>4 фишки одного вида — обновить обязательно</h4>
+      <figure><img width="744" height="363" src="img/csc/overcrowd4.jpg" alt="Перенаселение: 4 фишки" loading="lazy"><figcaption>Вы должны обновить все фишки животных</figcaption></figure>
+      <p>Отложите все 4 фишки в сторону. Затем берите фишки из мешочка по одной и кладите слева направо рядом с жетонами, пока не получится 4 новые пары. <i>Это может повториться несколько раз за ход игрока.</i></p>
+      <h4>3 фишки одного вида — по желанию</h4>
+      <figure><img width="777" height="330" src="img/csc/overcrowd3.jpg" alt="Перенаселение: 3 фишки" loading="lazy"><figcaption>Активный игрок решает, обновить 3 фишки или нет</figcaption></figure>
+      <p>Если решили обновить, отложите эти 3 фишки и доберите из мешочка до 3 новых пар. <i>Такое обновление можно сделать только 1 раз в ход.</i></p>
+      <p>Устранив перенаселение, верните отложенные фишки обратно в мешочек.</p>
+    </section>
+
+    <section id="nature-token" data-keys="жетон природы шишка выбор любой пары обновление">
+      <h3>Жетон природы вместо обычного выбора</h3>
+      <p>Обычно вы берёте существующую пару. Но вы можете потратить <img width="81" height="115" class="ic" src="img/csc/icons/nature.png" alt="жетон природы" title="жетон природы"> <b>жетон природы</b>, чтобы сделать одно из двух:</p>
+      <ol>
+        <li>Вместо одной из существующих пар взять <b>любой</b> из четырёх жетонов ареалов и <b>любую</b> из четырёх фишек животных.</li>
+        <li><b>Обновить любое количество</b> фишек животных, прежде чем взять пару — по правилам обновления при перенаселении.</li>
+      </ol>
+      <p>За ход можно потратить любое количество жетонов природы. Потраченные жетоны возвращаются в запас. Если жетонов природы у вас нет, вы обязаны выбрать одну из существующих пар.</p>
+    </section>
+
+    <section id="place-tile" data-keys="добавить жетон ареалов правила выкладывания соседство">
+      <h3>2. Добавьте жетон ареалов в экосистему</h3>
+      <ul>
+        <li><b>А.</b> Новый жетон должен хотя бы одной стороной соприкасаться с другим вашим жетоном — выложенным ранее или начальным.</li>
+        <li><b>Б.</b> Нельзя класть новый жетон поверх других жетонов или сдвигать ранее выложенные.</li>
+      </ul>
+      <div class="fig-row">
+        <figure><img width="710" height="355" src="img/csc/place-tile.jpg" alt="Добавление жетона" loading="lazy"></figure>
+        <figure><img width="710" height="363" src="img/csc/place-valid.jpg" alt="Куда можно положить жетон" loading="lazy"><figcaption>Зелёные метки — куда жетон положить можно</figcaption></figure>
+      </div>
+      <div class="note"><b>Примечание:</b> совмещать одинаковые ареалы необязательно, однако это может принести очки в конце игры.</div>
+    </section>
+
+    <section id="place-animal" data-keys="фишка животного на жетон заповедник">
+      <h3>Добавьте фишку животного</h3>
+      <ul>
+        <li><b>А.</b> На жетоне не должно быть другой фишки животного: <i>на каждом жетоне всегда не более одной фишки</i>.</li>
+        <li><b>Б.</b> На жетоне должно быть изображено животное того же вида: <i>на каждом жетоне изображено от 1 до 3 животных</i>.</li>
+      </ul>
+      <figure><img width="727" height="363" src="img/csc/place-animal.jpg" alt="Куда можно поставить фишку" loading="lazy"><figcaption>Есть 2 подходящих жетона, на которые можно поместить фишку лисицы</figcaption></figure>
+      <p>Фишку можно поставить как на жетон, выложенный в этом ходу, так и на любой другой подходящий. Если подходящего жетона нет или вы не хотите ставить фишку — верните её в мешочек.</p>
+      <p>Если вы помещаете фишку на <b>жетон заповедника</b>, возьмите <img width="81" height="115" class="ic" src="img/csc/icons/nature.png" alt="жетон природы" title="жетон природы"> <b>жетон природы</b>.</p>
+      <p>Поместив жетон и фишку, выложите на освободившееся место новый жетон из любой стопки и новую фишку из мешочка. <i>Не сдвигайте существующие пары, просто заполняйте пустое место.</i> Ход переходит к следующему игроку по часовой стрелке.</p>
+    </section>
+  </section>
+
+  <section id="tile-kinds" data-keys="виды жетонов ареалы заповедник">
+    <h2>Виды жетонов <a class="src" data-zoom="img/csc/page-08.jpg" href="img/csc/page-08.jpg">стр. 8</a></h2>
+    <p>На каждом жетоне ареалов изображены 1 или 2 типа ареала, а также 1, 2 или 3 вида животных.</p>
+    <div class="item right"><img width="194" height="220" class="hex" src="img/csc/icons/tile-wetland-river.png" alt="Жетон болота и реки" loading="lazy"><div>
+      <h4>Два типа ареала</h4><p>На этом жетоне <img width="42" height="52" class="ic" src="img/csc/icons/h-wetland.png" alt="болота" title="болота"> болота и <img width="42" height="52" class="ic" src="img/csc/icons/h-river.png" alt="реки" title="реки"> реки. Сюда можно поместить <img width="114" height="114" class="ic" src="img/csc/icons/salmon.png" alt="лосось" title="лосось"> лосося, <img width="113" height="116" class="ic" src="img/csc/icons/bear.png" alt="медведь" title="медведь"> медведя или <img width="114" height="112" class="ic" src="img/csc/icons/hawk.png" alt="ястреб" title="ястреб"> ястреба.</p>
+    </div></div>
+    <div class="item right"><img width="194" height="220" class="hex" src="img/csc/icons/tile-mountain-prairie.png" alt="Жетон горы и прерии" loading="lazy"><div>
+      <h4>Горы и прерии</h4><p>На этом жетоне <img width="42" height="52" class="ic" src="img/csc/icons/h-mountain.png" alt="горы" title="горы"> горы и <img width="42" height="52" class="ic" src="img/csc/icons/h-prairie.png" alt="прерии" title="прерии"> прерии. Сюда можно поместить <img width="113" height="116" class="ic" src="img/csc/icons/bear.png" alt="медведь" title="медведь"> медведя или <img width="114" height="114" class="ic" src="img/csc/icons/fox.png" alt="лисица" title="лисица"> лисицу.</p>
+    </div></div>
+    <div class="item right"><img width="194" height="220" class="hex" src="img/csc/icons/tile-reserve.png" alt="Жетон заповедника" loading="lazy"><div>
+      <h4>Жетон заповедника</h4><p>Отмечен значком домика в верхнем углу. Поместив сюда фишку животного, возьмите <img width="81" height="115" class="ic" src="img/csc/icons/nature.png" alt="жетон природы" title="жетон природы"> <b>жетон природы</b>.</p>
+    </div></div>
+  </section>
+
+  <section id="scoring">
+    <h2>Конец партии и подсчёт очков <a class="src" data-zoom="img/csc/page-08.jpg" href="img/csc/page-08.jpg">стр. 8–9</a></h2>
+    <p>Если в конце хода игрока нельзя выложить новый жетон ареалов, потому что стопки опустели, партия тут же завершается. <i>Каждый участник сделает ровно 20 ходов.</i> Очки считаются за карты целей, ареалы, лидерство в ареалах и жетоны природы.</p>
+
+    <section id="score-goals" data-keys="очки за карты целей">
+      <h3>1. Карты целей</h3>
+      <p>Каждый участник подсчитывает очки за животных согласно выбранным на игру <a href="#goals">картам целей</a>.</p>
+    </section>
+
+    <section id="score-habitats" data-keys="очки за ареалы наибольший ареал">
+      <h3>2. Ареалы</h3>
+      <p>Каждый участник получает по <b>1 очку за каждый жетон в своём наибольшем ареале</b> каждого из 5 типов: <img width="42" height="52" class="ic" src="img/csc/icons/h-mountain.png" alt="горы" title="горы"> горы, <img width="42" height="52" class="ic" src="img/csc/icons/h-forest.png" alt="леса" title="леса"> леса, <img width="42" height="52" class="ic" src="img/csc/icons/h-prairie.png" alt="прерии" title="прерии"> прерии, <img width="42" height="52" class="ic" src="img/csc/icons/h-wetland.png" alt="болота" title="болота"> болота, <img width="42" height="52" class="ic" src="img/csc/icons/h-river.png" alt="реки" title="реки"> реки.</p>
+      <p>Жетоны входят в единый ареал, если соприкасаются хотя бы одной совпадающей стороной.</p>
+      <div class="example"><b>Пример:</b> если у вас есть ареал из 3 лесов и ареал из 4 лесов, вы получаете 4 очка — ваш наибольший лесной ареал состоит из 4 жетонов.</div>
+    </section>
+
+    <section id="score-leadership" data-keys="лидерство в ареалах самый большой ареал ничья">
+      <h3>3. Лидерство в ареалах</h3>
+      <p>Игроки получают очки за <b>самые большие ареалы среди всех экосистем</b>, в зависимости от числа участников.</p>
+      <div class="table-wrap"><table>
+        <tr><th>Игроков</th><th>1-е место</th><th>2-е место</th></tr>
+        <tr><th>2</th><td>2 очка, при ничьей по 1</td><td>—</td></tr>
+        <tr><th>3–4</th><td>3 очка</td><td>1 очко</td></tr>
+      </table></div>
+      <ul>
+        <li><b>Вдвоём:</b> каждый тип ареала приносит 2 очка владельцу самого большого ареала этого типа. В случае ничьей оба игрока получают по 1 очку. Второе место не приносит очков.</li>
+        <li><b>Втроём и вчетвером:</b> 3 очка за первое место и 1 очко за второе. Если ничья у двух игроков, каждый получает 2 очка, а второе место не приносит очков. Если ничья у трёх или четырёх игроков, каждый получает по 1 очку, а следующий результат не приносит очков. <b>Ничья за второе место никогда не приносит очков.</b></li>
+        <li><b>В одиночной игре:</b> 2 очка за каждый ареал, состоящий хотя бы из 7 жетонов.</li>
+      </ul>
+    </section>
+
+    <section id="score-nature" data-keys="очки за жетоны природы ничья победитель">
+      <h3>4. Жетоны природы</h3>
+      <p>Каждый игрок получает по <b>1 очку</b> за каждый свой непотраченный жетон природы.</p>
+      <p>Сложите все набранные очки. Побеждает игрок с наибольшим количеством очков. В случае ничьей побеждает претендент с наибольшим количеством жетонов природы. Если ничья сохраняется, претенденты делят победу.</p>
+    </section>
+
+    <section id="score-example" data-keys="пример подсчёта очков экосистема блокнот">
+      <h3>Пример подсчёта <a class="src" data-zoom="img/csc/page-09.jpg" href="img/csc/page-09.jpg">стр. 9</a></h3>
+      <div class="fig-row">
+        <figure><img width="711" height="578" src="img/csc/ecosystem.jpg" alt="Экосистема Жени" loading="lazy"><figcaption>Экосистема Жени</figcaption></figure>
+        <figure class="tiny"><img width="363" height="793" src="img/csc/scorepad.jpg" alt="Блокнот подсчёта" loading="lazy"><figcaption>Записи в блокноте</figcaption></figure>
+      </div>
+      <ul>
+        <li>Две пары медведей: <b>11 очков</b>.</li>
+        <li>Линии из двух и из трёх оленей: <b>14 очков</b> — 5 + 9.</li>
+        <li>Миграция из 4 лососей: <b>12 очков</b>.</li>
+        <li>Четыре ястреба-одиночки: <b>11 очков</b>.</li>
+        <li>Животные-соседи трёх лисиц: <b>11 очков</b> — 3 + 5 + 3.</li>
+        <li>Ареал из шести гор: <b>6 очков</b>; ничья с одним игроком за самый большой ареал: <b>2 очка</b>.</li>
+        <li>Ареал из четырёх лесов: <b>4 очка</b>; ничья с двумя игроками: <b>1 очко</b>.</li>
+        <li>Ареал из семи прерий: <b>7 очков</b>; второе место по величине: <b>1 очко</b>.</li>
+        <li>Ареал из восьми болот: <b>8 очков</b>; самый большой ареал среди всех: <b>3 очка</b>.</li>
+        <li>Ареал из пяти рек: <b>5 очков</b>; самый маленький ареал из всех: <b>0 очков</b>.</li>
+        <li>Два непотраченных жетона природы: <b>2 очка</b>.</li>
+      </ul>
+    </section>
+  </section>
+
+  <section id="goals">
+    <h2>Карты целей <a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11</a></h2>
+    <p class="lead">Нажмите на карточку, чтобы прочитать полное пояснение из буклета. В каждой партии используется по одной карте на вид животных.</p>
+    <section id="goals-bear" data-keys="карты целей медведи">
+      <h3><img width="113" height="116" class="ic" src="img/csc/icons/bear.png" alt="медведь" title="медведь"> Медведи <a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11</a></h3>
+      <p>Медведи приносят очки за группы разных размеров. Эти группы могут быть любых форм и располагаться в любом направлении, но разные группы не должны находиться рядом друг с другом. Группа принесёт очки, только если в ней будет точное количество медведей, указанное на карте.</p>
+      <div class="sh-grid">
+        <section id="goal-bear-a" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели медведи А пары медведей">
+          <div class="sh-body"><span class="sh-label">Медведи · карта А</span><h4>Пары медведей</h4><p>Чем больше у вас пар медведей, тем больше очков.</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-bear-a.jpg" alt="Карта цели Медведи А" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта А.</b> Получите тем больше очков, чем больше у вас пар медведей.</p><p class="muted">Медведи приносят очки за группы разных размеров. Эти группы могут быть любых форм и располагаться в любом направлении, но разные группы не должны находиться рядом друг с другом. Группа принесёт очки, только если в ней будет точное количество медведей, указанное на карте.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-bear-b" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели медведи Б тройки медведей">
+          <div class="sh-body"><span class="sh-label">Медведи · карта Б</span><h4>Тройки медведей</h4><p>10 очков за каждую группу ровно из 3 медведей.</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-bear-b.jpg" alt="Карта цели Медведи Б" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Б.</b> Получите 10 очков за каждую группу ровно из 3 медведей.</p><p class="muted">Медведи приносят очки за группы разных размеров. Эти группы могут быть любых форм и располагаться в любом направлении, но разные группы не должны находиться рядом друг с другом. Группа принесёт очки, только если в ней будет точное количество медведей, указанное на карте.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-bear-v" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели медведи В группы 1–3 медведей">
+          <div class="sh-body"><span class="sh-label">Медведи · карта В</span><h4>Группы 1–3 медведей</h4><p>Очки за группы из 1, 2 и 3 медведей, плюс 3 очка за все три размера.</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-bear-v.jpg" alt="Карта цели Медведи В" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта В.</b> Получите очки за каждую группу размером от 1 до 3 медведей и дополнительно 3 очка, если у вас есть группы всех трёх размеров.</p><p class="muted">Медведи приносят очки за группы разных размеров. Эти группы могут быть любых форм и располагаться в любом направлении, но разные группы не должны находиться рядом друг с другом. Группа принесёт очки, только если в ней будет точное количество медведей, указанное на карте.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-bear-g" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели медведи Г группы 2–4 медведей">
+          <div class="sh-body"><span class="sh-label">Медведи · карта Г</span><h4>Группы 2–4 медведей</h4><p>Очки за каждую группу размером от 2 до 4 медведей.</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-bear-g.jpg" alt="Карта цели Медведи Г" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Г.</b> Получите очки за каждую группу размером от 2 до 4 медведей.</p><p class="muted">Медведи приносят очки за группы разных размеров. Эти группы могут быть любых форм и располагаться в любом направлении, но разные группы не должны находиться рядом друг с другом. Группа принесёт очки, только если в ней будет точное количество медведей, указанное на карте.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+      </div>
+    </section>
+    <section id="goals-elk" data-keys="карты целей олени">
+      <h3><img width="115" height="114" class="ic" src="img/csc/icons/elk.png" alt="олень" title="олень"> Олени <a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11</a></h3>
+      <p>Олени приносят очки за свои группы. Большинство карт требует, чтобы эти группы были определённой формы. В отличие от групп медведей, группы оленей могут находиться рядом друг с другом, но каждый олень состоит только в одной группе и принесёт очки лишь раз. Выбирайте, к какой группе отнести оленя так, чтобы получить как можно больше очков.</p>
+      <div class="sh-grid">
+        <section id="goal-elk-a" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели олени А прямые линии">
+          <div class="sh-body"><span class="sh-label">Олени · карта А</span><h4>Прямые линии</h4><p>Очки за группы в виде прямых линий в любом направлении.</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-elk-a.jpg" alt="Карта цели Олени А" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта А.</b> Получите очки за группы в виде прямых линий, расположенных в любом направлении.</p><p class="muted">Олени приносят очки за свои группы. Большинство карт требует, чтобы эти группы были определённой формы. В отличие от групп медведей, группы оленей могут находиться рядом друг с другом, но каждый олень состоит только в одной группе и принесёт очки лишь раз. Выбирайте, к какой группе отнести оленя так, чтобы получить как можно больше очков.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-elk-b" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели олени Б указанные формы">
+          <div class="sh-body"><span class="sh-label">Олени · карта Б</span><h4>Указанные формы</h4><p>Очки за группы указанных на карте форм в любом направлении.</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-elk-b.jpg" alt="Карта цели Олени Б" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Б.</b> Получите очки за группы указанных форм, расположенные в любом направлении.</p><p class="muted">Олени приносят очки за свои группы. Большинство карт требует, чтобы эти группы были определённой формы. В отличие от групп медведей, группы оленей могут находиться рядом друг с другом, но каждый олень состоит только в одной группе и принесёт очки лишь раз. Выбирайте, к какой группе отнести оленя так, чтобы получить как можно больше очков.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-elk-v" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели олени В любая форма">
+          <div class="sh-body"><span class="sh-label">Олени · карта В</span><h4>Любая форма</h4><p>Очки за каждую группу любой формы и размера.</p></div>
+          <div class="sh-side"><img width="358" height="240" class="sh-img goal" src="img/csc/goal-elk-v.jpg" alt="Карта цели Олени В" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта В.</b> Получите очки за каждую группу любой формы и размера.</p><p class="muted">Олени приносят очки за свои группы. Большинство карт требует, чтобы эти группы были определённой формы. В отличие от групп медведей, группы оленей могут находиться рядом друг с другом, но каждый олень состоит только в одной группе и принесёт очки лишь раз. Выбирайте, к какой группе отнести оленя так, чтобы получить как можно больше очков.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-elk-g" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели олени Г кольцо">
+          <div class="sh-body"><span class="sh-label">Олени · карта Г</span><h4>Кольцо</h4><p>Очки за группы в форме кольца или его части.</p></div>
+          <div class="sh-side"><img width="356" height="240" class="sh-img goal" src="img/csc/goal-elk-g.jpg" alt="Карта цели Олени Г" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Г.</b> Получите очки за каждую группу, которая образует кольцо или его часть, как изображено на карте.</p><p class="muted">Олени приносят очки за свои группы. Большинство карт требует, чтобы эти группы были определённой формы. В отличие от групп медведей, группы оленей могут находиться рядом друг с другом, но каждый олень состоит только в одной группе и принесёт очки лишь раз. Выбирайте, к какой группе отнести оленя так, чтобы получить как можно больше очков.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+      </div>
+    </section>
+    <section id="goals-salmon" data-keys="карты целей лососи">
+      <h3><img width="114" height="114" class="ic" src="img/csc/icons/salmon.png" alt="лосось" title="лосось"> Лососи <a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11</a></h3>
+      <p>Лососи приносят очки за миграции. Миграция — это группа, в которой каждый лосось соседствует не более чем с двумя другими лососями (это значит, что группа из 3 лососей в форме треугольника считается миграцией, но больше к этой миграции нельзя присоединить ни одного лосося). Рядом с миграциями не должно быть других лососей.</p>
+      <div class="sh-grid">
+        <section id="goal-salmon-a" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лососи А миграции любого размера">
+          <div class="sh-body"><span class="sh-label">Лососи · карта А</span><h4>Миграции любого размера</h4><p>Очки за каждую миграцию в зависимости от её размера (до 7+).</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-salmon-a.jpg" alt="Карта цели Лососи А" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта А.</b> Получите очки за каждую миграцию в зависимости от её размера.</p><p class="muted">Лососи приносят очки за миграции. Миграция — это группа, в которой каждый лосось соседствует не более чем с двумя другими лососями (это значит, что группа из 3 лососей в форме треугольника считается миграцией, но больше к этой миграции нельзя присоединить ни одного лосося). Рядом с миграциями не должно быть других лососей.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-salmon-b" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лососи Б короткие миграции">
+          <div class="sh-body"><span class="sh-label">Лососи · карта Б</span><h4>Короткие миграции</h4><p>Очки за каждую миграцию в зависимости от её размера (до 5+).</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-salmon-b.jpg" alt="Карта цели Лососи Б" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Б.</b> Получите очки за каждую миграцию в зависимости от её размера.</p><p class="muted">Лососи приносят очки за миграции. Миграция — это группа, в которой каждый лосось соседствует не более чем с двумя другими лососями (это значит, что группа из 3 лососей в форме треугольника считается миграцией, но больше к этой миграции нельзя присоединить ни одного лосося). Рядом с миграциями не должно быть других лососей.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-salmon-v" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лососи В миграции от 3 лососей">
+          <div class="sh-body"><span class="sh-label">Лососи · карта В</span><h4>Миграции от 3 лососей</h4><p>Очки только за миграции хотя бы из 3 лососей.</p></div>
+          <div class="sh-side"><img width="358" height="240" class="sh-img goal" src="img/csc/goal-salmon-v.jpg" alt="Карта цели Лососи В" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта В.</b> Получите очки за каждую миграцию хотя бы из 3 лососей в зависимости от её размера.</p><p class="muted">Лососи приносят очки за миграции. Миграция — это группа, в которой каждый лосось соседствует не более чем с двумя другими лососями (это значит, что группа из 3 лососей в форме треугольника считается миграцией, но больше к этой миграции нельзя присоединить ни одного лосося). Рядом с миграциями не должно быть других лососей.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-salmon-g" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лососи Г лосось и соседи">
+          <div class="sh-body"><span class="sh-label">Лососи · карта Г</span><h4>Лосось и соседи</h4><p>1 очко за каждого лосося в миграции и за каждое соседнее животное.</p></div>
+          <div class="sh-side"><img width="356" height="240" class="sh-img goal" src="img/csc/goal-salmon-g.jpg" alt="Карта цели Лососи Г" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Г.</b> Получите за каждую миграцию хотя бы из 3 лососей по 1 очку за каждого лосося в миграции и за каждую фишку животного, находящуюся рядом с миграцией (вид животных не имеет значения).</p><p class="muted">Лососи приносят очки за миграции. Миграция — это группа, в которой каждый лосось соседствует не более чем с двумя другими лососями (это значит, что группа из 3 лососей в форме треугольника считается миграцией, но больше к этой миграции нельзя присоединить ни одного лосося). Рядом с миграциями не должно быть других лососей.</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+      </div>
+    </section>
+    <section id="goals-hawk" data-keys="карты целей ястребы">
+      <h3><img width="114" height="112" class="ic" src="img/csc/icons/hawk.png" alt="ястреб" title="ястреб"> Ястребы <a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11</a></h3>
+      <p>Ястребы приносят очки за распространение по всей экосистеме: за ястребов-одиночек, за пары ястребов или за линии видимости между ястребами. Линия видимости — это прямая, проходящая между несоприкасающимися сторонами двух жетонов ареалов с фишками ястребов. Линии видимости прерываются только ястребами (а значит, линию видимости нельзя провести через третьего ястреба).</p>
+      <div class="sh-grid">
+        <section id="goal-hawk-a" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели ястребы А ястребы-одиночки">
+          <div class="sh-body"><span class="sh-label">Ястребы · карта А</span><h4>Ястребы-одиночки</h4><p>Чем больше ястребов, рядом с которыми нет других ястребов.</p></div>
+          <div class="sh-side"><img width="358" height="240" class="sh-img goal" src="img/csc/goal-hawk-a.jpg" alt="Карта цели Ястребы А" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта А.</b> Получите тем больше очков, чем больше у вас ястребов, рядом с которыми нет других ястребов.</p><p class="muted">Ястребы приносят очки за распространение по всей экосистеме: за ястребов-одиночек, за пары ястребов или за линии видимости между ястребами. Линия видимости — это прямая, проходящая между несоприкасающимися сторонами двух жетонов ареалов с фишками ястребов. Линии видимости прерываются только ястребами (а значит, линию видимости нельзя провести через третьего ястреба).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-hawk-b" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели ястребы Б одиночки на линиях видимости">
+          <div class="sh-body"><span class="sh-label">Ястребы · карта Б</span><h4>Одиночки на линиях видимости</h4><p>Чем больше ястребов-одиночек, связанных линиями видимости.</p></div>
+          <div class="sh-side"><img width="356" height="240" class="sh-img goal" src="img/csc/goal-hawk-b.jpg" alt="Карта цели Ястребы Б" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Б.</b> Получите тем больше очков, чем больше у вас ястребов-одиночек на линиях видимости.</p><p class="muted">Ястребы приносят очки за распространение по всей экосистеме: за ястребов-одиночек, за пары ястребов или за линии видимости между ястребами. Линия видимости — это прямая, проходящая между несоприкасающимися сторонами двух жетонов ареалов с фишками ястребов. Линии видимости прерываются только ястребами (а значит, линию видимости нельзя провести через третьего ястреба).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-hawk-v" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели ястребы В линии видимости">
+          <div class="sh-body"><span class="sh-label">Ястребы · карта В</span><h4>Линии видимости</h4><p>3 очка за каждую линию видимости между ястребами.</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-hawk-v.jpg" alt="Карта цели Ястребы В" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта В.</b> Получите 3 очка за каждую линию видимости между ястребами.</p><p class="muted">Ястребы приносят очки за распространение по всей экосистеме: за ястребов-одиночек, за пары ястребов или за линии видимости между ястребами. Линия видимости — это прямая, проходящая между несоприкасающимися сторонами двух жетонов ареалов с фишками ястребов. Линии видимости прерываются только ястребами (а значит, линию видимости нельзя провести через третьего ястреба).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-hawk-g" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели ястребы Г пары и виды на линии">
+          <div class="sh-body"><span class="sh-label">Ястребы · карта Г</span><h4>Пары и виды на линии</h4><p>Очки за пару ястребов тем больше, чем больше разных видов между ними.</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-hawk-g.jpg" alt="Карта цели Ястребы Г" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Г.</b> Получите тем больше очков за каждую пару ястребов, чем больше разных видов животных находится на линии видимости между ними. Каждый ястреб может быть частью только одной пары.</p><p class="muted">Ястребы приносят очки за распространение по всей экосистеме: за ястребов-одиночек, за пары ястребов или за линии видимости между ястребами. Линия видимости — это прямая, проходящая между несоприкасающимися сторонами двух жетонов ареалов с фишками ястребов. Линии видимости прерываются только ястребами (а значит, линию видимости нельзя провести через третьего ястреба).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+      </div>
+    </section>
+    <section id="goals-fox" data-keys="карты целей лисицы">
+      <h3><img width="114" height="114" class="ic" src="img/csc/icons/fox.png" alt="лисица" title="лисица"> Лисицы <a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11</a></h3>
+      <p>Лисицы приносят очки за соседство с другими животными. Каждая лисица или каждая пара лисиц приносит тем больше очков, чем лучше выполняется условие на карте цели (одинокую лисицу может окружать до 6 животных, пару лисиц — до 8).</p>
+      <div class="sh-grid">
+        <section id="goal-fox-a" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лисицы А разные соседи">
+          <div class="sh-body"><span class="sh-label">Лисицы · карта А</span><h4>Разные соседи</h4><p>Чем больше разных видов рядом с лисицей (включая других лисиц).</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-fox-a.jpg" alt="Карта цели Лисицы А" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта А.</b> Получите тем больше очков за каждую лисицу, чем больше разных видов животных находится рядом с ней (включая других лисиц).</p><p class="muted">Лисицы приносят очки за соседство с другими животными. Каждая лисица или каждая пара лисиц приносит тем больше очков, чем лучше выполняется условие на карте цели (одинокую лисицу может окружать до 6 животных, пару лисиц — до 8).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-fox-b" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лисицы Б пары соседей">
+          <div class="sh-body"><span class="sh-label">Лисицы · карта Б</span><h4>Пары соседей</h4><p>Чем больше видов, пары которых стоят рядом с лисицей.</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-fox-b.jpg" alt="Карта цели Лисицы Б" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Б.</b> Получите тем больше очков за каждую лисицу, чем больше у вас разных видов животных, пары которых находятся рядом с ней (не учитывая других лисиц). Животные в парах не обязаны соседствовать.</p><p class="muted">Лисицы приносят очки за соседство с другими животными. Каждая лисица или каждая пара лисиц приносит тем больше очков, чем лучше выполняется условие на карте цели (одинокую лисицу может окружать до 6 животных, пару лисиц — до 8).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-fox-v" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лисицы В самый частый сосед">
+          <div class="sh-body"><span class="sh-label">Лисицы · карта В</span><h4>Самый частый сосед</h4><p>Очки за самый многочисленный вид рядом с лисицей.</p></div>
+          <div class="sh-side"><img width="358" height="238" class="sh-img goal" src="img/csc/goal-fox-v.jpg" alt="Карта цели Лисицы В" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта В.</b> Получите тем больше очков за каждую лисицу, чем больше животных одного вида находится рядом с ней (не учитывая других лисиц). Очки приносит только самый многочисленный вид животных.</p><p class="muted">Лисицы приносят очки за соседство с другими животными. Каждая лисица или каждая пара лисиц приносит тем больше очков, чем лучше выполняется условие на карте цели (одинокую лисицу может окружать до 6 животных, пару лисиц — до 8).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+        <section id="goal-fox-g" class="sh-card" tabindex="0" role="button" aria-haspopup="dialog" data-keys="карта цели лисицы Г пары лисиц">
+          <div class="sh-body"><span class="sh-label">Лисицы · карта Г</span><h4>Пары лисиц</h4><p>Очки за пару лисиц: чем больше видов, пары которых рядом с ней.</p></div>
+          <div class="sh-side"><img width="356" height="238" class="sh-img goal" src="img/csc/goal-fox-g.jpg" alt="Карта цели Лисицы Г" loading="lazy"></div>
+          <div class="sh-full" hidden><p><b>Карта Г.</b> Получите тем больше очков за каждую пару лисиц, чем больше у вас разных видов животных, пары которых находятся рядом с ней (не учитывая другие пары лисиц). Животные в парах не обязаны соседствовать.</p><p class="muted">Лисицы приносят очки за соседство с другими животными. Каждая лисица или каждая пара лисиц приносит тем больше очков, чем лучше выполняется условие на карте цели (одинокую лисицу может окружать до 6 животных, пару лисиц — до 8).</p><a class="src" data-zoom="img/csc/page-11.jpg" href="img/csc/page-11.jpg">стр. 11 буклета</a></div>
+        </section>
+      </div>
+    </section>
+  </section>
+
+  <section id="solo" data-keys="одиночная игра соло">
+    <h2>Одиночная игра <a class="src" data-zoom="img/csc/page-10.jpg" href="img/csc/page-10.jpg">стр. 10</a></h2>
+    <p><b>Подготовка.</b> Проведите подготовку для игры вдвоём со следующими изменениями: возьмите <b>начальный жетон ареалов</b> только себе, а стопки жетонов ареалов расположите <b>слева</b> от игровой зоны.</p>
+    <p><b>Ход игры.</b> Следуйте обычным правилам, но в конце каждого хода, прежде чем выложить новый жетон и фишку, убирайте в коробку <b>крайний правый жетон и крайнюю правую фишку</b> и сдвигайте оставшиеся жетоны и фишки вправо — это может создать новые пары. Затем выкладывайте <b>2 новых жетона и 2 новые фишки</b> вместо обычных одного жетона и одной фишки.</p>
+    <div class="fig-row">
+      <figure><img width="760" height="214" src="img/csc/solo-1.jpg" alt="Соло: пример хода" loading="lazy"><figcaption>Тратим жетон природы: берём заповедник и подходящего ему оленя</figcaption></figure>
+      <figure><img width="760" height="248" src="img/csc/solo-2.jpg" alt="Соло: убираем крайние" loading="lazy"><figcaption>Убираем крайний правый жетон и крайнюю правую фишку</figcaption></figure>
+      <figure><img width="760" height="248" src="img/csc/solo-3.jpg" alt="Соло: сдвигаем и добираем" loading="lazy"><figcaption>Сдвигаем оставшиеся вправо и выкладываем 2 новых жетона и 2 фишки</figcaption></figure>
+    </div>
+    <p><b>Конец партии.</b> Вы сделаете ровно 20 ходов. Подсчитайте очки по обычным правилам и проверьте результат по таблице:</p>
+    <div class="table-wrap"><table>
+      <tr><th>60+</th><td>Хорошее начало!</td></tr>
+      <tr><th>70+</th><td>Вы уловили суть!</td></tr>
+      <tr><th>80+</th><td>Здорово!</td></tr>
+      <tr><th>90+</th><td>Отлично!</td></tr>
+      <tr><th>100+</th><td>Превосходно!</td></tr>
+      <tr><th>110+</th><td>Невероятно!!!</td></tr>
+    </table></div>
+    <p>Чтобы получить больше впечатлений от одиночной игры, пройдите <a href="#scenarios">сценарии</a>.</p>
+  </section>
+
+  <section id="variants" data-keys="варианты игры семейный средней сложности">
+    <h2>Варианты игры <a class="src" data-zoom="img/csc/page-10.jpg" href="img/csc/page-10.jpg">стр. 10</a></h2>
+    <section id="variant-family" data-keys="семейный вариант группы животных">
+      <h3>Семейный вариант</h3>
+      <p><b>Подготовка.</b> По обычным правилам, но на этапе 3 используйте <i>только</i> карту цели с семейным вариантом.</p>
+      <p><b>Ход игры.</b> По обычным правилам.</p>
+      <p><b>Подсчёт очков.</b> По обычным правилам. Можете пропустить этап 3, лидерство в ареалах, если не хотите соревноваться.</p>
+      <p>Игроки получают очки за каждую свою группу животных одного вида в зависимости от её размера. Группы могут быть любой формы.</p>
+      <div class="fig-row">
+        <figure class="tiny"><img width="315" height="479" src="img/csc/family-card.jpg" alt="Карта цели с семейным вариантом" loading="lazy"><figcaption>Карта цели семейного варианта</figcaption></figure>
+        <figure><img width="496" height="314" src="img/csc/family-example.jpg" alt="Пример групп" loading="lazy"><figcaption>Здесь есть группа из 3 лососей, группа из 2 лисиц, группа из 2 оленей, 2 медведя-одиночки и 3 ястреба-одиночки</figcaption></figure>
+      </div>
+    </section>
+    <section id="variant-medium" data-keys="вариант средней сложности">
+      <h3>Вариант средней сложности</h3>
+      <p>Играется по тем же правилам, что и семейный, но с использованием <b>карты цели со средней сложностью</b> — она приносит больше очков за крупные группы животных.</p>
+    </section>
+  </section>
+
+  <section id="achievements">
+    <h2>Достижения Каскадии <a class="src" data-zoom="img/csc/page-12.jpg" href="img/csc/page-12.jpg">стр. 12–14</a></h2>
+    <p>Изучайте дикую природу Каскадии, получайте достижения и пройдите путь через все ареалы региона, чтобы стать прославленным биологом Каскадии! Достижения можно зарабатывать как с соперниками, так и в одиночных партиях. На карте достижений прогресс сохраняют до 5 игроков: выберите путь и впишите под ним своё имя.</p>
+    <p>Перед каждой партией выбирайте один из трёх вариантов игры с достижениями: <a href="#scenarios">сценарии</a>, <a href="#ach-standard">стандартная игра</a> или <a href="#ach-restrictions">игра с ограничениями</a>. После партии, если вы получили достижение, закрасьте свой символ в ячейке этого достижения, а затем крайнюю левую пустую ячейку своего пути.</p>
+    <figure><img width="1200" height="553" src="img/csc/achievements-map.jpg" alt="Карта достижений" loading="lazy"><figcaption>Карта достижений: 8 — изучение рек, 16 — болот, 24 — лесов, 32 — гор, 40 — прерий, 50 — биолог Каскадии</figcaption></figure>
+
+    <section id="scenarios" data-keys="сценарии достижения">
+      <h3>Сценарии <a class="src" data-zoom="img/csc/page-13.jpg" href="img/csc/page-13.jpg">стр. 13</a></h3>
+      <p>Играть в сценарии можно как с соперниками, так и в одиночку. В каждом сценарии указано, какие <b>карты целей</b> нужно использовать и какие условия — от 1 до 4 — необходимо выполнить.</p>
+      <p>В одиночной игре проходите сценарии по порядку, начиная с первого: их сложность возрастает. При игре с соперниками выберите любой сценарий.</p>
+      <figure><img width="1200" height="869" src="img/csc/scenarios.jpg" alt="15 сценариев" loading="lazy"><figcaption>15 сценариев: буквы — какие карты целей взять, значки сверху — условия сценария</figcaption></figure>
+      <figure><img width="1200" height="351" src="img/csc/achievements-legend.jpg" alt="Обозначения в условиях сценариев" loading="lazy"><figcaption>Что означают значки в условиях сценариев</figcaption></figure>
+    </section>
+
+    <section id="ach-standard" data-keys="достижения стандартная игра список">
+      <h3>Стандартная игра</h3>
+      <p>Проведите обычную партию с соперниками. После партии победитель может закрасить свой символ не более чем в одной строке, если он выполнил соответствующее условие.</p>
+      <ol>
+        <li>Наберите хотя бы 80 очков.</li>
+        <li>Наберите хотя бы 85 очков.</li>
+        <li>Наберите хотя бы 90 очков.</li>
+        <li>Наберите хотя бы 95 очков.</li>
+        <li>Наберите хотя бы 100 очков.</li>
+        <li>Наберите хотя бы 105 очков.</li>
+        <li>Наберите хотя бы 110 очков.</li>
+        <li>У вас не осталось жетонов природы.</li>
+        <li>У вас нет медведей.</li>
+        <li>У вас нет оленей.</li>
+        <li>У вас нет лососей.</li>
+        <li>У вас нет ястребов.</li>
+        <li>У вас нет лисиц.</li>
+        <li>У вас хотя бы 11 животных одного вида.</li>
+        <li>Хотя бы 3 ваших разных ареала больше, чем у других игроков.</li>
+        <li>Наберите хотя бы 5 очков за каждый ареал.</li>
+        <li>Наберите хотя бы 12 очков за 1 ареал.</li>
+        <li>Наберите хотя бы 15 очков за 1 ареал.</li>
+        <li>Наберите хотя бы 10 очков за каждый вид животных.</li>
+        <li>Наберите хотя бы по 20 очков за животных двух видов.</li>
+        <li>Наберите хотя бы 30 очков за животных одного вида.</li>
+        <li>У вас хотя бы 5 жетонов природы.</li>
+        <li>У вас хотя бы 10 жетонов природы.</li>
+        <li>У вас нет животных в заповедниках.</li>
+        <li>У вас ровно 3 вида животных.</li>
+      </ol>
+    </section>
+
+    <section id="ach-restrictions" data-keys="достижения игра с ограничениями список">
+      <h3>Игра с ограничениями</h3>
+      <p>Проведите обычную партию с соперниками, выбрав одно из ограничений. После партии победитель закрашивает свой символ под этим ограничением.</p>
+      <ol>
+        <li>Добавляйте каждый жетон в экосистему так, чтобы хотя бы один ареал на нём касался такого же ареала на другом жетоне.</li>
+        <li>Добавляйте каждый жетон в экосистему так, чтобы ни один ареал на нём не касался такого же ареала на другом жетоне. <i>(Не начисляйте очки за ареалы в этой партии.)</i></li>
+        <li>Измените подсчёт очков за ареалы: все ареалы ровно из 3 жетонов приносят 3 очка.</li>
+        <li>Измените подсчёт очков за ареалы: в подсчёте участвуют только ареалы хотя бы из 5 жетонов.</li>
+        <li>В игровой зоне три пары из жетонов и фишек вместо четырёх пар.</li>
+        <li>Играйте с двумя наборами карт целей. При подсчёте очков каждый игрок решает сам, по какому из наборов карт целей получать очки.</li>
+        <li>Каждый игрок начинает партию с двумя случайными жетонами ареалов вместо начального жетона ареалов.</li>
+        <li>Чтобы применить эффект жетона природы, нужно потратить 2 жетона природы.</li>
+        <li>Вы не можете помещать фишки животных на жетоны ареалов, выложенные в том же ходу.</li>
+        <li>Играйте с картами целей, открывающимися постепенно: раздайте каждому игроку по 1 из 5 карт целей взакрытую, оставшиеся карты разместите в игровой зоне в открытую. Потратив жетон природы, откройте свою карту цели остальным игрокам.</li>
+      </ol>
+    </section>
+  </section>
+
+  <section id="facts" data-keys="про животных ареалы интересные факты">
+    <h2>Про животных и ареалы <a class="src" data-zoom="img/csc/page-15.jpg" href="img/csc/page-15.jpg">стр. 15</a></h2>
+    <div class="item right"><img width="144" height="160" class="hex" src="img/csc/icons/ph-bear.png" alt="Медведь гризли" loading="lazy"><div>
+      <h4>Медведь гризли</h4><p>Самые крупные из североамериканских медведей, до 2,5 метра в высоту стоя на задних лапах. Около 75 % рациона — ягоды, фрукты и орехи, но медведи всеядны. Сейчас численность гризли менее 5 % от исторической.</p></div></div>
+    <div class="item right"><img width="144" height="162" class="hex" src="img/csc/icons/ph-elk.png" alt="Олень Рузвельта" loading="lazy"><div>
+      <h4>Олень Рузвельта</h4><p>Самые крупные олени в регионе: до 3 метров в длину, около 2 метров в высоту и более 500 кг. Подвид назван в честь Теодора Рузвельта, основавшего в 1909 году национальный памятник на горе Олимпус.</p></div></div>
+    <div class="item right"><img width="143" height="160" class="hex" src="img/csc/icons/ph-salmon.png" alt="Лосось чавыча" loading="lazy"><div>
+      <h4>Лосось чавыча</h4><p>Самый крупный из тихоокеанских лососей. Распространён по всему северному побережью Тихого океана — от Калифорнии до Камчатки и Амура. Многие популяции под угрозой из-за плотин и чрезмерного вылова.</p></div></div>
+    <div class="item right"><img width="144" height="159" class="hex" src="img/csc/icons/ph-hawk.png" alt="Краснохвостый сарыч" loading="lazy"><div>
+      <h4>Краснохвостый сарыч</h4><p>Один из самых распространённых видов ястребиных в Северной Америке. Размах крыльев достигает полутора метров, а в пикировании птица развивает скорость до 190 км/ч.</p></div></div>
+    <div class="item right"><img width="144" height="163" class="hex" src="img/csc/icons/ph-fox.png" alt="Рыжая лисица" loading="lazy"><div>
+      <h4>Рыжая лисица</h4><p>Одно из самых распространённых млекопитающих северного полушария. В Каскадии обитает особый подвид: его можно встретить в прериях и субальпийских районах у подножия гор.</p></div></div>
+    <div class="item right"><img width="42" height="52" class="hex" src="img/csc/icons/h-river.png" alt="Реки" loading="lazy"><div>
+      <h4>Реки</h4><p>Колумбия — одна из самых крупных рек Каскадии: 2000 км от Скалистых гор до Тихого океана. В ней обитают чавыча, кижуч, нерка и радужная форель.</p></div></div>
+    <div class="item right"><img width="42" height="52" class="hex" src="img/csc/icons/h-wetland.png" alt="Болота" loading="lazy"><div>
+      <h4>Болота</h4><p>Болота называют почками природы: они очищают водные экосистемы и извлекают из воды питательные вещества, например фосфор. Здесь нашло приют множество форм жизни.</p></div></div>
+    <div class="item right"><img width="42" height="52" class="hex" src="img/csc/icons/h-forest.png" alt="Леса" loading="lazy"><div>
+      <h4>Леса</h4><p>Леса Каскадии — одни из самых разнообразных в мире. В дождевом лесу Хох на полуострове Олимпик выпадает более 3000 мм осадков в год. Леса поглощают много углерода.</p></div></div>
+    <div class="item right"><img width="42" height="52" class="hex" src="img/csc/icons/h-prairie.png" alt="Прерии" loading="lazy"><div>
+      <h4>Прерии</h4><p>Экосистемы лугов с редкими деревьями и кустами, часто в засушливых высокогорных районах. Здесь живут грызуны, рептилии, птицы и лисицы.</p></div></div>
+    <div class="item right"><img width="42" height="52" class="hex" src="img/csc/icons/h-mountain.png" alt="Горы" loading="lazy"><div>
+      <h4>Горы</h4><p>Каскадный хребет тянется от Британской Колумбии до Северной Калифорнии. Здесь есть вулканы, например Сент-Хеленс, а высочайшая точка — гора Рейнир, 4392 метра.</p></div></div>
+  </section>
+
+  <section id="pages">
+    <h2>Страницы оригинального буклета</h2>
+    <p class="lead">Листайте страницы свайпом влево-вправо. Нажмите на страницу, чтобы открыть её на весь экран — там тоже можно листать.</p>
+    <div class="pages-wrap">
+      <div class="pages-carousel" data-gallery>
+        <a class="pg" href="img/csc/page-01.jpg" data-zoom="img/csc/page-01.jpg" data-caption="Страница 1 из 16"><img width="900" height="900" src="img/csc/page-01-m.jpg" alt="Страница 1" loading="lazy">1</a>
+        <a class="pg" href="img/csc/page-02.jpg" data-zoom="img/csc/page-02.jpg" data-caption="Страница 2 из 16"><img width="900" height="900" src="img/csc/page-02-m.jpg" alt="Страница 2" loading="lazy">2</a>
+        <a class="pg" href="img/csc/page-03.jpg" data-zoom="img/csc/page-03.jpg" data-caption="Страница 3 из 16"><img width="900" height="900" src="img/csc/page-03-m.jpg" alt="Страница 3" loading="lazy">3</a>
+        <a class="pg" href="img/csc/page-04.jpg" data-zoom="img/csc/page-04.jpg" data-caption="Страница 4 из 16"><img width="900" height="900" src="img/csc/page-04-m.jpg" alt="Страница 4" loading="lazy">4</a>
+        <a class="pg" href="img/csc/page-05.jpg" data-zoom="img/csc/page-05.jpg" data-caption="Страница 5 из 16"><img width="900" height="900" src="img/csc/page-05-m.jpg" alt="Страница 5" loading="lazy">5</a>
+        <a class="pg" href="img/csc/page-06.jpg" data-zoom="img/csc/page-06.jpg" data-caption="Страница 6 из 16"><img width="900" height="900" src="img/csc/page-06-m.jpg" alt="Страница 6" loading="lazy">6</a>
+        <a class="pg" href="img/csc/page-07.jpg" data-zoom="img/csc/page-07.jpg" data-caption="Страница 7 из 16"><img width="900" height="900" src="img/csc/page-07-m.jpg" alt="Страница 7" loading="lazy">7</a>
+        <a class="pg" href="img/csc/page-08.jpg" data-zoom="img/csc/page-08.jpg" data-caption="Страница 8 из 16"><img width="900" height="900" src="img/csc/page-08-m.jpg" alt="Страница 8" loading="lazy">8</a>
+        <a class="pg" href="img/csc/page-09.jpg" data-zoom="img/csc/page-09.jpg" data-caption="Страница 9 из 16"><img width="900" height="900" src="img/csc/page-09-m.jpg" alt="Страница 9" loading="lazy">9</a>
+        <a class="pg" href="img/csc/page-10.jpg" data-zoom="img/csc/page-10.jpg" data-caption="Страница 10 из 16"><img width="900" height="900" src="img/csc/page-10-m.jpg" alt="Страница 10" loading="lazy">10</a>
+        <a class="pg" href="img/csc/page-11.jpg" data-zoom="img/csc/page-11.jpg" data-caption="Страница 11 из 16"><img width="900" height="900" src="img/csc/page-11-m.jpg" alt="Страница 11" loading="lazy">11</a>
+        <a class="pg" href="img/csc/page-12.jpg" data-zoom="img/csc/page-12.jpg" data-caption="Страница 12 из 16"><img width="900" height="900" src="img/csc/page-12-m.jpg" alt="Страница 12" loading="lazy">12</a>
+        <a class="pg" href="img/csc/page-13.jpg" data-zoom="img/csc/page-13.jpg" data-caption="Страница 13 из 16"><img width="900" height="900" src="img/csc/page-13-m.jpg" alt="Страница 13" loading="lazy">13</a>
+        <a class="pg" href="img/csc/page-14.jpg" data-zoom="img/csc/page-14.jpg" data-caption="Страница 14 из 16"><img width="900" height="900" src="img/csc/page-14-m.jpg" alt="Страница 14" loading="lazy">14</a>
+        <a class="pg" href="img/csc/page-15.jpg" data-zoom="img/csc/page-15.jpg" data-caption="Страница 15 из 16"><img width="900" height="900" src="img/csc/page-15-m.jpg" alt="Страница 15" loading="lazy">15</a>
+        <a class="pg" href="img/csc/page-16.jpg" data-zoom="img/csc/page-16.jpg" data-caption="Страница 16 из 16"><img width="900" height="900" src="img/csc/page-16-m.jpg" alt="Страница 16" loading="lazy">16</a>
+      </div>
+      <div class="pc-bar"><button class="icon-btn pc-prev" aria-label="Предыдущая страница">‹</button><span class="pc-count"></span><button class="icon-btn pc-next" aria-label="Следующая страница">›</button></div>
+    </div>
+  </section>
+</main>
+<script src="assets/app.js?v=13"></script>
+</body>
+</html>

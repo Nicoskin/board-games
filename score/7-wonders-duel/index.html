@@ -1,0 +1,1324 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>7 чудес: Дуэль — счётный лист</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="img/icon.png" sizes="any">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<meta name="theme-color" content="#1C6B63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="7 чудес: Дуэль">
+<meta name="description" content="Подсчёт победных очков в настольной игре «7 чудес: Дуэль»: чудеса, жетоны прогресса, гильдии, военный трек и ничья по синим картам">
+<meta property="og:title" content="7 чудес: Дуэль — счётный лист">
+<meta property="og:description" content="Подсчёт победных очков в настольной игре «7 чудес: Дуэль»">
+<meta property="og:image" content="img/cover.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=PT+Sans:wght@400;700&display=swap">
+<style>
+:root{
+  --ground:#E4D0A8; --surface:#FBF4E4; --surface-2:#F1E4C6; --ink:#2C2417; --muted:#75644A;
+  --line:#CDB58A; --accent:#1C6B63; --accent-ink:#F3FBF8; --accent-soft:#D3E5DA;
+  --gold:#B8891F; --focus:#1F5FA8; --shadow:rgba(60,40,15,.18); --warn:#A8322A;
+  --board:#173E44; --board-ink:#F4EFDF; --board-cell:rgba(240,250,245,.1);
+  --display:Forum, Georgia, "Times New Roman", serif;
+  --body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+  --c-blue:#1D5E9E; --c-green:#1F8A47; --c-yellow:#EFC21B; --c-purple:#7A4A9E;
+  --c-brown:#6E4526; --c-grey:#8C8C88; --c-red:#C8272E;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12110C; --surface:#201D15; --surface-2:#2B271C; --ink:#F0E6CF; --muted:#AA987A;
+    --line:#463E2C; --accent:#4FB3A6; --accent-ink:#0C1917; --accent-soft:#1D3431;
+    --gold:#E0B44A; --focus:#8FB8F2; --shadow:rgba(0,0,0,.45); --warn:#EE8A7E;
+    --board:#10292D; --board-cell:rgba(240,250,245,.07);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12110C; --surface:#201D15; --surface-2:#2B271C; --ink:#F0E6CF; --muted:#AA987A;
+  --line:#463E2C; --accent:#4FB3A6; --accent-ink:#0C1917; --accent-soft:#1D3431;
+  --gold:#E0B44A; --focus:#8FB8F2; --shadow:rgba(0,0,0,.45); --warn:#EE8A7E;
+  --board:#10292D; --board-cell:rgba(240,250,245,.07);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+body{margin:0;color:var(--ink);font:400 16px/1.45 var(--body);-webkit-text-size-adjust:100%;
+  background:var(--ground) url("img/parchment.jpg") repeat;background-size:420px;background-blend-mode:multiply;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+button,input{font:inherit;color:inherit}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* У степпера и переключателей overflow:hidden, и внешняя обводка фокуса обрезается
+   до полосок по бокам. Внутри таких блоков подсвечиваем рамкой внутрь. */
+.stepper :focus-visible,.own :focus-visible,.pcount :focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--focus)}
+h1,h2,h3{text-wrap:balance}
+img{max-width:100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.board,.stepper,.own,.vp,.hint-btn,.tot,.secnav,.ico,.track{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* ---------- лавровый жетон победных очков — как на картах игры ---------- */
+.vp{--s:42px;position:relative;flex:none;width:var(--s);height:var(--s);display:grid;place-items:center}
+.vp svg{position:absolute;inset:0;width:100%;height:100%}
+.vp b{position:relative;font:700 calc(var(--s) * .44)/1 var(--body);font-variant-numeric:lining-nums tabular-nums;color:#1D4F2E}
+.vp.empty svg{opacity:.35;filter:grayscale(1)}
+.vp.empty b{color:var(--muted);font-weight:400}
+.vp.sm{--s:34px}
+.vp.md{--s:40px}
+
+/* значок цвета карты — как в блокноте */
+.card{display:inline-block;width:.62em;height:.9em;border-radius:.12em;background:var(--cc);
+  box-shadow:0 0 0 .08em #fff,0 1px 3px rgba(0,0,0,.35);vertical-align:middle}
+.ico .card{font-size:40px}
+
+/* ---------- шапка ---------- */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--ground) 90%,transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.top-row{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:calc(7px + env(safe-area-inset-top)) 14px 3px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand img{width:40px;height:40px;border-radius:9px;flex:none;box-shadow:0 1px 3px var(--shadow)}
+.brand h1{margin:0;font:400 27px/1 var(--display);letter-spacing:.01em;white-space:nowrap}
+.brand small{display:block;font-size:11.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase}
+.secnav{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:5px 10px 7px;scrollbar-width:none}
+.secnav::-webkit-scrollbar{display:none}
+.secnav a{flex:none;padding:6px 14px;border-radius:999px;color:var(--ink);text-decoration:none;font-weight:700;font-size:15px}
+.secnav a[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.btn{font-weight:700;font-size:15px;padding:9px 14px;min-height:42px;border-radius:8px;border:1.5px solid var(--accent);
+  background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.danger{background:transparent;color:var(--warn);border-color:var(--warn)}
+.btn:disabled{opacity:.6;cursor:progress}
+.linkbtn{border:0;background:none;padding:6px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px}
+.topbtns{display:flex;gap:7px;flex:none}
+/* на телефоне название переносится на две строки, а подпись прячется — иначе налезает на кнопки */
+@media (max-width:440px){ .topbtns .btn{padding:9px 10px;font-size:14px} .brand h1{font-size:21px;white-space:normal} .brand small{display:none} .brand img{width:34px;height:34px} }
+
+/* ---------- раскладка ---------- */
+/* minmax(0,1fr), а не auto: иначе колонка растягивается по min-content
+   самой широкой карточки и страница уезжает вбок на телефоне. */
+.layout{max-width:1180px;margin:0 auto;padding:6px 10px 20px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){
+  .layout{grid-template-columns:minmax(0,1fr) 380px;align-items:start;padding-inline:16px}
+  .results{position:sticky;top:104px;max-height:calc(100vh - 186px);overflow:auto}
+}
+.group{scroll-margin-top:100px}
+.group > h2{margin:18px 4px 8px;font:400 27px/1.1 var(--display)}
+.cats{display:grid;gap:10px}
+
+/* ---------- карточки категорий ---------- */
+.cat{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 1px 3px var(--shadow);scroll-margin-top:100px}
+.cat-h{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center}
+.ico{width:48px;height:48px;border-radius:9px;background:var(--surface-2);display:grid;place-items:center;overflow:hidden}
+.ico img{width:40px;height:40px;display:block}
+.cat-h h3{margin:0;font:700 19px/1.15 var(--body);display:flex;align-items:center;gap:6px}
+.donemark{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:700}
+.rule{display:block;font-size:13.5px;color:var(--muted);line-height:1.25;margin-top:2px}
+.hint-btn{min-height:38px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.hint-btn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media (max-width:400px){ .hint-btn{padding:6px 9px;font-size:13px} }
+
+.plist{list-style:none;margin:8px 0 0;padding:0}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto 42px;gap:10px;align-items:center;padding:8px 0}
+.prow + .prow{border-top:1px solid var(--line)}
+.prow .rest{grid-column:1 / -1;margin-top:-4px;font-size:13px;color:var(--muted)}
+.prow .rest:empty{display:none}
+.pname{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;min-width:0}
+.pname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pname small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.pdot{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
+.pn{color:var(--pn-l)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .pn{color:var(--pn-d)} }
+:root[data-theme="dark"] .pn{color:var(--pn-d)}
+
+.stepper{display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);flex:none}
+.stepper button{width:46px;height:46px;border:0;background:var(--surface-2);font:700 26px/1 var(--body);cursor:pointer;color:var(--ink)}
+.stepper button:active{background:var(--accent-soft)}
+.stepper input{width:54px;text-align:center;border:0;border-inline:1.5px solid var(--line);background:var(--surface);font:700 21px var(--body);
+  font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield;padding:0;border-radius:0}
+.stepper input::placeholder{color:var(--muted);font-weight:400}
+.stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.stepper.sm button{width:38px;height:40px;font-size:21px}
+.stepper.sm input{width:44px;font-size:18px}
+/* монет бывает под полсотни — их удобнее набрать с клавиатуры */
+.stepper.lg input{width:90px;font-size:23px}
+@media (max-width:370px){ .stepper button{width:40px} .stepper input{width:46px} .stepper.sm button{width:34px} .stepper.sm input{width:38px} .stepper.lg input{width:70px} }
+
+/* подсказка */
+.hint{background:var(--surface-2);border-radius:10px;padding:12px;margin-top:10px}
+.hint p{margin:0 0 8px;max-width:66ch}
+.hint p:last-child{margin-bottom:0}
+.hint .ex{font-weight:700}
+.note{display:flex;gap:9px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:10px;
+  background:var(--surface-2);border-left:4px solid var(--accent);font-size:14.5px;line-height:1.35}
+.note img{width:30px;height:30px;flex:none}
+.note.bad{border-left-color:var(--warn);color:var(--ink)}
+.note.bad b{color:var(--warn)}
+
+/* ---------- плитки: чудеса, жетоны прогресса, гильдии ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:10px}
+/* у гильдии внутри ещё счётчики карт — ей нужна ширина, на телефоне идёт в одну колонку */
+.tiles.gl{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+/* на телефоне плитки идут в одну колонку: в две не помещаются ни названия чудес, ни имена на кнопках */
+@media (max-width:560px){ .tiles,.tiles.gl{grid-template-columns:minmax(0,1fr);gap:6px} }
+
+.tile{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 9px;align-items:start;padding:8px;
+  border:1.5px solid var(--line);border-radius:11px;background:var(--surface-2)}
+.tile.on{border-color:var(--oc);box-shadow:inset 0 0 0 1.5px var(--oc);background:color-mix(in srgb,var(--oc) 12%,var(--surface-2))}
+.tile .art{display:block;grid-row:span 2}
+.tile .art.w{width:26px;height:72px;border-radius:5px;object-fit:cover;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.tile .art.t{width:52px;height:52px}
+.tile .art.g{width:48px;height:48px}
+.tname{font-weight:700;font-size:14.5px;line-height:1.15;display:flex;justify-content:space-between;gap:4px;align-items:flex-start;min-width:0}
+.tname span{min-width:0;hyphens:auto;-webkit-hyphens:auto}
+.tname .vp{margin:-4px -3px 0 0}
+.tname .rule{font-weight:400;font-size:12.5px}
+.own{grid-column:2;display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface);align-self:end}
+.own button{min-height:38px;border:0;background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:4px 5px;font-size:13.5px;font-weight:700;min-width:0}
+.own button + button{border-left:1.5px solid var(--line)}
+.own button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.own button[aria-pressed="true"]{background:var(--oc);color:#fff}
+.own button[aria-pressed="true"] .pdot{box-shadow:0 0 0 2px #fff}
+.tsum{margin-top:10px;font-size:14px;color:var(--muted);line-height:1.35}
+.tsum b{color:var(--ink)}
+
+/* счётчики карт для гильдии */
+.gcount{grid-column:1 / -1;display:grid;gap:6px;margin-top:4px;padding-top:7px;border-top:1px dashed var(--line)}
+.gcount > small{font-size:12.5px;color:var(--muted);line-height:1.25}
+.gline{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13.5px;min-width:0}
+.gline > span{display:flex;align-items:center;gap:5px;min-width:0}
+.gline > span b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.gline .auto{font:700 17px var(--body);font-variant-numeric:tabular-nums;padding-right:6px}
+.gres{font-size:13.5px;font-weight:700;color:var(--accent)}
+
+/* ---------- военный трек: поле из правил, по делениям можно тыкать ---------- */
+.track{position:relative;margin-top:10px;aspect-ratio:1400 / 247;background:url("img/board.webp") center/100% 100% no-repeat;border-radius:6px}
+.track button{position:absolute;top:0;height:64%;width:4.8%;transform:translateX(-50%);border:0;padding:0;background:none;cursor:pointer;border-radius:40%}
+.track button:hover{background:rgba(255,240,200,.18)}
+.track button:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--focus)}
+.track .marker{position:absolute;top:31%;height:62%;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:left .18s ease-out}
+@media (prefers-reduced-motion:reduce){ .track .marker{transition:none} }
+.tcaps{display:flex;justify-content:space-between;gap:10px;margin-top:4px;font-size:13.5px;font-weight:700}
+.tcaps span{display:flex;align-items:center;gap:5px;min-width:0}
+.tcaps span b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tctl{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:8px;align-items:center;margin-top:8px}
+.tctl > button{height:48px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);font:700 22px/1 var(--body);cursor:pointer}
+.tctl > button:active{background:var(--accent-soft)}
+.tstat{text-align:center;font-size:15px;line-height:1.25}
+.tstat b{display:block;font-size:16.5px}
+.tstat.sup b{color:var(--warn)}
+.mrow{display:flex;justify-content:space-between;gap:8px;margin-top:10px}
+.mrow .pname{font-size:15.5px}
+.mrow > div{display:flex;align-items:center;gap:8px;min-width:0}
+.mrow > div:last-child{flex-direction:row-reverse}
+
+/* научное превосходство */
+.sci{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.sci button{min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px;font-weight:700;min-width:0}
+.sci button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sci button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.sci button img{width:26px;height:26px;flex:none}
+
+/* ---------- итоги ---------- */
+.results{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;scroll-margin-top:100px;box-shadow:0 1px 3px var(--shadow)}
+.results > h2{margin:0 0 10px;font:400 26px/1.1 var(--display)}
+.verdict{display:flex;gap:10px;align-items:center;border:1.5px solid var(--gold);border-radius:11px;padding:10px 12px;margin-bottom:10px;
+  background:color-mix(in srgb,var(--gold) 14%,var(--surface-2));font-size:15px;line-height:1.3}
+.verdict img{width:40px;height:40px;flex:none}
+.verdict b{display:block;font-size:16px}
+.verdict.draw{border-color:var(--line);background:var(--surface-2)}
+.podium{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ptot{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:10px;padding:10px 12px;
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2);min-width:0}
+.ptot .pmeeple{grid-row:span 2;width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.2)}
+.ptname{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptot b{font:400 34px/1 var(--display);font-variant-numeric:tabular-nums}
+.ptot.lead{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+.rtable{margin-top:12px;border-radius:14px;background:var(--board);padding:8px;display:grid;gap:4px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.3),inset 0 0 26px rgba(0,0,0,.28),0 2px 6px var(--shadow)}
+.rrow{display:grid;grid-template-columns:30px minmax(0,1fr) 46px 46px;gap:8px;align-items:center;padding:4px 8px;border-radius:9px;background:var(--board-cell)}
+.rrow.rhead{background:none;padding-block:0}
+.rhp{display:grid;place-items:center}
+.rhp i{display:block;width:20px;height:20px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)}
+.ricon{display:grid;place-items:center}
+.ricon img{width:28px;height:28px;display:block}
+.ricon .card{font-size:24px}
+.rname{color:var(--board-ink);font-weight:700;font-size:14.5px;line-height:1.15}
+.rv{display:grid;place-items:center}
+.rrow.rtotal{background:rgba(0,0,0,.28)}
+.rrow.rtotal .rname{font:400 20px var(--display)}
+.rtv{text-align:center;font:700 20px var(--body);font-variant-numeric:tabular-nums;color:var(--board-ink)}
+.rtv.lead{color:#FFD766}
+
+.export{margin-top:18px;padding-top:14px;border-top:1.5px solid var(--line)}
+.export h3{margin:0 2px 8px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.export-btns{display:flex;flex-wrap:wrap;gap:8px}
+.export-btns .btn{flex:1 1 auto}
+
+/* нижняя панель */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:2px solid var(--line);
+  box-shadow:0 -6px 20px var(--shadow);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+.dock-in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tot{min-width:0;display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 12px;border-radius:10px;
+  background:var(--surface-2);color:var(--ink);text-decoration:none}
+.tot span{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tot b{margin-left:auto;font:400 26px/1 var(--display);font-variant-numeric:tabular-nums}
+.tot.lead{box-shadow:inset 0 0 0 1.5px var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+@media (min-width:1000px){ .dock{display:none} body{padding-bottom:0} }
+
+/* диалоги */
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,calc(100% - 20px));max-height:calc(100% - 40px);
+  background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(20,16,8,.6)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--line)}
+.dlg-h h2{margin:0;font:400 24px var(--display)}
+.dlg-b{padding:4px 16px 12px;overflow:auto;max-height:66vh}
+.dlg-b.pad{padding:12px 16px}
+.pedit{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pedit label{font-size:13px;color:var(--muted)}
+.pedit input{width:100%;min-width:0;font:700 18px var(--body);padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface-2)}
+.swatches{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sw{width:32px;height:32px;border-radius:50%;padding:0;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.sw[aria-checked="true"]{box-shadow:0 0 0 2.5px var(--ink)}
+.sw:disabled{opacity:.25;cursor:not-allowed}
+.dlg-f{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 16px;border-top:1.5px solid var(--line)}
+#exportImg{display:block;width:100%;height:auto;border-radius:10px;background:var(--surface-2)}
+.opt{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-weight:700;cursor:pointer;line-height:1.3}
+.opt input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--accent)}
+.sheet{margin:0;padding:12px;border-radius:10px;background:var(--surface-2);border:1.5px solid var(--line);
+  font:400 15px/1.5 ui-monospace,"Cascadia Mono",Consolas,"PT Sans",monospace;white-space:pre-wrap;overflow-x:auto;max-height:46vh}
+.saymsg{margin:10px 2px 0;font-size:14px;color:var(--muted);min-height:1.2em}
+.warn{margin:0 0 12px;padding:10px 12px;border-radius:9px;background:var(--accent-soft);font-size:14px;line-height:1.35}
+
+/* памятка по подготовке */
+.steps{margin:0;padding-left:22px;display:grid;gap:7px;line-height:1.35}
+.steps li::marker{font-weight:700;color:var(--accent)}
+.setup-h{margin:16px 0 8px;font:400 21px var(--display)}
+.setup-h:first-child{margin-top:0}
+.firstgame{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.firstgame div{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--surface-2);font-size:14.5px;line-height:1.4}
+.firstgame b{display:block;margin-bottom:3px}
+.pcount{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.pcount button{flex:1;min-height:44px;border:0;background:var(--surface);color:var(--ink);font-weight:700;font-size:15px;cursor:pointer}
+.pcount button + button{border-left:1.5px solid var(--line)}
+.pcount button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* история партий */
+.hisnote{font-size:13.5px;color:var(--muted);align-self:center;flex:1 1 auto;line-height:1.3}
+.hgame{border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:9px;background:var(--surface-2)}
+.hhead{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+.hhead time{font-size:13px;color:var(--muted);flex:1 1 auto}
+.hhead .linkbtn{flex:none;padding:0;font-size:13px}
+.hhow{font-size:13px;color:var(--accent);font-weight:700;margin-top:4px}
+.hrow{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:15.5px}
+.hrow i{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
+.hrow span{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow b{font-variant-numeric:tabular-nums;font-size:17px}
+.hrow.win{font-weight:700}
+.hrow.win span::after{content:" 🏆";font-size:13px}
+.hempty{margin:0;color:var(--muted);line-height:1.4}
+
+footer{max-width:1180px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:14px}
+footer p{margin:0 0 6px;max-width:78ch}
+.home{flex:none;align-self:center;display:grid;place-items:center;width:30px;height:40px;margin:0 -4px 0 -8px;border-radius:9px;color:var(--muted);text-decoration:none}
+.home:active{background:var(--surface-2)}
+@media (max-width:400px){.home + img{display:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div class="brand"><a class="home" href="../../#score" aria-label="Все игры" title="Все игры"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <img src="img/icon.png" alt="" width="40" height="40">
+      <div><h1>7 чудес: Дуэль</h1><small>Счётный лист</small></div>
+    </div>
+    <div class="topbtns">
+      <button type="button" class="btn ghost" id="openSetup">Подготовка</button>
+      <button type="button" class="btn ghost" id="openPlayers">Игроки</button>
+    </div>
+  </div>
+  <nav class="secnav" id="secnav" aria-label="Разделы подсчёта"></nav>
+</header>
+
+<main class="layout">
+  <div id="cats"></div>
+  <section class="results" id="results" aria-labelledby="resTitle">
+    <h2 id="resTitle">Итоги партии</h2>
+    <div id="verdict"></div>
+    <div class="podium" id="podium"></div>
+    <div id="rtable"></div>
+    <div class="export">
+      <h3>Выгрузить результаты</h3>
+      <div class="export-btns">
+        <button type="button" class="btn" id="expTxt">Текст</button>
+        <button type="button" class="btn ghost" id="expImg">Картинка</button>
+        <button type="button" class="btn ghost" id="expJson">JSON</button>
+      </div>
+    </div>
+    <div class="export">
+      <h3>Архив</h3>
+      <div class="export-btns">
+        <button type="button" class="btn ghost" id="openHistory">История партий</button>
+        <button type="button" class="btn danger" id="newGame">Новая партия</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Правила подсчёта и все иллюстрации — из правил «7 чудес: Дуэль» и блокнота для подсчёта очков. Очки и имена игроков сохраняются только в вашем браузере и никуда не отправляются.</p>
+</footer>
+
+<nav class="dock" aria-label="Текущий счёт"><div class="dock-in" id="dock"></div></nav>
+
+<dialog id="playersDlg" aria-labelledby="dlgTitle">
+  <div class="dlg-h"><h2 id="dlgTitle">Игроки</h2><button type="button" class="btn ghost" data-close>Готово</button></div>
+  <div class="dlg-b" id="dlgBody"></div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="swapPlayers">Поменять местами</button>
+    <button type="button" class="btn danger" id="resetScores">Новая партия</button>
+  </div>
+</dialog>
+
+<dialog id="textDlg" aria-labelledby="txtTitle">
+  <div class="dlg-h"><h2 id="txtTitle">Текст итогов</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <label class="opt"><input type="checkbox" id="txtDetails"> Подробно: какие чудеса, жетоны и гильдии</label>
+    <pre class="sheet" id="txtSheet"></pre>
+    <p class="saymsg" id="txtSay"></p>
+  </div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="txtFile">Скачать .txt</button>
+    <button type="button" class="btn" id="txtCopy">Копировать</button>
+  </div>
+</dialog>
+
+<dialog id="setupDlg" aria-labelledby="setupTitle">
+  <div class="dlg-h"><h2 id="setupTitle">Подготовка к игре</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad" id="setupBody"></div>
+</dialog>
+
+<dialog id="historyDlg" aria-labelledby="hisTitle">
+  <div class="dlg-h"><h2 id="hisTitle">История партий</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad" id="historyBody"></div>
+  <div class="dlg-f">
+    <span class="hisnote" id="hisNote"></span>
+    <button type="button" class="btn danger" id="clearHistory">Очистить историю</button>
+  </div>
+</dialog>
+
+<dialog id="exportDlg" aria-labelledby="expTitle">
+  <div class="dlg-h"><h2 id="expTitle">Картинка итогов</h2><button type="button" class="btn ghost" data-close>Закрыть</button></div>
+  <div class="dlg-b pad">
+    <p class="warn" id="imgWarn" hidden></p>
+    <img id="exportImg" alt="Итоги партии">
+  </div>
+  <div class="dlg-f">
+    <button type="button" class="btn ghost" id="shareImg" hidden>Поделиться</button>
+    <button type="button" class="btn" id="saveImg">Скачать PNG</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+const STORE = 'duel-scorer-v1';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const plural = (n, f) => { const a = Math.abs(n) % 100, b = a % 10; return a > 10 && a < 20 ? f[2] : b > 1 && b < 5 ? f[1] : b === 1 ? f[0] : f[2]; };
+const ochk = n => `${n} ${plural(n, ['очко', 'очка', 'очков'])}`;
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+/* лавровый жетон победных очков — светлый круг в зелёном венке, как на картах */
+const LAUREL = `<svg viewBox="0 0 44 44" aria-hidden="true">
+  <circle cx="22" cy="22" r="20" fill="#2F8A4C"/>
+  <g fill="#8CCB6E">${Array.from({length:14}, (_, i) => {
+    const a = (i / 14) * Math.PI * 2, x = 22 + Math.cos(a) * 17.4, y = 22 + Math.sin(a) * 17.4;
+    return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="2.1" ry="4" transform="rotate(${(a * 180 / Math.PI + 90 + 35).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }).join('')}</g>
+  <circle cx="22" cy="22" r="13.6" fill="#F7F1DC" stroke="#1F5E33" stroke-width="1.4"/></svg>`;
+const vp = (n, cls = '') => `<span class="vp${n == null ? ' empty' : ''}${cls}">${LAUREL}<b>${n == null ? '—' : n}</b></span>`;
+
+const COLORS = {
+  /* [фишка, название, имя на светлом фоне, имя на тёмном фоне] */
+  blue:  ['#2C6CB5', 'Синий',   '#255C9C', '#8FBAF2'],
+  red:   ['#BE3A2B', 'Красный', '#A93124', '#F0937F'],
+  green: ['#3E8A3C', 'Зелёный', '#2E6A2C', '#8ACF83'],
+  gold:  ['#C99513', 'Жёлтый',  '#7E6108', '#EFC84C'],
+  purple:['#7E4FA6', 'Фиолетовый', '#6A3F90', '#C7A2EA']
+};
+const col = p => COLORS[p.color] || COLORS.blue;
+const dot = p => `<i class="pdot" style="background:${col(p)[0]}"></i>`;
+const pnStyle = p => `--pn-l:${col(p)[2]};--pn-d:${col(p)[3]}`;
+const pn = p => `<span class="pn" style="${pnStyle(p)}">${esc(p.name || 'Без имени')}</span>`;
+const img = (n, a = '', cls = '') => `<img src="img/${n}" alt="${esc(a)}"${cls ? ` class="${cls}"` : ''} loading="lazy">`;
+const card = c => `<i class="card" style="--cc:var(--c-${c})"></i>`;
+
+/* ---------- справочник из правил ---------- */
+const WONDERS = [
+  {id:'pyramids',   name:'Пирамиды',                  vp:9},
+  {id:'sphinx',     name:'Сфинкс',                    vp:6},
+  {id:'library',    name:'Александрийская библиотека', vp:4},
+  {id:'lighthouse', name:'Александрийский маяк',       vp:4},
+  {id:'appian',     name:'Аппиева дорога',             vp:3},
+  {id:'circus',     name:'Большой цирк',               vp:3},
+  {id:'colossus',   name:'Колосс',                     vp:3},
+  {id:'gardens',    name:'Висячие сады',               vp:3},
+  {id:'zeus',       name:'Статуя Зевса',               vp:3},
+  {id:'mausoleum',  name:'Галикарнасский мавзолей',    vp:2},
+  {id:'piraeus',    name:'Пирей',                      vp:2},
+  {id:'artemis',    name:'Храм Артемиды',              vp:0}
+];
+/* очки жетонов прогресса: у «Математики» — 3 за каждый свой жетон, включая её саму */
+const PROGRESS = [
+  {id:'philosophy',   name:'Философия',      vp:7},
+  {id:'agriculture',  name:'Земледелие',     vp:4},
+  {id:'mathematics',  name:'Математика',     vp:'3×', math:true},
+  {id:'law',          name:'Закон',          vp:0},
+  {id:'architecture', name:'Архитектура',    vp:0},
+  {id:'economy',      name:'Экономика',      vp:0},
+  {id:'masonry',      name:'Каменная кладка', vp:0},
+  {id:'strategy',     name:'Стратегия',      vp:0},
+  {id:'theology',     name:'Теология',       vp:0},
+  {id:'urbanism',     name:'Урбанизм',       vp:0}
+];
+/* Гильдия приносит очки по тому городу, где нужного больше, — своему или чужому.
+   Счётчики карт вводятся прямо в плитке гильдии; чудеса и монеты берутся из своих разделов. */
+const GUILDS = [
+  {id:'builders',     name:'Гильдия строителей',     what:'чудес',                    per:2, from:'wonders', rule:'2 ПО за каждое чудо в городе, где чудес больше'},
+  {id:'moneylenders', name:'Гильдия ростовщиков',    what:'комплектов из 3 монет',     per:1, from:'coins',   rule:'1 ПО за каждые 3 монеты в самом богатом городе'},
+  {id:'scientists',   name:'Гильдия учёных',         what:'зелёных карт', cards:['green'],          per:1, rule:'1 ПО за каждую зелёную карту в городе, где их больше'},
+  {id:'traders',      name:'Гильдия торговцев',      what:'жёлтых карт',  cards:['yellow'],         per:1, rule:'1 ПО за каждую жёлтую карту в городе, где их больше'},
+  {id:'magistrates',  name:'Гильдия судей',          what:'синих карт',   cards:['blue'],           per:1, rule:'1 ПО за каждую синюю карту в городе, где их больше'},
+  {id:'tacticians',   name:'Гильдия тактиков',       what:'красных карт', cards:['red'],            per:1, rule:'1 ПО за каждую красную карту в городе, где их больше'},
+  {id:'shipowners',   name:'Гильдия судовладельцев', what:'коричневых и серых карт', cards:['brown', 'grey'], per:1, rule:'1 ПО за каждую коричневую и серую карту в городе, где их вместе больше'}
+];
+const W = Object.fromEntries(WONDERS.map(x => [x.id, x]));
+const G = Object.fromEntries(GUILDS.map(x => [x.id, x]));
+
+/* Военный трек: 19 делений, 0 — центр. Плюс — маркер ушёл к столице второго игрока
+   (правой), значит перевес у первого. Зоны: 1–2 деления — 2 ПО, 3–5 — 5 ПО,
+   6–8 — 10 ПО, 9 — столица соперника и досрочная победа. */
+const milVP = d => d >= 9 ? 10 : d >= 6 ? 10 : d >= 3 ? 5 : d >= 1 ? 2 : 0;
+/* центры делений на картинке поля, в процентах ширины (картинка 2008 точек, шаг 96,1) */
+const cellX = i => ((135 + i * 96.1) / 2008 * 100).toFixed(2) + '%';
+
+/* ---------- состояние ---------- */
+const uid = () => 'p' + Math.random().toString(36).slice(2, 9);
+const blankV = () => ({blue:null, green:null, yellow:null, coins:null});
+const freshGame = () => ({wonders:{}, progress:{}, guilds:{}, gc:{}, marker:0, science:null});
+const mkPlayer = (name, color) => ({id:uid(), name, color, v:blankV()});
+
+/* Имена и цвета игроков дублируются в куки на 400 дней (больше браузеры не разрешают),
+   очки текущей партии хранятся в localStorage. */
+const COOKIE = 'duel_players', COOKIE_DAYS = 400;
+function readPlayersCookie() {
+  try {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + COOKIE + '=([^;]*)'));
+    const list = m && JSON.parse(decodeURIComponent(m[1]));
+    return Array.isArray(list) && list.length === 2 && list.every(x => x && typeof x.n === 'string') ? list : null;
+  } catch (e) { return null; }
+}
+function writePlayersCookie() {
+  try {
+    const data = encodeURIComponent(JSON.stringify(state.players.map(p => ({n:p.name, c:p.color}))));
+    const path = location.pathname.replace(/[^/]*$/, '') || '/';
+    document.cookie = `${COOKIE}=${data}; max-age=${COOKIE_DAYS * 86400}; path=${path}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+  } catch (e) {}
+}
+
+let state;
+try {
+  const raw = JSON.parse(lsGet(STORE));
+  if (raw && Array.isArray(raw.players) && raw.players.length === 2) {
+    raw.players.forEach(p => { p.id = p.id || uid(); p.v = Object.assign(blankV(), p.v); if (!COLORS[p.color]) p.color = 'blue'; });
+    state = Object.assign(freshGame(), raw);
+  }
+} catch (e) {}
+if (!state) {
+  const saved = readPlayersCookie();
+  state = Object.assign(freshGame(), {players:saved
+    ? saved.map((x, i) => mkPlayer(x.n, COLORS[x.c] ? x.c : ['blue', 'red'][i]))
+    : [mkPlayer('Игрок 1', 'blue'), mkPlayer('Игрок 2', 'red')]});
+}
+const save = () => { lsSet(STORE, JSON.stringify(state)); writePlayersCookie(); };
+writePlayersCookie(); /* продлеваем срок куки при каждом заходе */
+
+/* ---------- подсчёт ---------- */
+const owned = (map, i) => Object.keys(map).filter(k => map[k] === i);
+const wonderCount = i => owned(state.wonders, i).filter(k => W[k]).length;
+const coinSets = i => Math.floor((state.players[i].v.coins || 0) / 3);
+/* сколько «нужного» в городе i для гильдии g */
+function guildBase(g, i) {
+  if (g.from === 'wonders') return wonderCount(i);
+  if (g.from === 'coins') return coinSets(i);
+  const c = state.gc[g.id]; return c && c[i] != null ? c[i] : null;
+}
+function guildVP(g) {
+  const a = guildBase(g, 0), b = guildBase(g, 1);
+  return Math.max(a || 0, b || 0) * g.per;
+}
+
+const CATS = [
+  {id:'blue',     name:'Гражданские здания', short:'Синие',    ico:card('blue'),   kind:'num', rule:'Очки с синих карт — они же решают ничью'},
+  {id:'green',    name:'Научные здания',     short:'Зелёные',  ico:card('green'),  kind:'num', rule:'Очки с зелёных карт'},
+  {id:'yellow',   name:'Торговые здания',    short:'Жёлтые',   ico:card('yellow'), kind:'num', rule:'Очки с жёлтых карт'},
+  {id:'guilds',   name:'Гильдии',            short:'Гильдии',  ico:card('purple'), kind:'guilds', rule:'Отметьте, чья гильдия, — очки посчитаются сами'},
+  {id:'wonders',  name:'Чудеса света',       short:'Чудеса',   ico:img('wonder.png', 'Чудо света'), kind:'wonders', rule:'Отметьте построенные чудеса'},
+  {id:'progress', name:'Жетоны прогресса',   short:'Прогресс', ico:img('progress.png', 'Жетон прогресса'), kind:'progress', rule:'Отметьте, у кого какие жетоны'},
+  {id:'coins',    name:'Монеты',             short:'Монеты',   ico:img('coin.png', 'Монета'), kind:'num', big:true, rule:'1 ПО за каждые 3 монеты в казне'},
+  {id:'military', name:'Военный трек',       short:'Армия',    ico:img('military.png', 'Военный трек'), kind:'military', rule:'Куда ушёл маркер конфликта: 2, 5 или 10 ПО'},
+  {id:'science',  name:'Научное превосходство', ico:img('laurel.png', 'Лавровый венок'), kind:'science', rule:'6 разных научных символов — досрочная победа', noRow:true}
+];
+const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+const ROWS = CATS.filter(c => !c.noRow);
+
+function points(i, c) {
+  const p = state.players[i];
+  switch (c.kind) {
+    case 'num': return c.id === 'coins' ? (p.v.coins == null ? null : coinSets(i)) : p.v[c.id];
+    case 'wonders': {
+      if (!Object.keys(state.wonders).length) return null;
+      return owned(state.wonders, i).reduce((s, k) => s + (W[k] ? W[k].vp : 0), 0);
+    }
+    case 'progress': {
+      if (!Object.keys(state.progress).length) return null;
+      const mine = owned(state.progress, i);
+      return mine.reduce((s, k) => s + (k === 'mathematics' ? 3 * mine.length : (PROGRESS.find(t => t.id === k)?.vp || 0)), 0);
+    }
+    case 'guilds': {
+      if (!Object.keys(state.guilds).length) return null;
+      return owned(state.guilds, i).reduce((s, k) => s + (G[k] ? guildVP(G[k]) : 0), 0);
+    }
+    case 'military': {
+      const m = state.marker, d = Math.abs(m);
+      return (m > 0 && i === 0) || (m < 0 && i === 1) ? milVP(d) : 0;
+    }
+  }
+  return null;
+}
+const total = i => ROWS.reduce((s, c) => s + (points(i, c) || 0), 0);
+
+/* Кто победил. Досрочно — военным превосходством (маркер в столице соперника) или научным
+   (6 разных символов). Иначе гражданская победа по очкам; при равенстве — у кого больше
+   очков за синие карты, а если и там поровну, победа делится. */
+function standing() {
+  const totals = [0, 1].map(total), m = state.marker;
+  const blue = [0, 1].map(i => state.players[i].v.blue || 0);
+  let winners = [], how = null;
+  if (Math.abs(m) >= 9) { winners = [m > 0 ? 0 : 1]; how = 'military'; }
+  else if (state.science === 0 || state.science === 1) { winners = [state.science]; how = 'science'; }
+  else if (totals[0] || totals[1]) {
+    how = 'civil';
+    if (totals[0] !== totals[1]) winners = [totals[0] > totals[1] ? 0 : 1];
+    else if (blue[0] !== blue[1]) { winners = [blue[0] > blue[1] ? 0 : 1]; how = 'blue'; }
+    else { winners = [0, 1]; how = 'shared'; }
+  }
+  return {totals, blue, winners, how, isLead: i => winners.includes(i)};
+}
+const HOW = {
+  military:'военное превосходство', science:'научное превосходство', civil:'гражданская победа',
+  blue:'гражданская победа: ничья по очкам, больше очков за синие карты', shared:'ничья — победа поделена'
+};
+
+/* ---------- разметка ---------- */
+const catsEl = $('#cats'), dock = $('#dock'), secnav = $('#secnav');
+const GROUPS = [
+  {id:'build',   title:'Здания',             nav:'Здания',         cats:['blue', 'green', 'yellow', 'guilds']},
+  {id:'wonders', title:'Чудеса и прогресс',  nav:'Чудеса',         cats:['wonders', 'progress']},
+  {id:'army',    title:'Казна, армия и наука', nav:'Казна и армия', cats:['coins', 'military', 'science']}
+];
+
+/* раскрытые подсказки переживают перезагрузку */
+const HINTS_KEY = 'duel-open-hints';
+const openHints = new Set((() => { try { return JSON.parse(lsGet(HINTS_KEY)) || []; } catch (e) { return []; } })());
+
+const HINTS = {
+  blue:['Сложите победные очки со всех <b>синих карт</b> в своём городе — число в лавровом венке на карте.',
+        'Если по итогу очков поровну, побеждает тот, у кого больше очков именно за синие карты, — поэтому эту строку важно заполнить честно.'],
+  green:['Сложите победные очки с <b>зелёных карт</b>. Научные символы сами по себе очков не дают — только число в венке.'],
+  yellow:['Сложите победные очки с <b>жёлтых карт</b> — они есть только у торговых зданий III эпохи (например, «Арена», «Маяк», «Торговая палата»).',
+          'Монеты, полученные с жёлтых карт во время игры, считаются в разделе «Монеты».'],
+  guilds:['Гильдия приносит очки <b>по тому городу, где нужного больше</b> — это может быть и город соперника.',
+          'Нажмите в плитке гильдии, у кого она построена, и введите, сколько нужных карт в каждом городе. Чудеса и монеты для строителей и ростовщиков сайт возьмёт из своих разделов.',
+          'В партии участвуют только 3 гильдии из 7.'],
+  wonders:['Отмечайте только <b>построенные</b> чудеса — под которыми лежит карта эпохи. Невозведённые чудеса очков не дают.',
+           'За партию можно построить не больше 7 чудес: восьмое уходит в коробку. «Храм Артемиды» очков не приносит.'],
+  progress:['«Философия» — 7 ПО, «Земледелие» — 4 ПО, «Математика» — по 3 ПО за каждый ваш жетон прогресса, включая её саму. Остальные жетоны очков не приносят.',
+            'Отметьте все свои жетоны: без них «Математика» посчитается неверно.'],
+  coins:['Каждый <b>полный комплект из 3 монет</b> в казне — 1 ПО. Остаток очков не даёт.',
+         'Просто наберите, сколько монет в казне, — сайт сам разделит на 3.'],
+  military:['Нажмите на деление поля, где стоит маркер конфликта, или двигайте его стрелками.',
+            'Очки получает тот, в сторону <b>чьего соперника</b> ушёл маркер: 2 ПО за первые два деления, 5 ПО — за зону 3–5, 10 ПО — за зону 6–8.',
+            'Если маркер дошёл до столицы соперника, игра сразу заканчивается <b>военным превосходством</b>.'],
+  science:['Кто собрал <b>6 разных научных символов</b> (с зелёных карт и жетона «Закон»), сразу побеждает — очки не считаются.',
+           'Одинаковые символы не в счёт: пара одинаковых даёт только жетон прогресса.']
+};
+
+const stepper = (key, i, val, max, label, size) =>
+  `<div class="stepper${size ? ' ' + size : ''}"><button type="button" data-step="-1" aria-label="${esc(label)}: меньше">−</button>` +
+  `<input type="number" inputmode="numeric" pattern="[0-9]*" placeholder="—" enterkeyhint="next" data-key="${key}" data-i="${i}" value="${val ?? ''}" min="0" max="${max}" aria-label="${esc(label)}">` +
+  `<button type="button" data-step="1" aria-label="${esc(label)}: больше">+</button></div>`;
+
+const ownerBtns = (kind, id, max) => {
+  const o = state[kind][id];
+  return `<div class="own" role="group" aria-label="Чьё">${state.players.map((p, i) =>
+    `<button type="button" data-own="${kind}" data-id="${id}" data-i="${i}" aria-pressed="${o === i}" style="--oc:${col(p)[0]}" title="${esc(p.name)}">${dot(p)}<span>${esc(p.name || '—')}</span></button>`).join('')}</div>`;
+};
+const tileStyle = (kind, id) => { const o = state[kind][id]; return o === 0 || o === 1 ? ` on" style="--oc:${col(state.players[o])[0]}` : ''; };
+
+function wondersHTML() {
+  return `<div class="tiles">${WONDERS.map(w => `<div class="tile${tileStyle('wonders', w.id)}">
+    ${img(`w-${w.id}.jpg`, '', 'art w')}
+    <div class="tname"><span>${w.name}</span>${vp(w.vp, ' sm')}</div>
+    ${ownerBtns('wonders', w.id)}</div>`).join('')}</div>
+    <p class="tsum" data-sum="wonders"></p>`;
+}
+function progressHTML() {
+  return `<div class="tiles">${PROGRESS.map(t => `<div class="tile${tileStyle('progress', t.id)}">
+    ${img(`pt-${t.id}.png`, '', 'art t')}
+    <div class="tname"><span>${t.name}</span>${t.vp ? vp(t.vp, ' sm') : ''}</div>
+    ${ownerBtns('progress', t.id)}</div>`).join('')}</div>`;
+}
+function guildsHTML() {
+  return `<div class="tiles gl">${GUILDS.map(g => {
+    const o = state.guilds[g.id], on = o === 0 || o === 1;
+    let cnt = '';
+    if (on) {
+      const lines = state.players.map((p, i) => `<div class="gline"><span>${dot(p)}<b class="pn" style="${pnStyle(p)}">${esc(p.name)}</b></span>${g.from
+        ? `<span class="auto" data-gauto="${g.id}" data-i="${i}"></span>`
+        : stepper('gc:' + g.id, i, state.gc[g.id]?.[i], 30, `${g.what}: ${p.name}`, 'sm')}</div>`).join('');
+      cnt = `<div class="gcount"><small>${g.from === 'wonders' ? 'Построено чудес' : g.from === 'coins' ? 'Комплектов по 3 монеты' : 'Сколько ' + g.what} в каждом городе:</small>${lines}<span class="gres" data-gres="${g.id}"></span></div>`;
+    }
+    return `<div class="tile${tileStyle('guilds', g.id)}">
+      ${img(`g-${g.id}.png`, '', 'art g')}
+      <div class="tname"><span>${g.name}<small class="rule">${g.rule}</small></span></div>
+      ${ownerBtns('guilds', g.id)}${cnt}</div>`; }).join('')}</div>
+    <p class="tsum" data-sum="guilds"></p>`;
+}
+function militaryHTML() {
+  const [a, b] = state.players;
+  return `<div class="track" role="group" aria-label="Военный трек">
+      ${Array.from({length:19}, (_, i) => `<button type="button" data-cell="${i - 9}" style="left:${cellX(i)}" aria-label="Деление ${i - 9 === 0 ? 'в центре' : (i - 9 > 0 ? '+' : '') + (i - 9)}"></button>`).join('')}
+      <img class="marker" src="img/marker.png" alt="" id="marker">
+    </div>
+    <div class="tcaps"><span>${dot(a)}<b class="pn" style="${pnStyle(a)}">столица: ${esc(a.name)}</b></span><span><b class="pn" style="${pnStyle(b)}">столица: ${esc(b.name)}</b>${dot(b)}</span></div>
+    <div class="tctl">
+      <button type="button" data-move="-1" aria-label="Маркер на деление влево, к столице ${esc(a.name)}">◀</button>
+      <div class="tstat" id="tstat" aria-live="polite"></div>
+      <button type="button" data-move="1" aria-label="Маркер на деление вправо, к столице ${esc(b.name)}">▶</button>
+    </div>
+    <div class="mrow">${state.players.map((p, i) => `<div><span class="pname">${dot(p)}${pn(p)}</span>
+      <output class="vp" data-pts="military" data-i="${i}">${LAUREL}<b>—</b></output></div>`).join('')}</div>`;
+}
+function scienceHTML() {
+  return `<div class="sci" role="group" aria-label="Кто собрал 6 разных научных символов">${state.players.map((p, i) =>
+    `<button type="button" data-sci="${i}" aria-pressed="${state.science === i}">${img('laurel.png')}<span>${esc(p.name)}</span></button>`).join('')}</div>`;
+}
+
+function catHTML(c) {
+  const open = openHints.has(c.id), ps = state.players;
+  const head = `<header class="cat-h">
+      <div class="ico">${c.ico}</div>
+      <div><h3>${c.name}<span class="donemark" data-done="${c.id}" hidden title="Заполнено у обоих">✓</span></h3><span class="rule">${c.rule}</span></div>
+      <button type="button" class="hint-btn" aria-expanded="${open}" aria-controls="hint-${c.id}">${open ? 'Скрыть' : 'Как считать'}</button>
+    </header>
+    <div class="hint" id="hint-${c.id}"${open ? '' : ' hidden'}>${HINTS[c.id].map(t => `<p>${t}</p>`).join('')}</div>`;
+  const pts = i => `<output class="vp" data-pts="${c.id}" data-i="${i}">${LAUREL}<b>—</b></output>`;
+  let body;
+  if (c.kind === 'num') body = `<ul class="plist">${ps.map((p, i) => `<li class="prow"><span class="pname">${dot(p)}${pn(p)}</span>${
+      stepper(c.id, i, p.v[c.id], c.big ? 199 : 99, c.name + ': ' + p.name, c.big ? 'lg' : '')}${pts(i)}${c.big ? `<small class="rest" data-rest="${i}"></small>` : ''}</li>`).join('')}</ul>`;
+  else if (c.kind === 'wonders') body = wondersHTML();
+  else if (c.kind === 'progress') body = progressHTML() + `<ul class="plist">${ps.map((p, i) => `<li class="prow"><span class="pname">${dot(p)}<span>${pn(p)}<small data-ptinfo="${i}"></small></span></span><span></span>${pts(i)}</li>`).join('')}</ul>`;
+  else if (c.kind === 'guilds') body = guildsHTML();
+  else if (c.kind === 'military') body = militaryHTML();
+  else body = scienceHTML();
+  return `<article class="cat" id="cat-${c.id}">${head}${body}</article>`;
+}
+
+function renderAll() {
+  catsEl.innerHTML = GROUPS.map(g => `<section class="group" id="g-${g.id}" aria-labelledby="gh-${g.id}">
+    <h2 id="gh-${g.id}">${g.title}</h2>
+    <div class="cats">${g.cats.map(id => catHTML(CAT[id])).join('')}</div></section>`).join('');
+  secnav.innerHTML = GROUPS.map((g, i) => `<a href="#g-${g.id}" data-nav="g-${g.id}" aria-current="${i === 0}">${g.nav}</a>`).join('')
+    + '<a href="#results" data-nav="results" aria-current="false">Итоги</a>';
+  update(); spy();
+}
+
+function update() {
+  const ps = state.players;
+  $$('[data-pts]', catsEl).forEach(el => {
+    const n = points(+el.dataset.i, CAT[el.dataset.pts]);
+    el.querySelector('b').textContent = n == null ? '—' : n;
+    el.classList.toggle('empty', n == null);
+  });
+  $$('[data-rest]', catsEl).forEach(el => {
+    const c = ps[+el.dataset.rest].v.coins;
+    el.textContent = c == null ? '' : `${c} ${plural(c, ['монета', 'монеты', 'монет'])} = ${Math.floor(c / 3)} × 3${c % 3 ? ` и ${c % 3} в остатке — до следующего очка не хватает ${3 - c % 3}` : ' без остатка'}`;
+  });
+  $$('[data-ptinfo]', catsEl).forEach(el => {
+    const n = owned(state.progress, +el.dataset.ptinfo).length;
+    el.textContent = n ? `${n} ${plural(n, ['жетон', 'жетона', 'жетонов'])}` : 'нет жетонов';
+  });
+  $$('[data-gauto]', catsEl).forEach(el => { el.textContent = guildBase(G[el.dataset.gauto], +el.dataset.i); });
+  $$('[data-gres]', catsEl).forEach(el => {
+    const g = G[el.dataset.gres], a = guildBase(g, 0), b = guildBase(g, 1), o = state.guilds[g.id];
+    const best = Math.max(a || 0, b || 0);
+    el.textContent = `${ps[o]?.name || ''}: ${g.per > 1 ? `${g.per} × ${best}` : best} = ${ochk(best * g.per)}`;
+  });
+
+  /* сводки и предупреждения под плитками */
+  const wn = [0, 1].map(wonderCount), wAll = wn[0] + wn[1];
+  const sumW = $('[data-sum="wonders"]', catsEl);
+  if (sumW) {
+    const over = wAll > 7 || wn.some(n => n > 4);
+    sumW.innerHTML = `Построено: ${ps.map((p, i) => `<b>${esc(p.name)}</b> ${wn[i]}`).join(', ')} — всего ${wAll} из 7.`
+      + (over ? ` <b style="color:var(--warn)">${wAll > 7 ? 'Больше 7 чудес за партию не бывает.' : 'У каждого игрока только 4 чуда.'}</b>` : '');
+  }
+  const gAll = Object.keys(state.guilds).length, sumG = $('[data-sum="guilds"]', catsEl);
+  if (sumG) sumG.innerHTML = gAll > 3 ? '<b style="color:var(--warn)">В партии участвуют только 3 гильдии — проверьте отметки.</b>' : '';
+
+  /* военный трек */
+  const m = state.marker, d = Math.abs(m), mk = $('#marker');
+  if (mk) {
+    mk.style.left = cellX(m + 9);
+    const lead = m > 0 ? ps[0] : ps[1], ts = $('#tstat');
+    ts.classList.toggle('sup', d >= 9);
+    ts.innerHTML = m === 0 ? '<b>Маркер в центре</b>никто не получает очков'
+      : d >= 9 ? `<b>Военное превосходство</b>${esc(lead.name)} побеждает досрочно`
+      : `<b>Перевес: ${esc(lead.name)}</b>${d} ${plural(d, ['деление', 'деления', 'делений'])} → ${ochk(milVP(d))}`;
+  }
+  $$('[data-sci]', catsEl).forEach(b => b.setAttribute('aria-pressed', String(state.science === +b.dataset.sci)));
+
+  const both = f => ps.every(f);
+  const done = {blue:both(p => p.v.blue != null), green:both(p => p.v.green != null), yellow:both(p => p.v.yellow != null),
+    coins:both(p => p.v.coins != null), wonders:wAll > 0, progress:Object.keys(state.progress).length > 0, guilds:gAll > 0};
+  $$('[data-done]', catsEl).forEach(el => { el.hidden = !done[el.dataset.done]; });
+
+  const st = standing();
+  renderDock(st); renderResults(st);
+}
+
+function renderDock(st) {
+  dock.innerHTML = state.players.map((p, i) =>
+    `<a class="tot${st.isLead(i) ? ' lead' : ''}" href="#results">${dot(p)}${pn(p)}<b>${st.totals[i]}</b></a>`).join('');
+}
+
+function verdictText(st) {
+  const ps = state.players, name = i => esc(ps[i].name);
+  switch (st.how) {
+    case 'military': return {ico:'military.png', t:`${name(st.winners[0])} — военное превосходство`, s:'Маркер конфликта дошёл до столицы соперника: игра окончена досрочно, очки не важны.'};
+    case 'science':  return {ico:'laurel.png', t:`${name(st.winners[0])} — научное превосходство`, s:'6 разных научных символов: игра окончена досрочно, очки не важны.'};
+    case 'civil':    return {ico:'laurel.png', t:`Побеждает ${name(st.winners[0])}`, s:`Гражданская победа: ${st.totals[st.winners[0]]} против ${st.totals[1 - st.winners[0]]}.`};
+    case 'blue':     return {ico:'laurel.png', t:`Побеждает ${name(st.winners[0])}`, s:`Ничья по очкам (${st.totals[0]}), но за синие карты ${st.blue[st.winners[0]]} против ${st.blue[1 - st.winners[0]]}.`};
+    case 'shared':   return {ico:'laurel.png', t:'Ничья — победа поделена', s:`Поровну и по очкам (${st.totals[0]}), и за синие карты (${st.blue[0]}).`, draw:true};
+  }
+  return null;
+}
+
+function renderResults(st) {
+  const ps = state.players, v = verdictText(st);
+  $('#verdict').innerHTML = v ? `<div class="verdict${v.draw ? ' draw' : ''}">${img(v.ico)}<div><b>${v.t}</b>${v.s}</div></div>` : '';
+  $('#podium').innerHTML = ps.map((p, i) => `<div class="ptot${st.isLead(i) ? ' lead' : ''}">
+    <i class="pmeeple" style="background:${col(p)[0]}"></i><span class="ptname">${pn(p)}</span><b>${st.totals[i]}</b></div>`).join('');
+  $('#rtable').innerHTML = `<div class="rtable" role="table" aria-label="Очки по категориям">
+    <div class="rrow rhead" role="row"><span role="columnheader"><span class="sr">Значок</span></span><span role="columnheader"><span class="sr">Категория</span></span>
+      ${ps.map(p => `<span class="rhp" role="columnheader" title="${esc(p.name)}"><i style="background:${col(p)[0]}"></i><span class="sr">${esc(p.name)}</span></span>`).join('')}</div>
+    ${ROWS.map(c => `<div class="rrow" role="row"><span class="ricon" role="cell">${c.ico}</span><span class="rname" role="rowheader">${c.short}</span>
+      ${ps.map((p, i) => `<span class="rv" role="cell">${vp(points(i, c), ' sm')}</span>`).join('')}</div>`).join('')}
+    <div class="rrow rtotal" role="row"><span class="ricon" role="cell"><span class="sr">Σ</span></span><span class="rname" role="rowheader">Итого</span>
+      ${ps.map((p, i) => `<span class="rtv${st.isLead(i) ? ' lead' : ''}" role="cell">${st.totals[i]}</span>`).join('')}</div></div>`;
+}
+
+let observer;
+function spy() {
+  if (!('IntersectionObserver' in window)) return;
+  if (observer) observer.disconnect();
+  const set = id => secnav.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', String(a.dataset.nav === id)));
+  observer = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) set(e.target.id); }), {rootMargin:'-35% 0px -60% 0px'});
+  /* на широком экране итоги «прилипли» сбоку и видны всегда — следим только за разделами */
+  const sel = matchMedia('(min-width:1000px)').matches ? '.group' : '.group, #results';
+  document.querySelectorAll(sel).forEach(s => observer.observe(s));
+}
+
+/* ---------- ввод ---------- */
+const clamp = (n, inp) => Math.min(+inp.max, Math.max(+inp.min, n));
+const changed = () => { save(); update(); };
+/* ключ поля: «blue» — очки игрока, «gc:scientists» — счётчик карт для гильдии */
+function setVal(inp, n) {
+  const i = +inp.dataset.i, k = inp.dataset.key;
+  if (k.startsWith('gc:')) { const id = k.slice(3); (state.gc[id] = state.gc[id] || [null, null])[i] = n; }
+  else state.players[i].v[k] = n;
+}
+function getVal(inp) {
+  const i = +inp.dataset.i, k = inp.dataset.key;
+  return k.startsWith('gc:') ? state.gc[k.slice(3)]?.[i] ?? null : state.players[i].v[k];
+}
+
+catsEl.addEventListener('click', e => {
+  const step = e.target.closest('[data-step]');
+  if (step) {
+    const inp = step.parentElement.querySelector('input'), d = +step.dataset.step;
+    const now = inp.value === '' ? null : parseInt(inp.value, 10);
+    const n = clamp(now == null || isNaN(now) ? (d > 0 ? 1 : 0) : now + d, inp);
+    inp.value = n; setVal(inp, n); changed(); return;
+  }
+  const hb = e.target.closest('.hint-btn');
+  if (hb) {
+    const id = hb.getAttribute('aria-controls'), h = document.getElementById(id), open = h.hidden;
+    h.hidden = !open; hb.setAttribute('aria-expanded', String(open)); hb.textContent = open ? 'Скрыть' : 'Как считать';
+    const cid = id.slice(5); if (open) openHints.add(cid); else openHints.delete(cid);
+    lsSet(HINTS_KEY, JSON.stringify([...openHints]));
+    return;
+  }
+  const ob = e.target.closest('[data-own]');
+  if (ob) {
+    /* повторное нажатие на того же игрока снимает отметку */
+    const map = state[ob.dataset.own], id = ob.dataset.id, i = +ob.dataset.i;
+    if (map[id] === i) delete map[id]; else map[id] = i;
+    save(); rerenderCat(ob.dataset.own, ob.dataset.id, i); return;
+  }
+  const cell = e.target.closest('[data-cell]');
+  if (cell) { state.marker = +cell.dataset.cell; changed(); return; }
+  const mv = e.target.closest('[data-move]');
+  if (mv) { state.marker = Math.max(-9, Math.min(9, state.marker + +mv.dataset.move)); changed(); return; }
+  const sc = e.target.closest('[data-sci]');
+  if (sc) { const i = +sc.dataset.sci; state.science = state.science === i ? null : i; changed(); }
+});
+/* Перерисовываем только одну карточку, а фокус возвращаем на ту же кнопку:
+   иначе после каждого нажатия с клавиатуры фокус улетал бы в начало страницы. */
+function rerenderCat(kind, id, i) {
+  const art = $('#cat-' + kind);
+  art.outerHTML = catHTML(CAT[kind]);
+  update();
+  $(`[data-own="${kind}"][data-id="${id}"][data-i="${i}"]`)?.focus({preventScroll:true});
+}
+catsEl.addEventListener('input', e => {
+  const inp = e.target.closest('[data-key]'); if (!inp) return;
+  if (inp.value === '') { setVal(inp, null); changed(); return; }
+  const n = parseInt(inp.value, 10); if (isNaN(n)) return;
+  setVal(inp, clamp(n, inp)); changed();
+});
+catsEl.addEventListener('change', e => {
+  const inp = e.target.closest('[data-key]');
+  if (inp) inp.value = getVal(inp) ?? '';
+});
+catsEl.addEventListener('focusin', e => { if (e.target.matches('[data-key]')) e.target.select(); });
+/* Enter в поле переводит к следующему — удобно заполнять лист подряд */
+catsEl.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !e.target.matches('[data-key]')) return;
+  e.preventDefault();
+  const all = $$('[data-key]', catsEl), k = all.indexOf(e.target);
+  if (all[k + 1]) all[k + 1].focus(); else e.target.blur();
+});
+
+/* ---------- диалоги ---------- */
+const openDlg = d => d.showModal ? d.showModal() : d.setAttribute('open', '');
+const closeDlg = d => d.close ? d.close() : d.removeAttribute('open');
+$$('dialog').forEach(d => d.addEventListener('click', e => {
+  if (e.target === d || e.target.closest('[data-close]')) closeDlg(d);
+}));
+
+/* ---------- игроки ---------- */
+const dlg = $('#playersDlg'), dlgBody = $('#dlgBody');
+function renderDialog() {
+  dlgBody.innerHTML = state.players.map((p, i) => `<div class="pedit">
+    <label for="pname${i}">${i === 0 ? 'Первый игрок — столица слева на поле' : 'Второй игрок — столица справа на поле'}</label>
+    <input id="pname${i}" class="pn" style="${pnStyle(p)}" value="${esc(p.name)}" maxlength="24" data-name="${i}" enterkeyhint="done">
+    <div class="swatches" role="radiogroup" aria-label="Цвет: ${esc(p.name)}">
+      ${Object.entries(COLORS).map(([k, [hex, label]]) => {
+        const taken = state.players[1 - i].color === k;
+        return `<button type="button" class="sw" role="radio" aria-checked="${p.color === k}" aria-label="${label}${taken ? ' — занят' : ''}" data-color="${k}" data-i="${i}" style="background:${hex}"${taken ? ' disabled' : ''}></button>`; }).join('')}
+    </div></div>`).join('');
+}
+$('#openPlayers').addEventListener('click', () => { renderDialog(); openDlg(dlg); });
+dlg.addEventListener('click', e => {
+  const sw = e.target.closest('[data-color]');
+  if (sw) { state.players[+sw.dataset.i].color = sw.dataset.color; save(); renderDialog(); renderAll(); }
+});
+dlgBody.addEventListener('input', e => {
+  const inp = e.target.closest('[data-name]'); if (!inp) return;
+  state.players[+inp.dataset.name].name = inp.value; save(); renderAll();
+});
+/* Меняем местами вместе со всем добром: отметки чудес, жетонов, гильдий,
+   счётчики карт и маркер конфликта переворачиваются. */
+$('#swapPlayers').addEventListener('click', () => {
+  state.players.reverse();
+  ['wonders', 'progress', 'guilds'].forEach(k => Object.keys(state[k]).forEach(id => { state[k][id] = 1 - state[k][id]; }));
+  Object.values(state.gc).forEach(a => a.reverse());
+  state.marker = -state.marker || 0;
+  if (state.science === 0 || state.science === 1) state.science = 1 - state.science;
+  save(); renderDialog(); renderAll();
+});
+function newGame() {
+  if (!confirm('Начать новую партию? Счёт уедет в «Историю партий», лист очистится, игроки останутся.')) return;
+  const kept = archiveGame();      /* законченная партия уезжает в архив */
+  state.players.forEach(p => { p.v = blankV(); });
+  Object.assign(state, freshGame());
+  save(); renderAll(); closeDlg(dlg); window.scrollTo({top:0});
+  if (kept) setTimeout(() => alert('Партия сохранена в «Историю партий».'), 60);
+}
+$('#resetScores').addEventListener('click', newGame);
+$('#newGame').addEventListener('click', newGame);
+
+/* ---------- памятка по подготовке (правила, стр. 6–7) ---------- */
+const setupDlg = $('#setupDlg');
+$('#setupBody').innerHTML = `
+  <h3 class="setup-h">Поле и монеты</h3>
+  <ol class="steps">
+    <li>Поле — сбоку, между игроками. Маркер конфликта — на центральное деление.</li>
+    <li>4 военных жетона — на свои места лицом вверх.</li>
+    <li>Перемешайте 10 жетонов прогресса, <b>5 случайных</b> — на поле лицом вверх, остальные в коробку.</li>
+    <li>Каждый берёт из банка <b>7 монет</b>.</li>
+  </ol>
+  <h3 class="setup-h">Выбор чудес</h3>
+  <ol class="steps">
+    <li>Перемешайте 12 чудес, откройте 4. Первый игрок берёт 1, второй — 2, первый — последнее.</li>
+    <li>Откройте ещё 4 и повторите, но начинает <b>второй</b> игрок. У каждого по 4 чуда.</li>
+  </ol>
+  <p class="hempty" style="margin-top:10px">В первой партии вместо выбора возьмите готовые наборы:</p>
+  <div class="firstgame" style="margin-top:8px">
+    <div><b>Первый игрок</b>Пирамиды<br>Александрийский маяк<br>Храм Артемиды<br>Статуя Зевса</div>
+    <div><b>Второй игрок</b>Большой цирк<br>Пирей<br>Аппиева дорога<br>Колосс</div>
+  </div>
+  <h3 class="setup-h">Колоды эпох</h3>
+  <ol class="steps">
+    <li>Не глядя уберите в коробку <b>по 3 карты</b> из каждой колоды эпохи.</li>
+    <li>Возьмите <b>3 случайные гильдии</b> и не глядя замешайте в колоду III эпохи, остальные — в коробку.</li>
+    <li>Разложите 20 карт I эпохи по схеме с последней страницы правил: часть лицом вверх, часть вниз.</li>
+  </ol>
+  <h3 class="setup-h">Между эпохами</h3>
+  <p class="hempty">Следующую эпоху начинает тот, кого выберет игрок со <b>слабой армией</b> — на чьей стороне поля стоит маркер. Если маркер в центре — выбирает тот, кто сыграл последнюю карту.</p>`;
+$('#openSetup').addEventListener('click', () => openDlg(setupDlg));
+
+/* ---------- история партий ---------- */
+const HISTORY = 'duel-history', HIST_MAX = 60;
+const readHistory = () => { try { const h = JSON.parse(lsGet(HISTORY)); return Array.isArray(h) ? h : []; } catch (e) { return []; } };
+const writeHistory = h => lsSet(HISTORY, JSON.stringify(h.slice(0, HIST_MAX)));
+
+/* Партия попадает в архив в момент «Новой партии» — это и есть её конец. */
+function archiveGame() {
+  const st = standing();
+  if (!st.how) return false;
+  const h = readHistory();
+  h.unshift({
+    at: new Date().toISOString(), how: st.how,
+    players: state.players.map((p, i) => ({name:p.name || 'Без имени', color:p.color, total:st.totals[i], win:st.isLead(i)}))
+  });
+  writeHistory(h);
+  return true;
+}
+
+const historyDlg = $('#historyDlg'), historyBody = $('#historyBody'), hisNote = $('#hisNote');
+function renderHistory() {
+  const h = readHistory();
+  $('#clearHistory').hidden = !h.length;
+  if (!h.length) {
+    hisNote.textContent = '';
+    historyBody.innerHTML = `<p class="hempty">Пока пусто. Партия попадёт сюда, когда вы нажмёте «Новая партия» — счёт сохранится, а лист очистится.</p>`;
+    return;
+  }
+  const wins = {};
+  h.forEach(g => g.players.forEach(p => { if (p.win) wins[p.name] = (wins[p.name] || 0) + 1; }));
+  const table = Object.entries(wins).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'));
+  hisNote.textContent = `${h.length} ${plural(h.length, ['партия', 'партии', 'партий'])}`
+    + (table.length ? ' · победы: ' + table.map(([n, w]) => `${n} ${w}`).join(', ') : '');
+  historyBody.innerHTML = h.map((g, k) => `<div class="hgame">
+    <div class="hhead"><time datetime="${esc(g.at)}">${dateRu(new Date(g.at))}</time>
+      <button type="button" class="linkbtn" data-del="${k}">удалить</button></div>
+    ${[...g.players].sort((a, b) => b.win - a.win || b.total - a.total).map(p => `<div class="hrow${p.win ? ' win' : ''}">
+      <i style="background:${(COLORS[p.color] || COLORS.blue)[0]}"></i>
+      <span>${esc(p.name)}</span><b>${p.total}</b></div>`).join('')}
+    ${g.how ? `<div class="hhow">${HOW[g.how] || ''}</div>` : ''}
+  </div>`).join('');
+}
+$('#openHistory').addEventListener('click', () => { renderHistory(); openDlg(historyDlg); });
+historyDlg.addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); }
+});
+$('#clearHistory').addEventListener('click', () => {
+  if (!confirm('Удалить все сохранённые партии? Это не отменить.')) return;
+  writeHistory([]); renderHistory();
+});
+
+/* ---------- выгрузка результатов ---------- */
+const pad2 = x => String(x).padStart(2, '0');
+const stamp = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+const dateRu = d => d.toLocaleString('ru-RU', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+/* победитель идёт первым */
+const order = st => [0, 1].sort((a, b) => (st.isLead(b) ? 1 : 0) - (st.isLead(a) ? 1 : 0) || st.totals[b] - st.totals[a]);
+const namesOf = (map, list, i) => owned(map, i).map(k => list.find(x => x.id === k)?.name).filter(Boolean);
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+
+/* текст — по строкам блокнота */
+function resultText(details) {
+  const st = standing(), ps = state.players;
+  const body = order(st).map(i => {
+    const L = [ps[i].name || 'Без имени'];
+    ROWS.forEach(c => {
+      const n = points(i, c); if (n == null) return;
+      let extra = '';
+      if (details) {
+        const list = c.id === 'wonders' ? namesOf(state.wonders, WONDERS, i) : c.id === 'progress' ? namesOf(state.progress, PROGRESS, i)
+          : c.id === 'guilds' ? namesOf(state.guilds, GUILDS, i) : null;
+        if (list && list.length) extra = ` (${list.join(', ')})`;
+        if (c.id === 'coins') extra = ` (${ps[i].v.coins} ${plural(ps[i].v.coins, ['монета', 'монеты', 'монет'])})`;
+      }
+      L.push(`${c.short} ${n}${extra}`);
+    });
+    L.push('Итого ' + st.totals[i]);
+    return L.join('\n');
+  }).join('\n\n');
+  const v = verdictText(st);
+  return body + (v ? `\n\n${v.t.replace(/&quot;|&amp;|&lt;|&gt;/g, s => ({'&quot;':'"','&amp;':'&','&lt;':'<','&gt;':'>'}[s]))} (${HOW[st.how]})` : '') + '\n';
+}
+
+function resultData(now) {
+  const st = standing(), ps = state.players;
+  return {
+    game:'7 чудес: Дуэль',
+    exportedAt:now.toISOString(),
+    exportedAtLocal:dateRu(now),
+    victory:st.how ? {type:st.how, description:HOW[st.how], winners:st.winners.map(i => ps[i].name)} : null,
+    militaryMarker:state.marker,
+    players:order(st).map(i => ({
+      name:ps[i].name, color:col(ps[i])[1], winner:st.isLead(i), total:st.totals[i],
+      points:Object.fromEntries(ROWS.map(c => [c.id, points(i, c) || 0])),
+      coins:ps[i].v.coins || 0,
+      wonders:namesOf(state.wonders, WONDERS, i),
+      progress:namesOf(state.progress, PROGRESS, i),
+      guilds:namesOf(state.guilds, GUILDS, i),
+      scienceSupremacy:state.science === i
+    }))
+  };
+}
+
+const textDlg = $('#textDlg'), txtSheet = $('#txtSheet'), txtDetails = $('#txtDetails'), txtSay = $('#txtSay');
+const DETAILS_KEY = 'duel-text-details';
+txtDetails.checked = lsGet(DETAILS_KEY) === '1';
+const paintText = () => { txtSheet.textContent = resultText(txtDetails.checked); };
+$('#expTxt').addEventListener('click', () => { paintText(); txtSay.textContent = ''; openDlg(textDlg); });
+txtDetails.addEventListener('change', () => { lsSet(DETAILS_KEY, txtDetails.checked ? '1' : '0'); paintText(); });
+$('#txtCopy').addEventListener('click', async () => {
+  const text = resultText(txtDetails.checked);
+  try {
+    if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+    else {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    txtSay.textContent = 'Скопировано — вставляйте куда нужно.';
+  } catch (e) { txtSay.textContent = 'Скопировать не вышло: выделите текст выше вручную.'; }
+});
+$('#txtFile').addEventListener('click', () => {
+  download(new Blob(['﻿' + resultText(txtDetails.checked).replace(/\n/g, '\r\n')], {type:'text/plain;charset=utf-8'}), `duel-${stamp(new Date())}.txt`);
+});
+$('#expJson').addEventListener('click', () => {
+  const now = new Date();
+  download(new Blob([JSON.stringify(resultData(now), null, 2)], {type:'application/json'}), `duel-${stamp(now)}.json`);
+});
+
+/* --- картинка --- */
+const ICONS = {};
+const loadIcon = src => new Promise(res => {
+  if (ICONS[src]) return res(ICONS[src]);
+  const im = new Image();
+  im.onload = () => { ICONS[src] = im; res(im); };
+  im.onerror = () => res(null);
+  im.src = src;
+});
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function fitText(ctx, text, max) {
+  if (ctx.measureText(text).width <= max) return text;
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + '…').width > max) t = t.slice(0, -1);
+  return t + '…';
+}
+/* лавровый жетон — тот же рисунок, что и в SVG (система координат 44×44) */
+function drawLaurel(ctx, cx, cy, s, n) {
+  const k = s / 44;
+  ctx.save();
+  ctx.globalAlpha = n == null ? .4 : 1;
+  ctx.beginPath(); ctx.arc(cx, cy, 20 * k, 0, Math.PI * 2); ctx.fillStyle = n == null ? '#777' : '#2F8A4C'; ctx.fill();
+  ctx.fillStyle = n == null ? '#AAA' : '#8CCB6E';
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2;
+    ctx.save(); ctx.translate(cx + Math.cos(a) * 17.4 * k, cy + Math.sin(a) * 17.4 * k); ctx.rotate(a + Math.PI / 2 + 35 * Math.PI / 180);
+    ctx.beginPath(); ctx.ellipse(0, 0, 2.1 * k, 4 * k, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx, cy, 13.6 * k, 0, Math.PI * 2); ctx.fillStyle = '#F7F1DC'; ctx.fill();
+  ctx.lineWidth = 1.4 * k; ctx.strokeStyle = '#1F5E33'; ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `700 ${s * .44}px "PT Sans", sans-serif`; ctx.fillStyle = n == null ? '#8A7F6C' : '#1D4F2E';
+  ctx.fillText(n == null ? '—' : String(n), cx, cy + k);
+  ctx.restore();
+}
+function drawBoard(ctx, x, y, w, h, r) {
+  rrect(ctx, x, y, w, h, r);
+  ctx.save(); ctx.clip();
+  ctx.fillStyle = '#173E44'; ctx.fillRect(x, y, w, h);
+  const g = ctx.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * .2, x + w / 2, y + h / 2, Math.max(w, h) * .75);
+  g.addColorStop(0, 'rgba(160,255,230,.08)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+const CARD_HEX = {blue:'#1D5E9E', green:'#1F8A47', yellow:'#EFC21B', purple:'#7A4A9E'};
+const ROW_ICON = {wonders:'wonder.png', progress:'progress.png', coins:'coin.png', military:'military.png'};
+
+async function buildImage(now) {
+  try {
+    await Promise.all(['400 60px Forum', '700 30px "PT Sans"', '400 30px "PT Sans"']
+      .map(f => document.fonts.load(f, '0123456789АаБбВвЁё—×')));
+  } catch (e) {}
+  const icons = {};
+  await Promise.all([...Object.values(ROW_ICON), 'laurel.png', 'military.png'].map(async n => { icons[n] = await loadIcon(`img/${n}`); }));
+
+  const ps = state.players, st = standing(), totals = st.totals, v = verdictText(st);
+  const Wd = 1080, P = 46, inner = Wd - P * 2;
+  const cardsTop = P + 124 + (v ? 96 : 0);
+  const cardW = (inner - 16) / 2, cardH = 132;
+  const colW = 150, rowH = 66, headH = 84, totalH = 92;
+  const tableTop = cardsTop + cardH + 30;
+  const H = tableTop + headH + ROWS.length * rowH + 14 + totalH + 66;
+
+  const cv = document.createElement('canvas'); cv.width = Wd; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#E8D6B1'; ctx.fillRect(0, 0, Wd, H);
+  const pg = ctx.createLinearGradient(0, 0, 0, H);
+  pg.addColorStop(0, 'rgba(255,248,228,.6)'); pg.addColorStop(1, 'rgba(150,115,60,.18)');
+  ctx.fillStyle = pg; ctx.fillRect(0, 0, Wd, H);
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#16564F'; ctx.font = '400 64px Forum, Georgia, serif'; ctx.fillText('7 чудес: Дуэль', P, P + 56);
+  ctx.fillStyle = '#6B563A'; ctx.font = '400 27px "PT Sans", sans-serif';
+  ctx.fillText('Итоги партии · ' + dateRu(now), P, P + 96);
+  if (v) {
+    const y = P + 122;
+    rrect(ctx, P, y, inner, 80, 14); ctx.fillStyle = 'rgba(210,160,40,.18)'; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#B8891F'; ctx.stroke();
+    const ic = icons[v.ico]; if (ic) ctx.drawImage(ic, P + 14, y + 12, 56, 56);
+    const un = s => s.replace(/&quot;|&amp;|&lt;|&gt;/g, m => ({'&quot;':'"','&amp;':'&','&lt;':'<','&gt;':'>'}[m]));
+    ctx.fillStyle = '#2C2417'; ctx.font = '700 27px "PT Sans", sans-serif'; ctx.fillText(fitText(ctx, un(v.t), inner - 110), P + 86, y + 35);
+    ctx.fillStyle = '#6B563A'; ctx.font = '400 21px "PT Sans", sans-serif'; ctx.fillText(fitText(ctx, un(v.s), inner - 110), P + 86, y + 64);
+  }
+
+  order(st).forEach((i, k) => {
+    const p = ps[i], x = P + k * (cardW + 16), y = cardsTop, win = st.isLead(i);
+    drawBoard(ctx, x, y, cardW, cardH, 16);
+    if (win) { ctx.lineWidth = 4; ctx.strokeStyle = '#E3B23C'; rrect(ctx, x + 2, y + 2, cardW - 4, cardH - 4, 15); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(x + 44, y + cardH / 2, 24, 0, Math.PI * 2);
+    ctx.fillStyle = col(p)[0]; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke();
+    const tx = x + 84, tw = cardW - 84 - 16;
+    ctx.textAlign = 'left';
+    ctx.font = '400 19px "PT Sans", sans-serif'; ctx.fillStyle = win ? '#F3D06B' : 'rgba(240,245,235,.75)';
+    ctx.fillText(win ? (st.winners.length > 1 ? 'победа поделена' : 'победа') : '', tx, y + 34);
+    ctx.font = '700 28px "PT Sans", sans-serif'; ctx.fillStyle = '#F4EFDF';
+    ctx.fillText(fitText(ctx, p.name || 'Без имени', tw), tx, y + 70);
+    ctx.font = '400 46px Forum, Georgia, serif'; ctx.fillStyle = win ? '#FFD766' : '#F4EFDF';
+    ctx.fillText(String(totals[i]), tx, y + 116);
+    const numW = ctx.measureText(String(totals[i])).width;
+    ctx.font = '400 22px "PT Sans", sans-serif'; ctx.fillStyle = 'rgba(240,245,235,.75)';
+    ctx.fillText(plural(totals[i], ['очко', 'очка', 'очков']), tx + numW + 9, y + 116);
+  });
+
+  const colX = i => Wd - P - 10 - (2 - i) * colW + colW / 2;
+  let y = tableTop;
+  drawBoard(ctx, P, y, inner, headH - 14, 13);
+  ps.forEach((p, i) => {
+    ctx.beginPath(); ctx.arc(colX(i) - 0, y + 22, 13, 0, Math.PI * 2);
+    ctx.fillStyle = col(p)[0]; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.font = '700 21px "PT Sans", sans-serif'; ctx.fillStyle = '#F4EFDF';
+    ctx.fillText(fitText(ctx, p.name || '—', colW - 8), colX(i), y + 60);
+  });
+  y += headH;
+  ROWS.forEach(c => {
+    const h = rowH - 8, cy = y + h / 2;
+    drawBoard(ctx, P, y, inner, h, 11);
+    if (CARD_HEX[c.id === 'guilds' ? 'purple' : c.id]) {
+      rrect(ctx, P + 22, cy - 19, 26, 38, 4); ctx.fillStyle = CARD_HEX[c.id === 'guilds' ? 'purple' : c.id]; ctx.fill();
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke();
+    } else if (icons[ROW_ICON[c.id]]) ctx.drawImage(icons[ROW_ICON[c.id]], P + 13, cy - 22, 44, 44);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '700 25px "PT Sans", sans-serif'; ctx.fillStyle = '#F4EFDF';
+    ctx.fillText(c.name, P + 72, cy + 1);
+    ps.forEach((p, i) => drawLaurel(ctx, colX(i), cy, 46, points(i, c)));
+    y += rowH;
+  });
+  y += 14;
+  const th = totalH - 10, ty = y + th / 2;
+  drawBoard(ctx, P, y, inner, th, 13);
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#F4EFDF'; ctx.font = '400 38px Forum, Georgia, serif';
+  ctx.fillText('Итого', P + 22, ty);
+  ps.forEach((p, i) => {
+    ctx.textAlign = 'center'; ctx.font = '400 46px Forum, Georgia, serif';
+    ctx.fillStyle = st.isLead(i) ? '#FFD766' : '#F4EFDF';
+    ctx.fillText(String(totals[i]), colX(i), ty + 2);
+  });
+
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  ctx.font = '400 19px "PT Sans", sans-serif'; ctx.fillStyle = 'rgba(80,62,38,.75)';
+  ctx.fillText('7 чудес: Дуэль · счётный лист', P, H - 28);
+  if (/^https?:$/.test(location.protocol)) {
+    ctx.textAlign = 'right';
+    ctx.fillText(location.host + location.pathname.replace(/index\.html$/, ''), Wd - P, H - 28);
+  }
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('браузер не смог сохранить картинку')), 'image/png'));
+}
+
+const exportDlg = $('#exportDlg'), exportImg = $('#exportImg'), imgWarn = $('#imgWarn');
+let exportFile = null;
+$('#expImg').addEventListener('click', async e => {
+  const btn = e.currentTarget, label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Рисую…';
+  openDlg(exportDlg);
+  try {
+    const now = new Date(), blob = await buildImage(now);
+    exportFile = new File([blob], `duel-${stamp(now)}.png`, {type:'image/png'});
+    if (exportImg.src.startsWith('blob:')) URL.revokeObjectURL(exportImg.src);
+    exportImg.src = URL.createObjectURL(blob);
+    imgWarn.hidden = true;
+    $('#shareImg').hidden = !(navigator.canShare && navigator.canShare({files:[exportFile]}));
+  } catch (err) {
+    exportFile = null; exportImg.removeAttribute('src'); $('#shareImg').hidden = true;
+    imgWarn.hidden = false;
+    imgWarn.textContent = location.protocol === 'file:'
+      ? 'Картинка не рисуется, когда страница открыта с диска: браузер запрещает холсту читать локальные файлы. На GitHub Pages всё заработает — а пока выгрузите текстом.'
+      : 'Не получилось нарисовать картинку: ' + err.message + '. Попробуйте выгрузить текстом.';
+  }
+  btn.disabled = false; btn.textContent = label;
+});
+$('#saveImg').addEventListener('click', () => { if (exportFile) download(exportFile, exportFile.name); });
+$('#shareImg').addEventListener('click', async () => {
+  try { await navigator.share({files:[exportFile], title:'7 чудес: Дуэль — итоги партии'}); } catch (e) {}
+});
+
+/* ---------- работа без сети ---------- */
+/* Регистрируем только по http(s): с диска service worker не разрешён. */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('../../sw.js').catch(() => {}));
+}
+
+renderAll();
+})();
+</script>
+</body>
+</html>
