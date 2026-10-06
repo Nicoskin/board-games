@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Белый замок: Дуэль — счётный лист</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="img/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<meta name="theme-color" content="#EDE3CC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10151F" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Белый замок">
+<meta name="description" content="Подсчёт очков клана в настольной игре «Белый замок: Дуэль»: ресурсы, флаги нобори, катаны, кабуто и оригами">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&family=PT+Sans:wght@400;700&display=swap">
+<style>
+:root{
+  --ground:#EDE3CC; --surface:#FBF6E9; --surface-2:#F1E8D2; --ink:#1C2740; --muted:#6C6A5E;
+  --line:#D6C9A8; --accent:#1F3C6E; --accent-ink:#FBF6E9; --gold:#B8891F; --shadow:rgba(40,35,15,.14);
+  --p0:#C98A00; --p0-soft:#F7E6B4; --p1:#2A57A0; --p1-soft:#D6E2F5;
+  --display:"PT Serif", Georgia, "Times New Roman", serif;
+  --body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#10151F; --surface:#1A2231; --surface-2:#232D40; --ink:#ECE4D0; --muted:#A39F90;
+    --line:#35415A; --accent:#9DBBEE; --accent-ink:#10151F; --gold:#E0B44A; --shadow:rgba(0,0,0,.45);
+    --p0:#F0BE3C; --p0-soft:#3D3212; --p1:#86ABEF; --p1-soft:#1D2D4D;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 16px/1.4 var(--body);
+  font-variant-numeric:lining-nums;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:0 12px}
+
+/* ---------- шапка ---------- */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--ground) 93%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.home{flex:none;display:grid;place-items:center;width:30px;height:40px;margin:0 -4px 0 -6px;border-radius:9px;color:var(--muted);text-decoration:none}
+.home:active{background:var(--surface-2)}
+.brand img{width:40px;height:40px;border-radius:9px;flex:none;box-shadow:0 1px 3px var(--shadow)}
+.brand h1{margin:0;font:700 21px/1.05 var(--display);white-space:nowrap}
+.brand small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:9px 13px;font-weight:700;font-size:14.5px}
+.btn:active{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+@media (max-width:400px){.home + img{display:none}}
+
+/* ---------- итог сверху ---------- */
+.totals{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 9px}
+.tot{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 11px;border-radius:12px;
+  background:var(--surface);border:1px solid var(--line)}
+.tot i{flex:none;width:12px;height:12px;border-radius:50%}
+.tot span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.tot b{font:700 24px/1 var(--display);font-variant-numeric:lining-nums tabular-nums}
+.tot.lead{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.p0 i,.p0.dot{background:var(--p0)} .p1 i,.p1.dot{background:var(--p1)}
+.p0 span{color:var(--p0)} .p1 span{color:var(--p1)}
+
+/* ---------- разделы ---------- */
+main{padding:12px 0 calc(28px + env(safe-area-inset-bottom))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px var(--shadow);
+  padding:12px 12px 6px;margin-bottom:12px}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:2px}
+.card-h h2{margin:0;font:700 20px/1.15 var(--display)}
+.card-h .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:inline-grid;place-items:center;font:700 14px/1 var(--body);margin-right:8px;vertical-align:2px}
+.rule{margin:2px 0 8px;color:var(--muted);font-size:13.5px;line-height:1.35}
+.row{padding:9px 0;border-top:1px dashed var(--line)}
+.row-l{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-weight:700}
+.row-l img{flex:none;height:26px;width:auto}
+.row-l small{font-weight:400;color:var(--muted);font-size:13px;margin-left:auto;text-align:right}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st{display:grid;grid-template-columns:44px 1fr 44px;height:46px;border-radius:12px;overflow:hidden;
+  border:1.5px solid var(--pc);background:var(--surface)}
+.st.p0{--pc:var(--p0);--ps:var(--p0-soft)} .st.p1{--pc:var(--p1);--ps:var(--p1-soft)}
+.st button{border:0;background:var(--ps);font:700 24px/1 var(--body);color:var(--ink);touch-action:manipulation}
+.st button:active{filter:brightness(.92)}
+.st button:disabled{opacity:.35}
+.st input{width:100%;min-width:0;border:0;background:none;color:var(--ink);text-align:center;
+  font:700 21px/1 var(--body);font-variant-numeric:lining-nums tabular-nums;padding:0;border-radius:0;
+  -moz-appearance:textfield;appearance:textfield}
+.st input::-webkit-outer-spin-button,.st input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.st input:focus{outline:none;background:var(--ps)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);height:46px;border-radius:12px;overflow:hidden;border:1.5px solid var(--pc)}
+.seg.p0{--pc:var(--p0);--ps:var(--p0-soft)} .seg.p1{--pc:var(--p1);--ps:var(--p1-soft)}
+.seg button{border:0;border-left:1px solid var(--line);background:var(--surface);font:700 18px/1 var(--body);touch-action:manipulation}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--pc);color:var(--surface)}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 0 6px;border-top:1px solid var(--line)}
+.sum div{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:0 4px;font-size:13.5px;color:var(--muted);min-width:0}
+.sum div span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sum b{flex:none;font:700 19px/1 var(--display);font-variant-numeric:lining-nums tabular-nums}
+.sum .p0 b{color:var(--p0)} .sum .p1 b{color:var(--p1)}
+
+/* ---------- итоги ---------- */
+.res table{width:100%;border-collapse:collapse;font-variant-numeric:lining-nums tabular-nums}
+.res th,.res td{padding:8px 4px;border-top:1px dashed var(--line);text-align:right}
+.res th:first-child,.res td:first-child{text-align:left;font-weight:400}
+.res thead th{border-top:0;font-weight:700;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res thead .p0{color:var(--p0)} .res thead .p1{color:var(--p1)}
+.res td{font-weight:700;width:25%}
+.res tfoot td{border-top:2px solid var(--ink);font:700 24px/1 var(--display);padding-top:11px}
+.res tfoot td:first-child{font:700 18px/1 var(--display)}
+.winner{margin:12px 0 4px;padding:11px 13px;border-radius:12px;background:var(--surface-2);font-weight:700;text-align:center}
+.winner small{display:block;margin-top:4px;font-weight:400;color:var(--muted);font-size:13.5px;line-height:1.35}
+.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 8px}
+.fan{height:.95em;width:auto;vertical-align:-.12em;margin-right:.22em}
+.tot .fan{flex:none;height:22px;margin:0 -2px 0 0}
+.res tfoot .fan{height:22px}
+.hgame{padding:10px 0;border-top:1px dashed var(--line)}
+.hgame:first-child{border-top:0}
+.hdate{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted);font-size:13.5px}
+.hdel{border:0;background:none;color:var(--muted);padding:4px 6px;border-radius:8px;font-size:13.5px;text-decoration:underline}
+.hline{display:flex;align-items:center;gap:8px;margin-top:4px}
+.hline i{flex:none;width:11px;height:11px;border-radius:50%}
+.hline span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hline .fan{height:18px;margin:0}
+.hline b{font:700 20px/1 var(--display)}
+.hline.win span{font-weight:700}
+.hline.win b{color:var(--gold)}
+.hparts{margin-top:3px;color:var(--muted);font-size:13px;line-height:1.35}
+.hempty{color:var(--muted);margin:4px 0 10px}
+.dlg-scroll{max-height:min(62vh,520px);overflow:auto;margin:0 -4px;padding:0 4px}
+#exportImg{display:block;width:100%;height:auto;border-radius:10px;background:var(--surface-2);min-height:120px}
+dialog.wide{width:min(460px,calc(100vw - 24px))}
+a.btn{text-decoration:none;color:inherit;display:inline-block}
+
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:16px;width:min(360px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin:0 0 10px;font:700 20px var(--display)}
+dialog p{margin:0 0 12px;color:var(--muted)}
+dialog label{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+dialog label i{flex:none;width:14px;height:14px;border-radius:50%}
+dialog input{flex:1;min-width:0;font:inherit;color:inherit;background:var(--ground);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.dlg-a{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+button:focus-visible,.home:focus-visible,dialog input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><a class="home" href="../../#score" aria-label="Все игры" title="Все игры"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><img src="img/icon-192.png" alt="" width="40" height="40">
+        <div><h1>Белый замок: Дуэль</h1><small>Счётный лист</small></div>
+      </div>
+      <button type="button" class="btn" id="openPlayers">Игроки</button>
+    </div>
+    <div class="totals" id="totals"></div>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<dialog id="dlgPlayers">
+  <form method="dialog">
+    <h2>Игроки</h2>
+    <label><i class="p0 dot"></i><input id="name0" maxlength="20" autocomplete="off" aria-label="Имя жёлтого игрока"></label>
+    <label><i class="p1 dot"></i><input id="name1" maxlength="20" autocomplete="off" aria-label="Имя синего игрока"></label>
+    <div class="dlg-a"><button class="btn primary" value="ok">Готово</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgNew">
+  <form method="dialog">
+    <h2>Новая партия?</h2>
+    <p>Эта партия сохранится в истории, а числа обнулятся. Имена игроков останутся.</p>
+    <div class="dlg-a"><button class="btn" value="no">Отмена</button><button class="btn primary" value="yes">Обнулить</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgHistory" class="wide">
+  <h2>История партий</h2>
+  <div class="dlg-scroll" id="historyBody"></div>
+  <form method="dialog" class="dlg-a"><button class="btn primary">Закрыть</button></form>
+</dialog>
+
+<dialog id="dlgExport" class="wide">
+  <h2>Картинка-итог</h2>
+  <img id="exportImg" alt="Итоги партии">
+  <p id="exportNote" hidden></p>
+  <div class="dlg-a" style="margin-top:12px">
+    <button type="button" class="btn" id="shareImg" hidden>Поделиться</button>
+    <a class="btn" id="saveImg" download="white-castle-duel.png">Скачать</a>
+    <form method="dialog"><button class="btn primary">Закрыть</button></form>
+  </div>
+</dialog>
+
+<script>
+/* ---------- правила подсчёта (стр. 20 буклета) ---------- */
+const resPts = v => v >= 7 ? 2 : v >= 3 ? 1 : 0;
+const SCORE = {
+  track: p => p.track,
+  res:   p => Math.floor(p.purse / 5) + resPts(p.food) + resPts(p.iron) + resPts(p.pearl),
+  flags: p => p.flags * p.level,
+  katana: p => p.katana * p.normal,
+  kabuto: p => p.kabuto * (p.normal + 2 * p.elite),
+  ori:   p => p.blue * p.white,
+};
+const total = p => Object.values(SCORE).reduce((s, f) => s + f(p), 0);
+
+const SECTIONS = [
+  {id:'track', title:'Очки в игре', rule:'Где стоит ваш веер на шкале очков клана. С жетоном «+40» или «+80» прибавьте его.',
+    rows:[{k:'track', label:'Очки на шкале', max:300}],
+    sum:p => [['на шкале', SCORE.track(p)]]},
+  {id:'res', n:1, title:'Оставшиеся ресурсы', rule:'1 очко за каждые 5 монет и печатей вместе. Куб ресурса на делениях 3–6 — 1 очко, на делении 7 — 2 очка.',
+    rows:[
+      {k:'purse', label:'Монеты и печати', icons:['coin','seal'], hint:'вместе, до 10', max:10},
+      {k:'food', label:'Еда', icons:['food'], hint:'деление куба', max:7},
+      {k:'iron', label:'Железо', icons:['iron'], hint:'деление куба', max:7},
+      {k:'pearl', label:'Перламутр', icons:['pearl'], hint:'деление куба', max:7}],
+    sum:p => [['за ресурсы', SCORE.res(p)]]},
+  {id:'flags', n:2, title:'Флаги нобори', rule:'Число символов флагов × уровень, которого достиг ваш придворный.',
+    rows:[
+      {k:'flags', label:'Символы флагов', icons:['flag'], max:40},
+      {k:'level', label:'Уровень придворного', seg:['—', '1', '2', '3']}],
+    sum:p => [[`${p.flags} × ${p.level}`, SCORE.flags(p)]]},
+  {id:'war', n:3, title:'Катаны и кабуто', rule:'Катана стоит столько, сколько ваших печатей на обычной площадке. Кабуто — 1 за печать на обычной и 2 за печать на элитной.',
+    rows:[
+      {k:'normal', label:'Печати на обычной площадке', hint:'слева', max:8},
+      {k:'elite', label:'Печати на элитной площадке', hint:'справа', max:8},
+      {k:'katana', label:'Символы катан', icons:['katana'], max:40},
+      {k:'kabuto', label:'Символы кабуто', icons:['kabuto'], max:40}],
+    sum:p => [[`катаны ${p.katana} × ${p.normal}`, SCORE.katana(p)], [`кабуто ${p.kabuto} × ${p.normal + 2 * p.elite}`, SCORE.kabuto(p)]]},
+  {id:'ori', n:4, title:'Оригами', rule:'Число синих оригами × число белых.',
+    rows:[
+      {k:'blue', label:'Синие оригами', icons:['origami-blue'], max:40},
+      {k:'white', label:'Белые оригами', icons:['origami-white'], max:40}],
+    sum:p => [[`${p.blue} × ${p.white}`, SCORE.ori(p)]]},
+];
+const RESULT_ROWS = [['track','Очки в игре'], ['res','Ресурсы'], ['flags','Флаги нобори'], ['katana','Катаны'], ['kabuto','Кабуто'], ['ori','Оригами']];
+const KEYS = SECTIONS.flatMap(s => s.rows.map(r => r.k));
+const MAX = Object.fromEntries(SECTIONS.flatMap(s => s.rows.map(r => [r.k, r.seg ? r.seg.length - 1 : r.max])));
+
+/* ---------- состояние ---------- */
+const STORE = 'white-castle-duel-scorer-v1';
+const blank = () => Object.fromEntries(KEYS.map(k => [k, 0]));
+let state = {names:['Игрок 1', 'Игрок 2'], p:[blank(), blank()]};
+try {
+  const s = JSON.parse(localStorage.getItem(STORE));
+  if (s && Array.isArray(s.p) && s.p.length === 2) {
+    state.names = [0, 1].map(i => String(s.names?.[i] || state.names[i]).slice(0, 20));
+    state.p = s.p.map(p => Object.fromEntries(KEYS.map(k => [k, clamp(k, p?.[k])])));
+  }
+} catch (e) {}
+function clamp(k, v) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(MAX[k], Math.max(0, v)) : 0; }
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+
+/* ---------- разметка ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+const ico = n => `<img src="img/${n}.png" alt="">`;
+const FAN = '<img class="fan" src="img/fan.png" alt="очков клана">';
+
+function control(r, i) {
+  if (r.seg) return `<div class="seg p${i}" role="group" aria-label="${esc(r.label)}, ${esc(state.names[i])}">` +
+    r.seg.map((t, v) => `<button type="button" data-k="${r.k}" data-i="${i}" data-v="${v}" aria-pressed="false">${t}</button>`).join('') + '</div>';
+  return `<div class="st p${i}"><button type="button" data-k="${r.k}" data-i="${i}" data-d="-1" aria-label="Меньше">−</button>` +
+    `<input type="number" inputmode="numeric" min="0" max="${r.max}" data-k="${r.k}" data-i="${i}" aria-label="${esc(r.label)}, ${esc(state.names[i])}">` +
+    `<button type="button" data-k="${r.k}" data-i="${i}" data-d="1" aria-label="Больше">+</button></div>`;
+}
+
+function build() {
+  $('#main').innerHTML = SECTIONS.map(s => `
+    <section class="card" id="sec-${s.id}">
+      <div class="card-h"><h2>${s.n ? `<span class="num">${s.n}</span>` : ''}${s.title}</h2></div>
+      <p class="rule">${s.rule}</p>
+      ${s.rows.map(r => `<div class="row">
+        <div class="row-l">${(r.icons || []).map(ico).join('')}<span>${r.label}</span>${r.hint ? `<small>${r.hint}</small>` : ''}</div>
+        <div class="pair">${control(r, 0)}${control(r, 1)}</div>
+      </div>`).join('')}
+      <div class="sum" data-sum="${s.id}"></div>
+    </section>`).join('') + `
+    <section class="card res" id="results">
+      <div class="card-h"><h2>Итоги</h2></div>
+      <table><thead></thead><tbody></tbody><tfoot></tfoot></table>
+      <div class="winner" id="winner"></div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="openExport">Картинка-итог</button>
+        <button type="button" class="btn" id="openHistory">История партий</button>
+        <button type="button" class="btn" id="newGame">Новая партия</button>
+      </div>
+    </section>`;
+  render();
+}
+
+function render() {
+  const ps = state.p, tt = ps.map(total), names = state.names.map(esc);
+  const lead = tt[0] === tt[1] ? -1 : tt[0] > tt[1] ? 0 : 1;
+  $('#totals').innerHTML = [0, 1].map(i =>
+    `<div class="tot p${i}${lead === i && tt[i] ? ' lead' : ''}"><i></i><span>${names[i]}</span>${FAN}<b>${tt[i]}</b></div>`).join('');
+
+  document.querySelectorAll('.st input').forEach(el => {
+    const v = ps[el.dataset.i][el.dataset.k];
+    if (document.activeElement !== el) el.value = v;
+  });
+  document.querySelectorAll('.st button').forEach(b => {
+    const v = ps[b.dataset.i][b.dataset.k];
+    b.disabled = b.dataset.d < 0 ? v <= 0 : v >= MAX[b.dataset.k];
+  });
+  document.querySelectorAll('.seg button').forEach(b =>
+    b.setAttribute('aria-pressed', ps[b.dataset.i][b.dataset.k] === +b.dataset.v));
+
+  SECTIONS.forEach(s => {
+    const parts = ps.map(p => s.sum(p));
+    $(`[data-sum="${s.id}"]`).innerHTML = parts[0].map((_, n) =>
+      [0, 1].map(i => `<div class="p${i}"><span>${parts[i][n][0]}</span><b>${parts[i][n][1]}</b></div>`).join('')).join('');
+  });
+
+  const t = $('#results table');
+  t.tHead.innerHTML = `<tr><th></th><th class="p0">${names[0]}</th><th class="p1">${names[1]}</th></tr>`;
+  t.tBodies[0].innerHTML = RESULT_ROWS.map(([k, label]) =>
+    `<tr><td>${label}</td><td>${SCORE[k](ps[0])}</td><td>${SCORE[k](ps[1])}</td></tr>`).join('');
+  t.tFoot.innerHTML = `<tr><td>Всего</td><td>${FAN}${tt[0]}</td><td>${FAN}${tt[1]}</td></tr>`;
+
+  const w = $('#winner');
+  if (!tt[0] && !tt[1]) w.innerHTML = 'Введите числа — итог посчитается сам';
+  else if (lead >= 0) w.innerHTML = `Побеждает ${names[lead]}: ${tt[lead]} против ${tt[1 - lead]}`;
+  else w.innerHTML = `Ничья: по ${tt[0]}<small>Побеждает тот, кто поместил на поле больше печатей клана. Если поровну — тот, чей придворный выше на шкале статуса. Если и тут равенство, победа общая.</small>`;
+}
+
+/* ---------- ввод ---------- */
+function set(i, k, v) {
+  const p = state.p[i];
+  p[k] = clamp(k, v);
+  /* у игрока всего 8 печатей клана: на двух площадках их не может быть больше */
+  if ((k === 'normal' || k === 'elite') && p.normal + p.elite > 8) p[k] = 8 - (k === 'normal' ? p.elite : p.normal);
+  save(); render();
+}
+$('#main').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]');
+  if (b) { const {i, k} = b.dataset; set(i, k, b.dataset.v != null ? +b.dataset.v : state.p[i][k] + +b.dataset.d); return; }
+  if (e.target.id === 'newGame') $('#dlgNew').showModal();
+  if (e.target.id === 'openHistory') { renderHistory(); $('#dlgHistory').showModal(); }
+  if (e.target.id === 'openExport') openExport();
+});
+$('#main').addEventListener('input', e => { const el = e.target; if (el.matches('.st input')) set(el.dataset.i, el.dataset.k, el.value); });
+$('#main').addEventListener('focusin', e => { if (e.target.matches('.st input')) e.target.select(); });
+$('#main').addEventListener('focusout', e => { if (e.target.matches('.st input')) render(); });
+$('#main').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('.st input')) e.target.blur(); });
+
+$('#openPlayers').addEventListener('click', () => {
+  $('#name0').value = state.names[0]; $('#name1').value = state.names[1];
+  $('#dlgPlayers').showModal();
+});
+/* действие вешаем на саму кнопку, а не на событие close: так оно срабатывает сразу */
+$('#dlgPlayers form').addEventListener('submit', () => {
+  state.names = [$('#name0').value.trim() || 'Игрок 1', $('#name1').value.trim() || 'Игрок 2'];
+  save(); build();
+});
+$('#dlgNew form').addEventListener('submit', e => {
+  if (e.submitter?.value !== 'yes') return;
+  pushHistory();
+  state.p = [blank(), blank()]; save(); render(); scrollTo({top: 0});
+});
+
+/* ---------- история партий ---------- */
+const HISTORY = 'white-castle-duel-history', HIST_MAX = 60;
+const readHistory = () => { try { const h = JSON.parse(localStorage.getItem(HISTORY)); return Array.isArray(h) ? h : []; } catch (e) { return []; } };
+const writeHistory = h => { try { localStorage.setItem(HISTORY, JSON.stringify(h.slice(0, HIST_MAX))); } catch (e) {} };
+const parts = p => Object.fromEntries(RESULT_ROWS.map(([k]) => [k, SCORE[k](p)]));
+function pushHistory() {
+  const tt = state.p.map(total);
+  if (!tt[0] && !tt[1]) return;   /* пустую партию не храним */
+  const h = readHistory();
+  h.unshift({t: Date.now(), names: [...state.names], totals: tt, parts: state.p.map(parts)});
+  writeHistory(h);
+}
+const fmtDate = t => new Date(t).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+function renderHistory() {
+  const h = readHistory(), body = $('#historyBody');
+  if (!h.length) { body.innerHTML = '<p class="hempty">Пока пусто. Партия попадёт сюда, когда вы нажмёте «Новая партия».</p>'; return; }
+  body.innerHTML = h.map((g, n) => {
+    const lead = g.totals[0] === g.totals[1] ? -1 : g.totals[0] > g.totals[1] ? 0 : 1;
+    return `<div class="hgame"><div class="hdate"><span>${fmtDate(g.t)}${lead < 0 ? ' · ничья' : ''}</span><button type="button" class="hdel" data-del="${n}">Удалить</button></div>` +
+      [0, 1].map(i => `<div class="hline${lead === i ? ' win' : ''}"><i class="p${i} dot"></i><span>${esc(g.names[i])}</span>${FAN}<b>${g.totals[i]}</b></div>` +
+        `<div class="hparts">${RESULT_ROWS.map(([k, label]) => `${label.toLowerCase()} ${g.parts[i][k]}`).join(' · ')}</div>`).join('') + '</div>';
+  }).join('');
+}
+$('#historyBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]');
+  if (!b) return;
+  const h = readHistory(); h.splice(+b.dataset.del, 1); writeHistory(h); renderHistory();
+});
+
+/* ---------- картинка-итог ---------- */
+const loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+const ROW_ICONS = {track:['fan'], res:['coin', 'seal'], flags:['flag'], katana:['katana'], kabuto:['kabuto'], ori:['origami-blue', 'origami-white']};
+function fitText(ctx, text, w) {
+  if (ctx.measureText(text).width <= w) return text;
+  while (text.length > 1 && ctx.measureText(text + '…').width > w) text = text.slice(0, -1);
+  return text + '…';
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+
+async function drawExport() {
+  try { await Promise.all(['700 60px "PT Serif"', '700 30px "PT Sans"', '400 30px "PT Sans"'].map(f => document.fonts.load(f, 'Белый замок 0123'))); } catch (e) {}
+  const names = [...new Set(Object.values(ROW_ICONS).flat())];
+  const pics = Object.fromEntries(await Promise.all(names.map(async n => [n, await loadImg(`img/${n}.png`)])));
+  const ps = state.p, tt = ps.map(total), lead = tt[0] === tt[1] ? -1 : tt[0] > tt[1] ? 0 : 1;
+  const W = 1080, P = 56, RH = 92, tableY = 452, H = tableY + RESULT_ROWS.length * RH + 300;
+  const SER = '"PT Serif", Georgia, serif', SAN = '"PT Sans", "Segoe UI", sans-serif';
+  const INK = '#F3EAD3', MUTED = '#A9B4CC', GOLD = '#F0C14B', PC = ['#F0BE3C', '#8DB3F5'];
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1B2F57'); g.addColorStop(1, '#101B33');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = GOLD; ctx.fillRect(0, 0, W, 10);
+
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  ctx.fillStyle = INK; ctx.font = `700 62px ${SER}`; ctx.fillText('Белый замок: Дуэль', P, 104);
+  ctx.fillStyle = MUTED; ctx.font = `400 30px ${SAN}`; ctx.fillText('Итоги партии · ' + fmtDate(Date.now()), P, 152);
+
+  /* плашки игроков: имя и итог с веером */
+  const tw = (W - 2 * P - 24) / 2, ty = 196, th = 196;
+  ps.forEach((p, i) => {
+    const x = P + i * (tw + 24);
+    rr(ctx, x, ty, tw, th, 26); ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fill();
+    if (lead === i) { ctx.lineWidth = 5; ctx.strokeStyle = GOLD; ctx.stroke(); }
+    ctx.fillStyle = PC[i]; ctx.beginPath(); ctx.arc(x + 40, ty + 50, 13, 0, 7); ctx.fill();
+    ctx.font = `700 34px ${SAN}`; ctx.textAlign = 'left';
+    ctx.fillText(fitText(ctx, state.names[i], tw - 96), x + 66, ty + 62);
+    ctx.font = `700 96px ${SER}`; ctx.fillStyle = lead === i ? GOLD : INK;
+    const num = String(tt[i]), nw = ctx.measureText(num).width, fw = 84, gap = 18;
+    const sx = x + (tw - fw - gap - nw) / 2;
+    if (pics.fan) ctx.drawImage(pics.fan, sx, ty + 88, fw, fw);
+    ctx.fillText(num, sx + fw + gap, ty + 164);
+  });
+
+  /* таблица по категориям */
+  const cx = [W - P - 300, W - P - 70];
+  ctx.textAlign = 'center'; ctx.font = `700 26px ${SAN}`;
+  ps.forEach((p, i) => { ctx.fillStyle = PC[i]; ctx.fillText(fitText(ctx, state.names[i], 210), cx[i], tableY - 14); });
+  RESULT_ROWS.forEach(([k, label], n) => {
+    const y = tableY + n * RH;
+    ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(P, y, W - 2 * P, 2);
+    let x = P;
+    ROW_ICONS[k].forEach(nm => {
+      const im = pics[nm]; if (!im) return;
+      const h = 50, w = im.width / im.height * h; ctx.drawImage(im, x, y + (RH - h) / 2, w, h); x += w + 8;
+    });
+    ctx.textAlign = 'left'; ctx.fillStyle = INK; ctx.font = `400 34px ${SAN}`; ctx.fillText(label, P + 128, y + 58);
+    ctx.textAlign = 'center'; ctx.font = `700 40px ${SAN}`;
+    ps.forEach((p, i) => { ctx.fillStyle = INK; ctx.fillText(String(SCORE[k](p)), cx[i], y + 60); });
+  });
+  const yT = tableY + RESULT_ROWS.length * RH;
+  ctx.fillStyle = INK; ctx.fillRect(P, yT, W - 2 * P, 4);
+  ctx.textAlign = 'left'; ctx.font = `700 42px ${SER}`; ctx.fillText('Всего', P, yT + 78);
+  ctx.font = `700 56px ${SER}`;
+  ps.forEach((p, i) => {
+    const num = String(tt[i]), nw = ctx.measureText(num).width, fw = 46;
+    const sx = cx[i] - (fw + 10 + nw) / 2;
+    if (pics.fan) ctx.drawImage(pics.fan, sx, yT + 36, fw, fw);
+    ctx.textAlign = 'left'; ctx.fillStyle = lead === i ? GOLD : INK; ctx.fillText(num, sx + fw + 10, yT + 80);
+  });
+
+  ctx.textAlign = 'center'; ctx.fillStyle = lead < 0 ? INK : GOLD; ctx.font = `700 46px ${SER}`;
+  ctx.fillText(fitText(ctx, lead < 0 ? 'Ничья' : 'Побеждает ' + state.names[lead], W - 2 * P), W / 2, yT + 190);
+  if (/^https?:$/.test(location.protocol)) {
+    ctx.fillStyle = MUTED; ctx.font = `400 24px ${SAN}`;
+    ctx.fillText(location.host + location.pathname.replace(/index\.html$/, ''), W / 2, H - 34);
+  }
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('no blob')), 'image/png'));
+}
+
+let exportFile = null;
+async function openExport() {
+  const img = $('#exportImg'), note = $('#exportNote'), saveA = $('#saveImg'), share = $('#shareImg');
+  note.hidden = true; share.hidden = true; img.removeAttribute('src');
+  $('#dlgExport').showModal();
+  try {
+    const blob = await drawExport();
+    exportFile = new File([blob], 'white-castle-duel.png', {type: 'image/png'});
+    if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+    img.dataset.url = img.src = saveA.href = URL.createObjectURL(blob);
+    share.hidden = !(navigator.canShare && navigator.canShare({files: [exportFile]}));
+  } catch (e) {
+    note.textContent = 'Не получилось нарисовать картинку в этом браузере.'; note.hidden = false;
+  }
+}
+$('#shareImg').addEventListener('click', async () => {
+  try { await navigator.share({files: [exportFile], title: 'Белый замок: Дуэль — итоги партии'}); } catch (e) {}
+});
+
+build();
+
+/* ---------- офлайн ---------- */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('../../sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

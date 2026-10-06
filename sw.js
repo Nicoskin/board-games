@@ -12,7 +12,7 @@
 
    Добавили новую игру — допишите её файлы в ASSETS и поднимите VERSION. */
 
-const VERSION = 'v3';
+const VERSION = 'v5';
 const APP = 'bg-app-' + VERSION;
 const MEDIA = 'bg-media';
 const FONTS = 'bg-fonts';
@@ -71,7 +71,11 @@ const ASSETS = [
   'score/orleans/img/icon.png', 'score/orleans/img/parchment.jpg', 'score/orleans/img/star.png',
   'score/orleans/img/station.png', 'score/orleans/img/tile-brocade.jpg', 'score/orleans/img/tile-cheese.jpg',
   'score/orleans/img/tile-grain.jpg', 'score/orleans/img/tile-wine.jpg', 'score/orleans/img/tile-wool.jpg',
-  'score/orleans/img/wine.png', 'score/orleans/img/wool.png', 'score/star-realms/app.js',
+  'score/orleans/img/wine.png', 'score/orleans/img/wool.png', 'score/white-castle-duel/',
+  'score/white-castle-duel/img/coin.png', 'score/white-castle-duel/img/seal.png', 'score/white-castle-duel/img/food.png', 'score/white-castle-duel/img/iron.png',
+  'score/white-castle-duel/img/pearl.png', 'score/white-castle-duel/img/flag.png', 'score/white-castle-duel/img/katana.png', 'score/white-castle-duel/img/kabuto.png',
+  'score/white-castle-duel/img/origami-blue.png', 'score/white-castle-duel/img/origami-white.png', 'score/white-castle-duel/img/icon-192.png', 'score/white-castle-duel/img/fan.png',
+  'score/star-realms/app.js',
   'score/star-realms/', 'score/star-realms/style.css', 'score/star-realms/icons/apple-touch-icon.png',
   'score/star-realms/icons/icon-192.png', 'rules/7-wonders-duel.html', 'rules/castles-of-burgundy.html',
   'rules/cascadia.html', 'rules/dune-imperium-uprising.html', 'rules/img/dune/cover.jpg',

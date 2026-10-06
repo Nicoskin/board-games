@@ -6,6 +6,7 @@
 
 - 7 чудес: Дуэль — `score/7-wonders-duel/`
 - Агрикола (издание 2016) — `score/agricola/`
+- Белый замок: Дуэль — `score/white-castle-duel/`
 - Великий Западный Путь (2-е издание) — `score/great-western-trail/`
 - Звёздные империи, счётчик влияния — `score/star-realms/`
 - Каскадия — `score/cascadia/`
