@@ -316,6 +316,9 @@ dialog::backdrop{background:rgba(20,16,8,.6)}
 .hhead{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
 .hhead time{font-size:13px;color:var(--muted);flex:1 1 auto}
 .hhead .linkbtn{flex:none;padding:0;font-size:13px}
+.hgame.can{cursor:pointer}
+.hgame.can:active{filter:brightness(.96)}
+.hopen{flex:none;font-size:13px;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 .hhow{font-size:13px;color:var(--accent);font-weight:700;margin-top:4px}
 .hrow{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:15.5px}
 .hrow i{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
@@ -1008,15 +1011,27 @@ const writeHistory = h => lsSet(HISTORY, JSON.stringify(h.slice(0, HIST_MAX)));
 
 /* Партия попадает в архив в момент «Новой партии» — это и есть её конец. */
 function archiveGame() {
+  const from = state.restoredAt; delete state.restoredAt;   /* партия, открытая из истории, вернётся на своё место */
   const st = standing();
   if (!st.how) return false;
-  const h = readHistory();
+  const h = readHistory().filter(x => x.at !== from);
   h.unshift({
-    at: new Date().toISOString(), how: st.how,
+    at: from || new Date().toISOString(), state: snapshot(), how: st.how,
     players: state.players.map((p, i) => ({name:p.name || 'Без имени', color:p.color, total:st.totals[i], win:st.isLead(i)}))
   });
   writeHistory(h);
   return true;
+}
+
+const snapshot = () => { const s = JSON.parse(JSON.stringify(state)); delete s.restoredAt; return s; };
+/* Открыть партию из истории: кладём её лист на место текущего и перечитываем страницу —
+   так он проходит ту же проверку, что и при обычной загрузке. */
+function restoreGame(g) {
+  if (!g || !g.state) return;
+  if (!confirm('Открыть эту партию? Лист заполнится её числами, а то, что введено сейчас, пропадёт.')) return;
+  const s = JSON.parse(JSON.stringify(g.state)); s.restoredAt = g.at;
+  lsSet(STORE, JSON.stringify(s));
+  location.reload();
 }
 
 const historyDlg = $('#historyDlg'), historyBody = $('#historyBody'), hisNote = $('#hisNote');
@@ -1033,8 +1048,9 @@ function renderHistory() {
   const table = Object.entries(wins).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'));
   hisNote.textContent = `${h.length} ${plural(h.length, ['партия', 'партии', 'партий'])}`
     + (table.length ? ' · победы: ' + table.map(([n, w]) => `${n} ${w}`).join(', ') : '');
-  historyBody.innerHTML = h.map((g, k) => `<div class="hgame">
+  historyBody.innerHTML = h.map((g, k) => `<div class="hgame${g.state ? ' can' : ''}"${g.state ? ` data-load="${k}"` : ''}>
     <div class="hhead"><time datetime="${esc(g.at)}">${dateRu(new Date(g.at))}</time>
+      ${g.state ? '<span class="hopen">открыть</span>' : ''}
       <button type="button" class="linkbtn" data-del="${k}">удалить</button></div>
     ${[...g.players].sort((a, b) => b.win - a.win || b.total - a.total).map(p => `<div class="hrow${p.win ? ' win' : ''}">
       <i style="background:${(COLORS[p.color] || COLORS.blue)[0]}"></i>
@@ -1045,7 +1061,9 @@ function renderHistory() {
 $('#openHistory').addEventListener('click', () => { renderHistory(); openDlg(historyDlg); });
 historyDlg.addEventListener('click', e => {
   const del = e.target.closest('[data-del]');
-  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); }
+  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); return; }
+  const load = e.target.closest('[data-load]');
+  if (load) restoreGame(readHistory()[+load.dataset.load]);
 });
 $('#clearHistory').addEventListener('click', () => {
   if (!confirm('Удалить все сохранённые партии? Это не отменить.')) return;

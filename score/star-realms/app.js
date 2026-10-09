@@ -21,7 +21,7 @@ function freshState(prev) {
     count, start, names,
     colors: prev?.colors ?? COLORS.slice(),
     faceToFace: prev?.faceToFace ?? true,
-    fullscreen: prev?.fullscreen ?? true,
+    fullscreen: prev?.fullscreen ?? false,
     style: prev?.style ?? 'digits',
     vibrate: prev?.vibrate ?? true,
     values: Array.from({ length: count }, () => start),
@@ -42,7 +42,15 @@ function save() {
 
 let state = load();
 state.colors ??= COLORS.slice();       // сохранения из старых версий
-state.fullscreen ??= true;
+state.fullscreen ??= false;
+// Раньше режим «На весь экран» был включён сам. В общем приложении он прятал нижнюю панель
+// с настройками, поэтому один раз выключаем его у всех; включить обратно можно в настройках.
+try {
+  if (!localStorage.getItem('star-realms-fs-fix')) {
+    localStorage.setItem('star-realms-fs-fix', '1');
+    if (state.fullscreen) { state.fullscreen = false; save(); }
+  }
+} catch (_) {}
 const color = (i) => state.colors[i] || COLORS[i];
 
 // ---------- Щит влияния (как на карточке из игры) ----------

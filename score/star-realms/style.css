@@ -29,7 +29,10 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  /* Не 100dvh: в полноэкранном режиме эта единица бывает больше видимой области,
+     и нижняя панель уезжает за край. Прибитый к краям блок всегда равен экрану. */
+  position: fixed; inset: 0;
+  height: auto;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
@@ -185,7 +188,9 @@ dialog {
   border: 0; padding: 0;
   background: transparent; color: var(--text);
   width: min(460px, calc(100vw - 32px));
-  max-height: calc(100dvh - 40px);
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+  border-radius: 20px;
 }
 dialog::backdrop { background: rgba(3, 5, 15, .7); backdrop-filter: blur(4px); }
 .sheet {
@@ -193,8 +198,6 @@ dialog::backdrop { background: rgba(3, 5, 15, .7); backdrop-filter: blur(4px); }
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 20px;
-  max-height: calc(100dvh - 40px);
-  overflow-y: auto;
 }
 .sheet h2 { margin: 0 0 16px; font-size: 20px; }
 .sheet p { color: var(--muted); margin: 0 0 16px; }

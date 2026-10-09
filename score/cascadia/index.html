@@ -312,6 +312,9 @@ dialog::backdrop{background:rgba(30,20,8,.6)}
 .hhead{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
 .hhead time{font-size:13px;color:var(--muted);flex:1 1 auto}
 .hhead .linkbtn{flex:none;padding:0;font-size:13px}
+.hgame.can{cursor:pointer}
+.hgame.can:active{filter:brightness(.96)}
+.hopen{flex:none;font-size:13px;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 .hrow{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:15.5px}
 .hrow i{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.25)}
 .hrow span{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -594,7 +597,7 @@ try {
     });
     const cards = allA();
     if (raw.cards) ANIMALS.forEach(a => { if (LETTERS.includes(raw.cards[a.id])) cards[a.id] = raw.cards[a.id]; });
-    state = {players:raw.players.slice(0, 4), cards, mode:['cards', 'family', 'inter'].includes(raw.mode) ? raw.mode : 'cards'};
+    state = {players:raw.players.slice(0, 4), cards, mode:['cards', 'family', 'inter'].includes(raw.mode) ? raw.mode : 'cards', restoredAt:raw.restoredAt};
   }
 } catch (e) {}
 if (!state) {
@@ -1071,16 +1074,28 @@ const cardsLine = () => state.mode === 'cards'
   : state.mode === 'family' ? 'семейный вариант' : 'вариант средней сложности';
 
 function archiveGame() {
+  const from = state.restoredAt; delete state.restoredAt;   /* партия, открытая из истории, вернётся на своё место */
   const st = standing();
   if (!st.totals.some(t => t > 0)) return false;
-  const h = readHistory();
+  const h = readHistory().filter(x => x.at !== from);
   h.unshift({
-    at:new Date().toISOString(), cards:cardsLine(),
+    at: from || new Date().toISOString(), state: snapshot(), cards:cardsLine(),
     players:order(st).map(i => ({name:state.players[i].name || 'Без имени', color:state.players[i].color,
       total:st.totals[i], win:st.isLead(i)}))
   });
   writeHistory(h);
   return true;
+}
+
+const snapshot = () => { const s = JSON.parse(JSON.stringify(state)); delete s.restoredAt; return s; };
+/* Открыть партию из истории: кладём её лист на место текущего и перечитываем страницу —
+   так он проходит ту же проверку, что и при обычной загрузке. */
+function restoreGame(g) {
+  if (!g || !g.state) return;
+  if (!confirm('Открыть эту партию? Лист заполнится её числами, а то, что введено сейчас, пропадёт.')) return;
+  const s = JSON.parse(JSON.stringify(g.state)); s.restoredAt = g.at;
+  try { localStorage.setItem(STORE, JSON.stringify(s)); } catch (e) { return; }
+  location.reload();
 }
 
 const historyDlg = $('#historyDlg'), historyBody = $('#historyBody'), hisNote = $('#hisNote');
@@ -1097,8 +1112,9 @@ function renderHistory() {
   const table = Object.entries(wins).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'));
   hisNote.textContent = `${h.length} ${plural(h.length, ['партия', 'партии', 'партий'])}`
     + (table.length ? ' · победы: ' + table.map(([n, w]) => `${n} ${w}`).join(', ') : '');
-  historyBody.innerHTML = h.map((g, k) => `<div class="hgame">
+  historyBody.innerHTML = h.map((g, k) => `<div class="hgame${g.state ? ' can' : ''}"${g.state ? ` data-load="${k}"` : ''}>
     <div class="hhead"><time datetime="${esc(g.at)}">${dateRu(new Date(g.at))}${g.cards ? ' · ' + esc(g.cards) : ''}</time>
+      ${g.state ? '<span class="hopen">открыть</span>' : ''}
       <button type="button" class="linkbtn" data-del="${k}">удалить</button></div>
     ${g.players.map(p => `<div class="hrow${p.win ? ' win' : ''}">
       <i style="background:${(COLORS[p.color] || COLORS.blue)[0]}"></i>
@@ -1109,7 +1125,9 @@ $('#openHistory').addEventListener('click', () => { renderHistory(); openDlg(his
 historyDlg.addEventListener('click', e => {
   if (e.target === historyDlg || e.target.closest('[data-close]')) { closeDlg(historyDlg); return; }
   const del = e.target.closest('[data-del]');
-  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); }
+  if (del) { const h = readHistory(); h.splice(+del.dataset.del, 1); writeHistory(h); renderHistory(); return; }
+  const load = e.target.closest('[data-load]');
+  if (load) restoreGame(readHistory()[+load.dataset.load]);
 });
 $('#clearHistory').addEventListener('click', () => {
   if (!confirm('Удалить все сохранённые партии? Это не отменить.')) return;

@@ -116,6 +116,8 @@ main{padding:12px 0 calc(28px + env(safe-area-inset-bottom))}
 .res tfoot .fan{height:22px}
 .hgame{padding:10px 0;border-top:1px dashed var(--line)}
 .hgame:first-child{border-top:0}
+.hgame.can{cursor:pointer}
+.hopen{margin-left:auto;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 .hdate{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted);font-size:13.5px}
 .hdel{border:0;background:none;color:var(--muted);padding:4px 6px;border-radius:8px;font-size:13.5px;text-decoration:underline}
 .hline{display:flex;align-items:center;gap:8px;margin-top:4px}
@@ -162,8 +164,9 @@ button:focus-visible,.home:focus-visible,dialog input:focus-visible{outline:2px 
 <dialog id="dlgPlayers">
   <form method="dialog">
     <h2>Игроки</h2>
-    <label><i class="p0 dot"></i><input id="name0" maxlength="20" autocomplete="off" aria-label="Имя жёлтого игрока"></label>
-    <label><i class="p1 dot"></i><input id="name1" maxlength="20" autocomplete="off" aria-label="Имя синего игрока"></label>
+    <label><i class="p0 dot" id="dot0"></i><input id="name0" maxlength="20" autocomplete="off" aria-label="Имя первого игрока"></label>
+    <label><i class="p1 dot" id="dot1"></i><input id="name1" maxlength="20" autocomplete="off" aria-label="Имя второго игрока"></label>
+    <button type="button" class="btn" id="swapColors" style="width:100%;margin-bottom:10px">Поменять цвета местами</button>
     <div class="dlg-a"><button class="btn primary" value="ok">Готово</button></div>
   </form>
 </dialog>
@@ -242,14 +245,21 @@ const MAX = Object.fromEntries(SECTIONS.flatMap(s => s.rows.map(r => [r.k, r.seg
 /* ---------- состояние ---------- */
 const STORE = 'white-castle-duel-scorer-v1';
 const blank = () => Object.fromEntries(KEYS.map(k => [k, 0]));
-let state = {names:['Игрок 1', 'Игрок 2'], p:[blank(), blank()]};
-try {
-  const s = JSON.parse(localStorage.getItem(STORE));
-  if (s && Array.isArray(s.p) && s.p.length === 2) {
-    state.names = [0, 1].map(i => String(s.names?.[i] || state.names[i]).slice(0, 20));
-    state.p = s.p.map(p => Object.fromEntries(KEYS.map(k => [k, clamp(k, p?.[k])])));
-  }
-} catch (e) {}
+let state = {names:['Игрок 1', 'Игрок 2'], p:[blank(), blank()], swap:false};
+/* Принять сохранённый лист — из памяти браузера или из истории партий. */
+function adopt(s) {
+  if (!s || !Array.isArray(s.p) || s.p.length !== 2) return false;
+  state = {
+    names: [0, 1].map(i => String(s.names?.[i] || 'Игрок ' + (i + 1)).slice(0, 20)),
+    p: s.p.map(p => Object.fromEntries(KEYS.map(k => [k, clamp(k, p?.[k])]))),
+    swap: !!s.swap,
+  };
+  if (s.restoredAt) state.restoredAt = s.restoredAt;
+  return true;
+}
+try { adopt(JSON.parse(localStorage.getItem(STORE))); } catch (e) {}
+/* Цвет игрока: первый — жёлтый, второй — синий; state.swap меняет их местами. */
+const pc = i => state.swap ? 1 - i : i;
 function clamp(k, v) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(MAX[k], Math.max(0, v)) : 0; }
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
 
@@ -260,9 +270,9 @@ const ico = n => `<img src="img/${n}.png" alt="">`;
 const FAN = '<img class="fan" src="img/fan.png" alt="очков клана">';
 
 function control(r, i) {
-  if (r.seg) return `<div class="seg p${i}" role="group" aria-label="${esc(r.label)}, ${esc(state.names[i])}">` +
+  if (r.seg) return `<div class="seg p${pc(i)}" role="group" aria-label="${esc(r.label)}, ${esc(state.names[i])}">` +
     r.seg.map((t, v) => `<button type="button" data-k="${r.k}" data-i="${i}" data-v="${v}" aria-pressed="false">${t}</button>`).join('') + '</div>';
-  return `<div class="st p${i}"><button type="button" data-k="${r.k}" data-i="${i}" data-d="-1" aria-label="Меньше">−</button>` +
+  return `<div class="st p${pc(i)}"><button type="button" data-k="${r.k}" data-i="${i}" data-d="-1" aria-label="Меньше">−</button>` +
     `<input type="number" inputmode="numeric" min="0" max="${r.max}" data-k="${r.k}" data-i="${i}" aria-label="${esc(r.label)}, ${esc(state.names[i])}">` +
     `<button type="button" data-k="${r.k}" data-i="${i}" data-d="1" aria-label="Больше">+</button></div>`;
 }
@@ -295,7 +305,7 @@ function render() {
   const ps = state.p, tt = ps.map(total), names = state.names.map(esc);
   const lead = tt[0] === tt[1] ? -1 : tt[0] > tt[1] ? 0 : 1;
   $('#totals').innerHTML = [0, 1].map(i =>
-    `<div class="tot p${i}${lead === i && tt[i] ? ' lead' : ''}"><i></i><span>${names[i]}</span>${FAN}<b>${tt[i]}</b></div>`).join('');
+    `<div class="tot p${pc(i)}${lead === i && tt[i] ? ' lead' : ''}"><i></i><span>${names[i]}</span>${FAN}<b>${tt[i]}</b></div>`).join('');
 
   document.querySelectorAll('.st input').forEach(el => {
     const v = ps[el.dataset.i][el.dataset.k];
@@ -311,11 +321,11 @@ function render() {
   SECTIONS.forEach(s => {
     const parts = ps.map(p => s.sum(p));
     $(`[data-sum="${s.id}"]`).innerHTML = parts[0].map((_, n) =>
-      [0, 1].map(i => `<div class="p${i}"><span>${parts[i][n][0]}</span><b>${parts[i][n][1]}</b></div>`).join('')).join('');
+      [0, 1].map(i => `<div class="p${pc(i)}"><span>${parts[i][n][0]}</span><b>${parts[i][n][1]}</b></div>`).join('')).join('');
   });
 
   const t = $('#results table');
-  t.tHead.innerHTML = `<tr><th></th><th class="p0">${names[0]}</th><th class="p1">${names[1]}</th></tr>`;
+  t.tHead.innerHTML = `<tr><th></th><th class="p${pc(0)}">${names[0]}</th><th class="p${pc(1)}">${names[1]}</th></tr>`;
   t.tBodies[0].innerHTML = RESULT_ROWS.map(([k, label]) =>
     `<tr><td>${label}</td><td>${SCORE[k](ps[0])}</td><td>${SCORE[k](ps[1])}</td></tr>`).join('');
   t.tFoot.innerHTML = `<tr><td>Всего</td><td>${FAN}${tt[0]}</td><td>${FAN}${tt[1]}</td></tr>`;
@@ -348,11 +358,16 @@ $('#main').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.
 
 $('#openPlayers').addEventListener('click', () => {
   $('#name0').value = state.names[0]; $('#name1').value = state.names[1];
+  pendSwap = state.swap; paintDots();
   $('#dlgPlayers').showModal();
 });
+let pendSwap = false;
+const paintDots = () => [0, 1].forEach(i => { $('#dot' + i).className = `p${pendSwap ? 1 - i : i} dot`; });
+$('#swapColors').addEventListener('click', () => { pendSwap = !pendSwap; paintDots(); });
 /* действие вешаем на саму кнопку, а не на событие close: так оно срабатывает сразу */
 $('#dlgPlayers form').addEventListener('submit', () => {
   state.names = [$('#name0').value.trim() || 'Игрок 1', $('#name1').value.trim() || 'Игрок 2'];
+  state.swap = pendSwap;
   save(); build();
 });
 $('#dlgNew form').addEventListener('submit', e => {
@@ -367,10 +382,12 @@ const readHistory = () => { try { const h = JSON.parse(localStorage.getItem(HIST
 const writeHistory = h => { try { localStorage.setItem(HISTORY, JSON.stringify(h.slice(0, HIST_MAX))); } catch (e) {} };
 const parts = p => Object.fromEntries(RESULT_ROWS.map(([k]) => [k, SCORE[k](p)]));
 function pushHistory() {
+  const from = state.restoredAt; delete state.restoredAt;   /* партия, открытая из истории, вернётся на своё место */
   const tt = state.p.map(total);
   if (!tt[0] && !tt[1]) return;   /* пустую партию не храним */
-  const h = readHistory();
-  h.unshift({t: Date.now(), names: [...state.names], totals: tt, parts: state.p.map(parts)});
+  const h = readHistory().filter(g => g.t !== from);
+  h.unshift({t: from || Date.now(), names: [...state.names], totals: tt, parts: state.p.map(parts), swap: state.swap,
+    state: {names: [...state.names], p: state.p.map(p => ({...p})), swap: state.swap}});
   writeHistory(h);
 }
 const fmtDate = t => new Date(t).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
@@ -379,15 +396,19 @@ function renderHistory() {
   if (!h.length) { body.innerHTML = '<p class="hempty">Пока пусто. Партия попадёт сюда, когда вы нажмёте «Новая партия».</p>'; return; }
   body.innerHTML = h.map((g, n) => {
     const lead = g.totals[0] === g.totals[1] ? -1 : g.totals[0] > g.totals[1] ? 0 : 1;
-    return `<div class="hgame"><div class="hdate"><span>${fmtDate(g.t)}${lead < 0 ? ' · ничья' : ''}</span><button type="button" class="hdel" data-del="${n}">Удалить</button></div>` +
-      [0, 1].map(i => `<div class="hline${lead === i ? ' win' : ''}"><i class="p${i} dot"></i><span>${esc(g.names[i])}</span>${FAN}<b>${g.totals[i]}</b></div>` +
+    return `<div class="hgame${g.state ? ' can' : ''}"${g.state ? ` data-load="${n}"` : ''}><div class="hdate"><span>${fmtDate(g.t)}${lead < 0 ? ' · ничья' : ''}</span>${g.state ? '<span class="hopen">Открыть</span>' : ''}<button type="button" class="hdel" data-del="${n}">Удалить</button></div>` +
+      [0, 1].map(i => `<div class="hline${lead === i ? ' win' : ''}"><i class="p${g.swap ? 1 - i : i} dot"></i><span>${esc(g.names[i])}</span>${FAN}<b>${g.totals[i]}</b></div>` +
         `<div class="hparts">${RESULT_ROWS.map(([k, label]) => `${label.toLowerCase()} ${g.parts[i][k]}`).join(' · ')}</div>`).join('') + '</div>';
   }).join('');
 }
 $('#historyBody').addEventListener('click', e => {
   const b = e.target.closest('[data-del]');
-  if (!b) return;
-  const h = readHistory(); h.splice(+b.dataset.del, 1); writeHistory(h); renderHistory();
+  if (b) { const h = readHistory(); h.splice(+b.dataset.del, 1); writeHistory(h); renderHistory(); return; }
+  const load = e.target.closest('[data-load]'), g = load && readHistory()[+load.dataset.load];
+  if (!g || !g.state) return;
+  if (!confirm('Открыть эту партию? Лист заполнится её числами, а то, что введено сейчас, пропадёт.')) return;
+  adopt({...g.state, restoredAt: g.t});
+  save(); build(); $('#dlgHistory').close(); scrollTo({top: 0});
 });
 
 /* ---------- картинка-итог ---------- */
@@ -424,7 +445,7 @@ async function drawExport() {
     const x = P + i * (tw + 24);
     rr(ctx, x, ty, tw, th, 26); ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fill();
     if (lead === i) { ctx.lineWidth = 5; ctx.strokeStyle = GOLD; ctx.stroke(); }
-    ctx.fillStyle = PC[i]; ctx.beginPath(); ctx.arc(x + 40, ty + 50, 13, 0, 7); ctx.fill();
+    ctx.fillStyle = PC[pc(i)]; ctx.beginPath(); ctx.arc(x + 40, ty + 50, 13, 0, 7); ctx.fill();
     ctx.font = `700 34px ${SAN}`; ctx.textAlign = 'left';
     ctx.fillText(fitText(ctx, state.names[i], tw - 96), x + 66, ty + 62);
     ctx.font = `700 96px ${SER}`; ctx.fillStyle = lead === i ? GOLD : INK;
@@ -437,7 +458,7 @@ async function drawExport() {
   /* таблица по категориям */
   const cx = [W - P - 300, W - P - 70];
   ctx.textAlign = 'center'; ctx.font = `700 26px ${SAN}`;
-  ps.forEach((p, i) => { ctx.fillStyle = PC[i]; ctx.fillText(fitText(ctx, state.names[i], 210), cx[i], tableY - 14); });
+  ps.forEach((p, i) => { ctx.fillStyle = PC[pc(i)]; ctx.fillText(fitText(ctx, state.names[i], 210), cx[i], tableY - 14); });
   RESULT_ROWS.forEach(([k, label], n) => {
     const y = tableY + n * RH;
     ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(P, y, W - 2 * P, 2);
