@@ -12,7 +12,7 @@
 
    Добавили новую игру — допишите её файлы в ASSETS и поднимите VERSION. */
 
-const VERSION = 'v7';
+const VERSION = 'v8';
 const APP = 'bg-app-' + VERSION;
 const MEDIA = 'bg-media';
 const FONTS = 'bg-fonts';
@@ -39,7 +39,14 @@ const ASSETS = [
   'score/7-wonders-duel/img/w-piraeus.jpg', 'score/7-wonders-duel/img/w-pyramids.jpg',
   'score/7-wonders-duel/img/w-sphinx.jpg', 'score/7-wonders-duel/img/w-zeus.jpg',
   'score/7-wonders-duel/img/wonder.png', 'score/agricola/icon-192.png',
-  'score/agricola/', 'score/cascadia/', 'score/cascadia/img/art-bear.png',
+  'score/agricola/', 'score/cascadia/', 'score/cascadia/img/cards/bear-A.jpg', 'score/cascadia/img/cards/bear-B.jpg', 'score/cascadia/img/cards/bear-C.jpg',
+  'score/cascadia/img/cards/bear-D.jpg', 'score/cascadia/img/cards/elk-A.jpg', 'score/cascadia/img/cards/elk-B.jpg',
+  'score/cascadia/img/cards/elk-C.jpg', 'score/cascadia/img/cards/elk-D.jpg', 'score/cascadia/img/cards/salmon-A.jpg',
+  'score/cascadia/img/cards/salmon-B.jpg', 'score/cascadia/img/cards/salmon-C.jpg', 'score/cascadia/img/cards/salmon-D.jpg',
+  'score/cascadia/img/cards/hawk-A.jpg', 'score/cascadia/img/cards/hawk-B.jpg', 'score/cascadia/img/cards/hawk-C.jpg',
+  'score/cascadia/img/cards/hawk-D.jpg', 'score/cascadia/img/cards/fox-A.jpg', 'score/cascadia/img/cards/fox-B.jpg',
+  'score/cascadia/img/cards/fox-C.jpg', 'score/cascadia/img/cards/fox-D.jpg',
+  'score/cascadia/img/art-bear.png',
   'score/cascadia/img/art-elk.png', 'score/cascadia/img/art-fox.png', 'score/cascadia/img/art-hawk.png',
   'score/cascadia/img/art-salmon.png', 'score/cascadia/img/bear.png', 'score/cascadia/img/elk.png',
   'score/cascadia/img/forest.png', 'score/cascadia/img/fox.png', 'score/cascadia/img/hawk.png',
