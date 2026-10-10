@@ -883,7 +883,8 @@ function renderResults(st) {
   const ps = state.players, {totals, isLead, sc} = st, n = ps.length;
   const t = tieNote(st);
   tieEl.innerHTML = t ? `<div class="tie">${t}</div>` : '';
-  podium.innerHTML = order(st).map(i => { const p = ps[i];
+  /* в том же порядке, что и строка итогов внизу экрана: игроки не меняются местами */
+  podium.innerHTML = ps.map((p, i) => {
     return `<div class="ptot${isLead(i) ? ' lead' : ''}"><i class="pmeeple" style="background:${COLORS[p.color][0]}"></i>
     <span class="ptname">${pn(p)}${isLead(i) ? '<em>победа</em>' : ''}</span><b>${totals[i]}</b></div>`; }).join('');
   const sr = $('#soloRank');
@@ -980,7 +981,6 @@ function openCalc(pid, a) {
   const card = cardOf(a);
   $('#calcTitle').innerHTML = `${img(a)}<span>${A[a].name} · ${RU[k]}<small>${esc(p.name || 'Без имени')}</small></span>`;
   paintCalc(); openDlg(calcDlg);
-  if (card.kind !== 'groups') setTimeout(() => { const i = calcBody.querySelector('input'); if (i) { i.focus(); i.select(); } }, 30);
 }
 function paintCalc() {
   const card = cardOf(cc.a, cc.k), pts = calcPoints(card, cc);

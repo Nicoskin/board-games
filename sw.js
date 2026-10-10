@@ -12,7 +12,7 @@
 
    Добавили новую игру — допишите её файлы в ASSETS и поднимите VERSION. */
 
-const VERSION = 'v9';
+const VERSION = 'v10';
 const APP = 'bg-app-' + VERSION;
 const MEDIA = 'bg-media';
 const FONTS = 'bg-fonts';
