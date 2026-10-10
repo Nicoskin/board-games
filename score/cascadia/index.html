@@ -780,7 +780,7 @@ function cardsBoard() {
 }
 
 const cardPic = (card, a, k) => card.pic
-  ? `<img class="cardpic" src="img/${card.pic}.jpg" alt="${A[a.id || a].name}: карта цели ${RU[k]}" width="366" height="243" loading="lazy">` : '';
+  ? `<img class="cardpic" src="img/${card.pic}.jpg" alt="${A[a.id || a].name}: карта цели ${RU[k]}" loading="lazy">` : '';
 
 function animalCat(a) {
   const k = cardKey(a.id), card = cardOf(a.id), ps = state.players;
@@ -1399,12 +1399,11 @@ async function buildImage(now) {
   }
   return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('браузер не смог сохранить картинку')), 'image/png'));
 }
-/* --- картинка: таблица, как в остальных счётчиках --- */
+/* --- картинка: тёмная таблица, как в остальных счётчиках --- */
 async function buildTable(now) {
   try {
     await Promise.all(['700 60px Bitter', '400 26px "PT Sans"', '700 26px "PT Sans"'].map(f => document.fonts.load(f, '0123456789АаБбВвЁё—×+')));
   } catch (e) {}
-  const paper = await loadPic('img/paper.jpg');
   const icons = {};
   await Promise.all([...ANIMALS, ...HABS, {id:'pine'}].map(async x => { icons[x.id] = await loadPic(`img/${x.id}.png`); }));
 
@@ -1418,16 +1417,16 @@ async function buildTable(now) {
   const tableH = HH + rows.length * RH + TH;
   const H = TOP + tableH + 70;
   const SER = 'Bitter, Georgia, serif', SAN = '"PT Sans", sans-serif';
-  const INK = '#2E2418', MUTED = '#6B5A40', GREEN = '#3E6B2F';
+  const INK = '#EEE6D4', MUTED = '#A99A7E', GREEN = '#3E6B2F', ACC = '#8FC173';
 
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#EDE4D3'; ctx.fillRect(0, 0, W, H);
-  if (paper) { ctx.save(); ctx.fillStyle = ctx.createPattern(paper, 'repeat'); ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1C1810'); bg.addColorStop(1, '#100E09');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
   /* шапка — та же, что на листке */
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  ctx.fillStyle = GREEN; ctx.font = `700 66px ${SER}`; ctx.fillText('КАСКАДИЯ', M, M + 60);
+  ctx.fillStyle = ACC; ctx.font = `700 66px ${SER}`; ctx.fillText('КАСКАДИЯ', M, M + 60);
   ctx.fillStyle = MUTED; ctx.font = `400 26px ${SAN}`; ctx.fillText('Итоги партии · ' + dateRu(now), M, M + 100);
   let x = M; const cy = M + 158;
   if (state.mode === 'cards') {
@@ -1443,7 +1442,7 @@ async function buildTable(now) {
     ctx.fillText(state.mode === 'family' ? 'семейный вариант' : 'вариант средней сложности', x + 10, cy + 2);
   }
   if (note) {
-    ctx.textBaseline = 'alphabetic'; ctx.fillStyle = GREEN; ctx.font = `700 25px ${SAN}`;
+    ctx.textBaseline = 'alphabetic'; ctx.fillStyle = ACC; ctx.font = `700 25px ${SAN}`;
     ctx.fillText(fitText(ctx, note, W - M * 2), M, M + 236);
   }
 
@@ -1451,8 +1450,8 @@ async function buildTable(now) {
   const TW = W - 2 * M, LW = ps.length > 2 ? 300 : 380, CW = (TW - LW) / ps.length;
   const colX = i => M + LW + CW * (i + .5);
   const box = (y, h, fill) => { ctx.fillStyle = fill; ctx.fillRect(M, y, TW, h); };
-  ctx.save(); ctx.shadowColor = 'rgba(40,25,10,.28)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 5;
-  ctx.fillStyle = '#FBF7EE'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(M, TOP, TW, tableH, 22) : ctx.rect(M, TOP, TW, tableH); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 5;
+  ctx.fillStyle = '#241F16'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(M, TOP, TW, tableH, 22) : ctx.rect(M, TOP, TW, tableH); ctx.fill(); ctx.restore();
   ctx.save(); ctx.beginPath(); ctx.roundRect ? ctx.roundRect(M, TOP, TW, tableH, 22) : ctx.rect(M, TOP, TW, tableH); ctx.clip();
 
   /* имена */
@@ -1461,11 +1460,11 @@ async function buildTable(now) {
     ctx.font = `700 ${ps.length > 2 ? 26 : 30}px ${SAN}`; ctx.textAlign = 'center';
     const name = fitText(ctx, p.name || 'Без имени', CW - 44), nw = ctx.measureText(name).width;
     ctx.fillStyle = COLORS[p.color][0]; ctx.beginPath(); ctx.arc(colX(i) - nw / 2 - 16, TOP + HH / 2, 9, 0, 7); ctx.fill();
-    ctx.fillStyle = COLORS[p.color][4]; ctx.fillText(name, colX(i) + 8, TOP + HH / 2 + 1);
+    ctx.fillStyle = COLORS[p.color][3]; ctx.fillText(name, colX(i) + 8, TOP + HH / 2 + 1);
   });
 
   let y = TOP + HH;
-  const line = yy => { ctx.fillStyle = '#E2D6BC'; ctx.fillRect(M, yy, TW, 2); };
+  const line = yy => { ctx.fillStyle = '#3D3425'; ctx.fillRect(M, yy, TW, 2); };
   const label = (icon, text, yy, bold) => {
     if (icon) ctx.drawImage(icon, M + 22, yy + (RH - 48) / 2, 48, 48);
     ctx.textAlign = 'left'; ctx.fillStyle = INK; ctx.font = `${bold ? 700 : 400} 30px ${SAN}`;
@@ -1492,10 +1491,10 @@ async function buildTable(now) {
         ctx.font = `700 24px ${SAN}`; const t2 = b ? ' +' + b : '', w2 = ctx.measureText(t2).width;
         const x0 = colX(i) - (w1 + w2) / 2;
         ctx.textAlign = 'left'; ctx.fillStyle = INK; ctx.font = `700 34px ${SAN}`; ctx.fillText(t1, x0, y + RH / 2 + 1);
-        if (b) { ctx.fillStyle = GREEN; ctx.font = `700 24px ${SAN}`; ctx.fillText(t2, x0 + w1, y + RH / 2 + 3); }
+        if (b) { ctx.fillStyle = ACC; ctx.font = `700 24px ${SAN}`; ctx.fillText(t2, x0 + w1, y + RH / 2 + 3); }
       });
     } else if (r[0] === 'sub') {
-      box(y, RH, '#F1E9D9'); line(y);
+      box(y, RH, '#2F281C'); line(y);
       label(null, r[2], y, true);
       ps.forEach((p, i) => num(String(st.sc[i][r[1]]), i, y, true));
     } else {
@@ -1520,7 +1519,7 @@ async function buildTable(now) {
   ctx.restore();
 
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  ctx.font = `400 21px ${SAN}`; ctx.fillStyle = 'rgba(80,62,38,.8)';
+  ctx.font = `400 21px ${SAN}`; ctx.fillStyle = 'rgba(169,154,126,.85)';
   ctx.fillText('Каскадия · счётный лист', M, H - 22);
   if (/^https?:$/.test(location.protocol)) {
     ctx.textAlign = 'right';
