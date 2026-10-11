@@ -617,7 +617,7 @@ try {
       if (!Array.isArray(p.v.mt)) p.v.mt = [];
       p.v.mt = p.v.mt.filter(id => MASTER[id]);
     });
-    state = {players:raw.players, market:raw.market || null, restoredAt:raw.restoredAt};
+    state = {players:raw.players, market:raw.market || null, restoredAt:raw.restoredAt, stash:raw.stash};
   }
 } catch (e) {}
 if (!state) {
@@ -884,6 +884,7 @@ dlg.addEventListener('click', e => {
   if (rm) {
     const p = byId(rm.dataset.remove);
     if (!confirm(`Удалить игрока «${p.name}»?`)) return;
+    stashGame();   /* на случай, если игрока убирают перед «Новой партией» */
     state.players = state.players.filter(q => q !== p);
     if (state.market === p.id) state.market = null;
     save(); renderDialog(); renderAll();
@@ -913,8 +914,28 @@ const readHistory = () => { try { const h = JSON.parse(localStorage.getItem(HIST
 const writeHistory = h => { try { localStorage.setItem(HISTORY, JSON.stringify(h.slice(0, HIST_MAX))); } catch (e) {} };
 
 /* Партия попадает в архив в момент «Новой партии» — это и есть её конец. */
+/* Если перед «Новой партией» убрали игроков, в историю должна уйти партия в полном составе.
+   При удалении игрока запоминаем лист целиком; он годится, пока очки оставшихся не менялись. */
+const scoreSig = st => Object.fromEntries(st.players.map(p => [p.id, JSON.stringify([p.v, p.calc || null])]));
+function stashedGame() {
+  const s = state.stash;
+  if (!s || !s.snap || state.players.length >= s.snap.players.length) return null;
+  const now = scoreSig(state);
+  return state.players.every(p => s.sig[p.id] === now[p.id]) ? s.snap : null;
+}
+function stashGame() {
+  if (stashedGame()) return;
+  delete state.stash;
+  state.stash = {snap: snapshot(), sig: scoreSig(state)};
+}
 function archiveGame() {
   const from = state.restoredAt; delete state.restoredAt;   /* партия, открытая из истории, вернётся на своё место */
+  const live = state, full = stashedGame();
+  delete live.stash;
+  if (full) state = full;
+  try { return archiveNow(from); } finally { state = live; }
+}
+function archiveNow(from) {
   const st = standing();
   if (!st.totals.some(t => t !== 0)) return false;
   const h = readHistory().filter(x => x.at !== from);
@@ -928,7 +949,7 @@ function archiveGame() {
   return true;
 }
 
-const snapshot = () => { const s = JSON.parse(JSON.stringify(state)); delete s.restoredAt; return s; };
+const snapshot = () => { const s = JSON.parse(JSON.stringify(state)); delete s.restoredAt; delete s.stash; return s; };
 /* Открыть партию из истории: кладём её лист на место текущего и перечитываем страницу —
    так он проходит ту же проверку, что и при обычной загрузке. */
 function restoreGame(g) {

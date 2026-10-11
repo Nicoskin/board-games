@@ -791,6 +791,7 @@ dlg.addEventListener('click', e => {
   if (rm) {
     const p = byId(rm.dataset.remove);
     if (!confirm(`Удалить игрока «${p.name}»?`)) return;
+    stashGame();   /* на случай, если игрока убирают перед «Новой партией» */
     state.players = state.players.filter(q => q !== p);
     Object.keys(state.majors).forEach(k => { if (state.majors[k] === p.id) delete state.majors[k]; });
     save(); renderDialog(); renderAll();
@@ -1123,8 +1124,28 @@ const gameIsEmpty = () => state.players.every(p => CATS.every(c => c.kind === 'm
   : (c.kind === 'rooms' ? p.v.rooms : p.v[c.id]) == null));
 
 /* Партия попадает в архив в момент «Новой партии» — это и есть её конец. */
+/* Если перед «Новой партией» убрали игроков, в историю должна уйти партия в полном составе.
+   При удалении игрока запоминаем лист целиком; он годится, пока очки оставшихся не менялись. */
+const scoreSig = st => Object.fromEntries(st.players.map(p => [p.id, JSON.stringify([p.v, p.calc || null])]));
+function stashedGame() {
+  const s = state.stash;
+  if (!s || !s.snap || state.players.length >= s.snap.players.length) return null;
+  const now = scoreSig(state);
+  return state.players.every(p => s.sig[p.id] === now[p.id]) ? s.snap : null;
+}
+function stashGame() {
+  if (stashedGame()) return;
+  delete state.stash;
+  state.stash = {snap: snapshot(), sig: scoreSig(state)};
+}
 function archiveGame() {
   const from = state.restoredAt; delete state.restoredAt;   /* партия, открытая из истории, вернётся на своё место */
+  const live = state, full = stashedGame();
+  delete live.stash;
+  if (full) state = full;
+  try { return archiveNow(from); } finally { state = live; }
+}
+function archiveNow(from) {
   if (gameIsEmpty()) return false;
   const ps = state.players, totals = ps.map(total), {isLead} = leaders();
   const order = ps.map((p, i) => i).sort((a, b) => totals[b] - totals[a]);
@@ -1137,7 +1158,7 @@ function archiveGame() {
   return true;
 }
 
-const snapshot = () => { const s = JSON.parse(JSON.stringify(state)); delete s.restoredAt; return s; };
+const snapshot = () => { const s = JSON.parse(JSON.stringify(state)); delete s.restoredAt; delete s.stash; return s; };
 /* Открыть партию из истории: кладём её лист на место текущего и перечитываем страницу —
    так он проходит ту же проверку, что и при обычной загрузке. */
 function restoreGame(g) {
