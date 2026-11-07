@@ -12,7 +12,7 @@
 
    Добавили новую игру — допишите её файлы в ASSETS и поднимите VERSION. */
 
-const VERSION = 'v11';
+const VERSION = 'v12';
 const APP = 'bg-app-' + VERSION;
 const MEDIA = 'bg-media';
 const FONTS = 'bg-fonts';
@@ -85,7 +85,7 @@ const ASSETS = [
   'score/star-realms/app.js',
   'score/star-realms/', 'score/star-realms/style.css', 'score/star-realms/icons/apple-touch-icon.png',
   'score/star-realms/icons/icon-192.png', 'rules/7-wonders-duel.html', 'rules/castles-of-burgundy.html',
-  'rules/cascadia.html', 'rules/dune-imperium-uprising.html', 'rules/img/dune/cover.jpg',
+  'rules/cascadia.html', 'rules/hive.html', 'rules/img/hive/0.jpg', 'rules/dune-imperium-uprising.html', 'rules/img/dune/cover.jpg',
   'rules/assets/style.css', 'rules/assets/app.js', 'rules/img/7wd/cover.jpg',
   'rules/img/cob/thumb.jpg', 'rules/img/csc/cover.jpg'
 ];

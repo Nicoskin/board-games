@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#9a650c">
+<title>Улей — правила</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐝%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=14">
+</head>
+<body class="game-hive">
+<header class="top">
+  <div class="top-row">
+    <a class="icon-btn" href="../#rules" aria-label="Все игры">←</a>
+    <div class="top-title">Улей</div>
+    <button id="toc-btn" class="icon-btn" aria-label="Оглавление">☰ <span>Разделы</span></button>
+  </div>
+  <div class="search-row">
+    <input id="q" type="search" placeholder="Поиск: королева, кузнечик, ничья…" autocomplete="off" enterkeyhint="search">
+    <button id="q-clear" aria-label="Очистить" hidden>✕</button>
+  </div>
+</header>
+<div id="results" hidden></div>
+<nav id="toc" aria-label="Оглавление">
+  <div class="toc-head">Оглавление <button class="icon-btn toc-close" aria-label="Закрыть">✕</button></div>
+  <ol id="toc-list"></ol>
+</nav>
+<div id="scrim"></div>
+
+<main data-game="hive"><h1>Улей</h1><p class="lead">Дуэль Джона Янни. Окружите королеву соперника шестью фишками любого цвета.</p><section id="setup"><h2>Подготовка и первый ход <a class="src" href="img/hive/1.jpg" data-zoom="img/hive/1.jpg">стр. 1</a></h2><p>Каждый берёт 11 фишек одного цвета. Первый игрок кладёт любую свою фишку на стол, второй ставит свою вплотную к ней.</p></section>
+<section id="turn"><h2>Выкладывание и перемещение <a class="src" href="img/hive/2.jpg" data-zoom="img/hive/2.jpg">стр. 2</a></h2><p>В ход либо добавьте новую фишку, либо передвиньте свою фишку на поле. После первого хода каждого игрока новую фишку можно ставить только рядом со своими, без контакта с чужими. Передвигать фишки можно только после выкладывания своей королевы. При перемещении касаться чужих фишек можно.</p></section>
+<section id="queen"><h2>Королева <a class="src" href="img/hive/4.jpg" data-zoom="img/hive/4.jpg">стр. 4</a></h2><p>Выложите королеву не позднее своего четвёртого хода. Она передвигается на одну соседнюю свободную клетку скольжением.</p></section>
+<section id="beetle"><h2>Жук <a class="src" href="img/hive/5.jpg" data-zoom="img/hive/5.jpg">стр. 5</a></h2><p>Двигается на одну клетку и может залезать на другие фишки. Нижняя фишка заблокирована, а цвет стопки определяется верхним жуком. Жук может спуститься в свободное место. При выкладывании из запаса он подчиняется общим правилам.</p></section>
+<section id="grasshopper"><h2>Кузнечик <a class="src" href="img/hive/6.jpg" data-zoom="img/hive/6.jpg">стр. 6</a></h2><p>Прыгает по прямой через непрерывный ряд из одной или нескольких фишек на первое свободное место за ним. Через разрыв в ряду не прыгает.</p></section>
+<section id="spider"><h2>Паук <a class="src" href="img/hive/7.jpg" data-zoom="img/hive/7.jpg">стр. 7</a></h2><p>Скользит ровно на три шага по краю улья. Нельзя возвращаться на уже пройденное место. На каждом шаге паук должен соприкасаться с ульем.</p></section>
+<section id="ant"><h2>Муравей-солдат <a class="src" href="img/hive/8.jpg" data-zoom="img/hive/8.jpg">стр. 8</a></h2><p>Скользит по краю улья на любое расстояние, пока путь свободен.</p></section>
+<section id="limits"><h2>Единый улей и скольжение <a class="src" href="img/hive/9.jpg" data-zoom="img/hive/9.jpg">стр. 9</a></h2><p>Улей должен оставаться связанным и во время хода, и после него. При скольжении фишка должна физически проходить между соседями. Кузнечик перепрыгивает препятствия, а жук может пройти поверх фишек.</p></section>
+<section id="end"><h2>Пропуск хода и конец игры <a class="src" href="img/hive/11.jpg" data-zoom="img/hive/11.jpg">стр. 11</a></h2><p>Если нельзя ни выложить, ни переместить фишку, пропустите ход. Как только королеву окружили с шести сторон, её владелец проигрывает. Если обе королевы окружены одновременно, это ничья. При патовой ситуации игроки могут договориться о ничьей.</p></section>
+<section id="pages"><h2>Страницы буклета</h2><div class="pages-wrap"><div class="pages-carousel" data-gallery><a class="pg" href="img/hive/1.jpg" data-zoom="img/hive/1.jpg" data-caption="Страница 1"><img src="img/hive/1.jpg" alt="Страница 1" loading="lazy">1</a><a class="pg" href="img/hive/2.jpg" data-zoom="img/hive/2.jpg" data-caption="Страница 2"><img src="img/hive/2.jpg" alt="Страница 2" loading="lazy">2</a><a class="pg" href="img/hive/3.jpg" data-zoom="img/hive/3.jpg" data-caption="Страница 3"><img src="img/hive/3.jpg" alt="Страница 3" loading="lazy">3</a><a class="pg" href="img/hive/4.jpg" data-zoom="img/hive/4.jpg" data-caption="Страница 4"><img src="img/hive/4.jpg" alt="Страница 4" loading="lazy">4</a><a class="pg" href="img/hive/5.jpg" data-zoom="img/hive/5.jpg" data-caption="Страница 5"><img src="img/hive/5.jpg" alt="Страница 5" loading="lazy">5</a><a class="pg" href="img/hive/6.jpg" data-zoom="img/hive/6.jpg" data-caption="Страница 6"><img src="img/hive/6.jpg" alt="Страница 6" loading="lazy">6</a><a class="pg" href="img/hive/7.jpg" data-zoom="img/hive/7.jpg" data-caption="Страница 7"><img src="img/hive/7.jpg" alt="Страница 7" loading="lazy">7</a><a class="pg" href="img/hive/8.jpg" data-zoom="img/hive/8.jpg" data-caption="Страница 8"><img src="img/hive/8.jpg" alt="Страница 8" loading="lazy">8</a><a class="pg" href="img/hive/9.jpg" data-zoom="img/hive/9.jpg" data-caption="Страница 9"><img src="img/hive/9.jpg" alt="Страница 9" loading="lazy">9</a><a class="pg" href="img/hive/10.jpg" data-zoom="img/hive/10.jpg" data-caption="Страница 10"><img src="img/hive/10.jpg" alt="Страница 10" loading="lazy">10</a><a class="pg" href="img/hive/11.jpg" data-zoom="img/hive/11.jpg" data-caption="Страница 11"><img src="img/hive/11.jpg" alt="Страница 11" loading="lazy">11</a></div><div class="pc-bar"><button class="icon-btn pc-prev" aria-label="Предыдущая страница">‹</button><span class="pc-count"></span><button class="icon-btn pc-next" aria-label="Следующая страница">›</button></div></div></section></main><script src="assets/app.js?v=14"></script></body></html>
